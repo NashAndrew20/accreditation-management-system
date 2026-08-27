@@ -110,7 +110,7 @@ def reviewer_assignments(role_code, submission):
         query = query.filter(assigned_areas=submission.requirement.area_id)
     return query.order_by(
         Case(
-            When(user__username='approver', then=Value(0)),
+            When(user__username='dean', then=Value(0)),
             default=Value(1),
             output_field=IntegerField(),
         ),

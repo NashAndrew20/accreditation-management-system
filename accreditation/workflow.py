@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
 from django.utils import timezone
@@ -169,7 +170,16 @@ def approve_submission(submission, actor, remarks=''):
     if old_status == EvidenceSubmission.UNDER_DEAN_REVIEW:
         next_status, next_role = EvidenceSubmission.UNDER_AREA_CHAIR_REVIEW, 'AREA_CHAIR'
         decision = EvidenceReview.APPROVED
-        next_reviewer = _assign_next_reviewer(submission, next_role)
+        try:
+            next_reviewer = _assign_next_reviewer(submission, next_role)
+        except WorkflowError:
+            # The current development demo has only QA, Dean, and Program
+            # Head accounts. Keep the full Area Chair stage required outside
+            # demo mode, but let the three-account demo continue to QA.
+            if not settings.DEMO_MODE:
+                raise
+            next_status, next_role = EvidenceSubmission.UNDER_QA_REVIEW, 'QA'
+            next_reviewer = _assign_next_reviewer(submission, next_role)
     elif old_status == EvidenceSubmission.UNDER_AREA_CHAIR_REVIEW:
         next_status, next_role = EvidenceSubmission.UNDER_QA_REVIEW, 'QA'
         decision = EvidenceReview.APPROVED

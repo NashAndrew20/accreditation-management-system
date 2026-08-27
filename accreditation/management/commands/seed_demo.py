@@ -4,9 +4,9 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
-from django.db.models import Q
 from django.utils import timezone
 
+from accounts.demo_accounts import DEMO_ACCOUNT_DEFINITIONS, DEMO_PASSWORD
 from accreditation.cache import clear_active_structure_cache
 from accreditation.evidence_data import EVIDENCE_ITEMS
 from accreditation.models import (
@@ -22,7 +22,7 @@ from accreditation.models import (
     EvidenceVersion,
 )
 from accreditation.views import AREA_SUBAREAS
-from core.models import AuditLog, Department, Role, RoleAssignment, UserProfile
+from core.models import AuditLog, Department, Notification, Role, RoleAssignment, UserProfile
 
 
 ROLE_DEFINITIONS = [
@@ -39,6 +39,7 @@ ROLE_DEFINITIONS = [
 
 DEPARTMENT_DEFINITIONS = [
     ('QA', 'QA Office', Department.OFFICE, None),
+    ('CITE', 'CITE', Department.DEPARTMENT, None),
     ('ENG', 'College of Engineering', Department.DEPARTMENT, None),
     ('ENG-BSCIV', 'Bachelor of Science in Civil Engineering', Department.PROGRAM, 'ENG'),
     ('BUS', 'College of Business', Department.DEPARTMENT, None),
@@ -47,17 +48,24 @@ DEPARTMENT_DEFINITIONS = [
 ]
 
 
-DEMO_USERS = [
-    ('superadmin', 'superadmin@jmcfi.edu.ph', 'Demo', 'Superadmin', 'SUPERADMIN', 'QA'),
-    ('admin', 'admin@jmcfi.edu.ph', 'Demo', 'Admin', 'ADMIN', 'QA'),
-    ('uploader', 'uploader@jmcfi.edu.ph', 'Demo', 'Evidence Uploader', 'PROGRAM_HEAD', 'ENG-BSCIV'),
-    ('approver', 'approver@jmcfi.edu.ph', 'Demo', 'Approver', 'DEAN', 'ENG'),
-    ('qa', 'qa@jmcfi.edu.ph', 'Demo', 'QA', 'QA', 'QA'),
-    ('accreditation-head', 'accreditation.head@jmcfi.edu.ph', 'Demo', 'Accreditation Head', 'ACCREDITATION_HEAD', 'QA'),
-    ('program-head', 'program.head@jmcfi.edu.ph', 'Demo', 'Program Head', 'PROGRAM_HEAD', 'ENG-BSCIV'),
-    ('dean', 'dean@jmcfi.edu.ph', 'Demo', 'Dean', 'DEAN', 'ENG'),
-    ('area-chair', 'area.chair@jmcfi.edu.ph', 'Demo', 'Area Chair', 'AREA_CHAIR', 'ENG'),
-]
+DEMO_USERS = tuple(
+    (
+        account['username'],
+        account['email'],
+        account['first_name'],
+        account['last_name'],
+        account['role_code'],
+        account['department_code'],
+    )
+    for account in DEMO_ACCOUNT_DEFINITIONS
+)
+
+# Older demo usernames are migrated to the three canonical personas when the
+# seeder runs. Their records are retained so evidence history is not lost.
+LEGACY_DEMO_ALIASES = {
+    'phead': ('uploader', 'program-head'),
+    'dean': ('approver',),
+}
 
 
 class Command(BaseCommand):
@@ -144,19 +152,11 @@ class Command(BaseCommand):
                     )
 
         User = get_user_model()
-        demo_assignments = {}
         demo_users = {}
         for username, email, first_name, last_name, role_code, department_code in DEMO_USERS:
             user = User.objects.filter(username=username).first()
             if user is None:
-                # Rename accounts created by older versions of the demo seeder
-                # instead of leaving duplicate demo accounts behind.
-                user = User.objects.filter(
-                    username=f'demo-{username}',
-                    profile__is_demo_account=True,
-                ).first()
-                if user is not None:
-                    user.username = username
+                user = self._take_over_legacy_demo_user(User, username)
             if user is None:
                 user = User.objects.create_user(username=username, email=email)
             user.email = email
@@ -165,7 +165,7 @@ class Command(BaseCommand):
             user.is_active = True
             user.is_staff = role_code in {'SUPERADMIN', 'ADMIN'}
             user.is_superuser = role_code == 'SUPERADMIN'
-            user.set_password('123')
+            user.set_password(DEMO_PASSWORD)
             user.save()
 
             profile, _ = UserProfile.objects.get_or_create(user=user)
@@ -184,18 +184,16 @@ class Command(BaseCommand):
                     'approved_by': None,
                 },
             )
-            if username == 'approver':
-                # Remove the old QA/QA assignment created by earlier demo seeds.
-                RoleAssignment.objects.filter(
-                    user=user,
-                    role__code='QA',
-                    department=departments['QA'],
-                ).exclude(pk=assignment.pk).delete()
-            assignment.assigned_areas.set(areas if role_code == 'AREA_CHAIR' else [])
-            demo_assignments[username] = assignment
+            # A canonical demo user should have one active role/department so
+            # switching between the three personas remains predictable.
+            RoleAssignment.objects.filter(user=user).exclude(pk=assignment.pk).update(is_approved=False)
+            assignment.assigned_areas.clear()
             demo_users[username] = user
             profile.active_assignment = assignment
             profile.save(update_fields=['active_assignment', 'updated_at'])
+
+        self._migrate_legacy_demo_users(User, demo_users)
+        self._disable_stale_demo_accounts(User, set(demo_users))
 
         sample_count = self._seed_demo_submissions(
             areas=areas,
@@ -210,42 +208,99 @@ class Command(BaseCommand):
         ))
         self.stdout.write('Demo accounts use the development-only password 123 without forced first-login password changes.')
 
+    @staticmethod
+    def _take_over_legacy_demo_user(User, username):
+        for legacy_username in LEGACY_DEMO_ALIASES.get(username, ()):
+            legacy_user = User.objects.filter(
+                username=legacy_username,
+                profile__is_demo_account=True,
+            ).first()
+            if legacy_user:
+                legacy_user.username = username
+                legacy_user.save(update_fields=['username'])
+                return legacy_user
+        return None
+
+    @classmethod
+    def _migrate_legacy_demo_users(cls, User, demo_users):
+        for canonical_username, legacy_usernames in LEGACY_DEMO_ALIASES.items():
+            target = demo_users[canonical_username]
+            for legacy_username in legacy_usernames:
+                legacy = User.objects.filter(
+                    username=legacy_username,
+                    profile__is_demo_account=True,
+                ).exclude(pk=target.pk).first()
+                if not legacy:
+                    continue
+                cls._repoint_user_history(legacy, target)
+                cls._disable_demo_account(legacy)
+
+    @staticmethod
+    def _repoint_user_history(source, target):
+        submission_fields = (
+            'program_head',
+            'created_by',
+            'last_updated_by',
+            'current_reviewer',
+            'revision_return_reviewer',
+        )
+        for field in submission_fields:
+            EvidenceSubmission.objects.filter(**{f'{field}_id': source.id}).update(
+                **{f'{field}_id': target.id},
+            )
+
+        for model, field in (
+            (EvidenceVersion, 'submitted_by'),
+            (EvidenceFile, 'uploaded_by'),
+            (EvidenceReview, 'reviewer'),
+            (EvidenceComment, 'author'),
+            (Notification, 'user'),
+            (AuditLog, 'actor'),
+            (UserProfile, 'approved_by'),
+            (RoleAssignment, 'approved_by'),
+        ):
+            model.objects.filter(**{f'{field}_id': source.id}).update(
+                **{f'{field}_id': target.id},
+            )
+
+    @staticmethod
+    def _disable_demo_account(user):
+        user.is_active = False
+        user.is_staff = False
+        user.is_superuser = False
+        user.save(update_fields=['is_active', 'is_staff', 'is_superuser'])
+        RoleAssignment.objects.filter(user=user).update(is_approved=False)
+        profile = getattr(user, 'profile', None)
+        if profile:
+            profile.active_assignment = None
+            profile.save(update_fields=['active_assignment', 'updated_at'])
+
+    @classmethod
+    def _disable_stale_demo_accounts(cls, User, active_usernames):
+        stale_users = User.objects.filter(profile__is_demo_account=True).exclude(username__in=active_usernames)
+        for user in stale_users:
+            cls._disable_demo_account(user)
+
     def _seed_demo_submissions(self, areas, departments, roles, users):
         """Create repeatable evidence activity so development dashboards are useful."""
-        program_head = users.get('uploader') or users['program-head']
-        dean = users.get('approver') or users['dean']
-        area_chair = users['area-chair']
+        program_head = users['phead']
+        dean = users['dean']
         qa = users['qa']
-        sample_departments = [
-            departments['ENG-BSCIV'],
-            departments['ENG'],
-            departments['BUS'],
-            departments['EDU'],
-            departments['NURS'],
-        ]
+        sample_departments = [departments['CITE']]
         reviewer_by_stage = {
             EvidenceSubmission.UNDER_DEAN_REVIEW: (dean, roles['DEAN']),
-            EvidenceSubmission.UNDER_AREA_CHAIR_REVIEW: (area_chair, roles['AREA_CHAIR']),
             EvidenceSubmission.UNDER_QA_REVIEW: (qa, roles['QA']),
         }
-        engineering_scope_ids = {departments['ENG'].id, departments['ENG-BSCIV'].id}
 
         def reviewer_for_stage(stage, department):
-            if (
-                stage in {
-                    EvidenceSubmission.UNDER_DEAN_REVIEW,
-                    EvidenceSubmission.UNDER_AREA_CHAIR_REVIEW,
-                }
-                and department.id not in engineering_scope_ids
-            ):
+            if stage == EvidenceSubmission.UNDER_DEAN_REVIEW and department.id != departments['CITE'].id:
                 return None, None
-            return reviewer_by_stage[stage]
+            return reviewer_by_stage.get(stage, (None, None))
 
         status_pattern = [
             EvidenceSubmission.CLOSED,
             EvidenceSubmission.COMPLIED,
             EvidenceSubmission.UNDER_QA_REVIEW,
-            EvidenceSubmission.UNDER_AREA_CHAIR_REVIEW,
             EvidenceSubmission.UNDER_DEAN_REVIEW,
             EvidenceSubmission.NEEDS_REVISION,
             EvidenceSubmission.DRAFT,
@@ -285,9 +340,8 @@ class Command(BaseCommand):
             elif status == EvidenceSubmission.NEEDS_REVISION:
                 revision_return_status = (
                     EvidenceSubmission.UNDER_DEAN_REVIEW,
-                    EvidenceSubmission.UNDER_AREA_CHAIR_REVIEW,
                     EvidenceSubmission.UNDER_QA_REVIEW,
-                )[index % 3]
+                )[index % 2]
                 revision_return_reviewer, revision_return_role = reviewer_for_stage(
                     revision_return_status,
                     department,
@@ -377,17 +431,15 @@ class Command(BaseCommand):
                 program_head=program_head,
             )
 
-        # Reconcile rows created by earlier demo seeds so the active reviewer
-        # matches the current Engineering Dean demo account and its scope.
+        # Reconcile rows created by earlier demo seeds so their active reviewers
+        # use the current canonical accounts where the stage is available.
         demo_submissions = EvidenceSubmission.objects.filter(
             status__in=(
                 EvidenceSubmission.SUBMITTED,
                 EvidenceSubmission.UNDER_DEAN_REVIEW,
-                EvidenceSubmission.UNDER_AREA_CHAIR_REVIEW,
+                EvidenceSubmission.UNDER_QA_REVIEW,
             ),
-        ).filter(
-            Q(versions__notes='Seeded development demo evidence.')
-            | Q(current_reviewer=users['dean'])
+            versions__notes='Seeded development demo evidence.',
         ).select_related('department').distinct()
         for submission in demo_submissions:
             stage = (
@@ -448,51 +500,14 @@ class Command(BaseCommand):
             created_at=submitted_at,
         )
 
-        approval_chain = [
-            (
-                EvidenceSubmission.UNDER_DEAN_REVIEW,
-                EvidenceSubmission.UNDER_AREA_CHAIR_REVIEW,
-                EvidenceReview.APPROVED,
-                'Dean demo review approved.',
-            ),
-            (
-                EvidenceSubmission.UNDER_AREA_CHAIR_REVIEW,
-                EvidenceSubmission.UNDER_QA_REVIEW,
-                EvidenceReview.APPROVED,
-                'Area Chair demo review approved.',
-            ),
-        ]
+        # The current demo intentionally has no Area Chair account. Keep the
+        # role and workflow available to real users, but seed only the three
+        # active demo personas and leave their samples at the Dean/QA stages.
         if status in {
-            EvidenceSubmission.UNDER_AREA_CHAIR_REVIEW,
-            EvidenceSubmission.UNDER_QA_REVIEW,
             EvidenceSubmission.COMPLIED,
             EvidenceSubmission.CLOSED,
             EvidenceSubmission.NON_COMPLIED,
         }:
-            chain_length = 1 if status == EvidenceSubmission.UNDER_AREA_CHAIR_REVIEW else 2
-            for step, (from_status, to_status, decision, remarks) in enumerate(approval_chain[:chain_length]):
-                reviewer, reviewer_role = reviewer_by_stage[from_status]
-                review_time = submitted_at + timedelta(hours=8 + step * 12)
-                self._create_review(
-                    submission=submission,
-                    version=version,
-                    reviewer=reviewer,
-                    reviewer_role=reviewer_role,
-                    from_status=from_status,
-                    to_status=to_status,
-                    decision=decision,
-                    remarks=remarks,
-                    created_at=review_time,
-                )
-                self._create_audit(
-                    actor=reviewer,
-                    submission=submission,
-                    action='APPROVED',
-                    details={'demo_seed': True, 'from_status': from_status, 'to_status': to_status},
-                    created_at=review_time,
-                )
-
-        if status in {EvidenceSubmission.COMPLIED, EvidenceSubmission.CLOSED, EvidenceSubmission.NON_COMPLIED}:
             qa_reviewer, qa_role = reviewer_by_stage[EvidenceSubmission.UNDER_QA_REVIEW]
             qa_time = submitted_at + timedelta(hours=32)
             if status == EvidenceSubmission.NON_COMPLIED:
@@ -557,9 +572,8 @@ class Command(BaseCommand):
         if status == EvidenceSubmission.NEEDS_REVISION:
             revision_stage = (
                 EvidenceSubmission.UNDER_DEAN_REVIEW,
-                EvidenceSubmission.UNDER_AREA_CHAIR_REVIEW,
                 EvidenceSubmission.UNDER_QA_REVIEW,
-            )[index % 3]
+            )[index % 2]
             reviewer, reviewer_role = reviewer_by_stage[revision_stage]
             revision_time = submitted_at + timedelta(hours=10)
             remarks = 'Demo revision requested: attach clearer supporting evidence and update the narrative.'

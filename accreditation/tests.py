@@ -3,7 +3,7 @@ from datetime import timedelta
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from rest_framework.test import APIClient
 from django.utils import timezone
@@ -142,6 +142,19 @@ class AccreditationWorkflowTests(TestCase):
         self.assertEqual(EvidenceReview.objects.filter(submission=submission).count(), 4)
         self.assertTrue(EvidenceReview.objects.filter(submission=submission, decision=EvidenceReview.COMPLIED_DECISION).exists())
         self.assertTrue(EvidenceReview.objects.filter(submission=submission, decision=EvidenceReview.CLOSED_DECISION).exists())
+
+    @override_settings(DEMO_MODE=True)
+    def test_three_account_demo_can_forward_dean_review_to_qa(self):
+        self.area_chair.role_assignment.is_approved = False
+        self.area_chair.role_assignment.save(update_fields=['is_approved'])
+        submission = self.make_submission()
+        submit_submission(submission, self.program_head, 'meets', 'implemented', link_url='https://example.com/mission')
+
+        approve_submission(submission, self.dean, 'Dean demo approval.')
+
+        submission.refresh_from_db()
+        self.assertEqual(submission.status, EvidenceSubmission.UNDER_QA_REVIEW)
+        self.assertEqual(submission.current_reviewer_id, self.qa.id)
 
     def test_revision_returns_to_same_reviewer_and_preserves_versions_and_remarks(self):
         submission = self.make_submission(self.revision_requirement)

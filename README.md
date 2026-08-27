@@ -12,7 +12,7 @@ DEMO_MODE=True ./.venv/bin/python manage.py runserver 127.0.0.1:8000
 
 Open <http://127.0.0.1:8000/login/>.
 
-`seed_demo` is available only when `DEMO_MODE` is enabled (enabled by default while `DEBUG=True`). It creates internal demo accounts for Superadmin, Admin, QA, Accreditation Head, Program Head, Dean, and Area Chair. Their development password is `123`, and first-login password changes are currently disabled. Set `DJANGO_ENV=production` in production; demo seeding and demo authentication are disabled automatically.
+`seed_demo` is available only when `DEMO_MODE` is enabled (enabled by default while `DEBUG=True`). It creates only three active development demo accounts: `qa` (QA), `dean` (Dean · CITE), and `phead` (Program Head · CITE). Their development password is `123`, and first-login password changes are currently disabled. Older demo accounts are disabled, rather than deleted, so their evidence history remains intact. Set `DJANGO_ENV=production` in production; demo seeding and demo authentication are disabled automatically.
 
 ## Production configuration
 

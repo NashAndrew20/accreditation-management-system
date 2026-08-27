@@ -1,5 +1,5 @@
 JMCFI AMS DEVELOPMENT DEMO ACCOUNTS
-====================================
+===================================
 
 These credentials are for local development/demo mode only.
 Enable demo mode with: DEMO_MODE=True
@@ -9,15 +9,6 @@ Do not use these credentials in production.
 
 ROLE                USERNAME                 EMAIL                              DEPARTMENT / PROGRAM
 --------------------------------------------------------------------------------------------------------
-Admin               admin                    admin@jmcfi.edu.ph                 QA Office
-Evidence Uploader   uploader                 uploader@jmcfi.edu.ph              Bachelor of Science in Civil Engineering
-Approver (Dean)      approver                 approver@jmcfi.edu.ph              College of Engineering
-
-OTHER INTERNAL WORKFLOW ACCOUNTS
---------------------------------
-Superadmin          superadmin               superadmin@jmcfi.edu.ph            QA Office
 QA                  qa                       qa@jmcfi.edu.ph                    QA Office
-Accreditation Head  accreditation-head       accreditation.head@jmcfi.edu.ph   QA Office
-Program Head        program-head             program.head@jmcfi.edu.ph          Bachelor of Science in Civil Engineering
-Dean                dean                     dean@jmcfi.edu.ph                  College of Engineering
-Area Chair          area-chair               area.chair@jmcfi.edu.ph            College of Engineering
+Dean                dean                     dean@jmcfi.edu.ph                  CITE
+Program Head        phead                    phead@jmcfi.edu.ph                 CITE

@@ -25,38 +25,14 @@ from .forms import (
     RoleAssignmentForm,
     RoleSelectionForm,
 )
-
-
-DEMO_LOGIN_OPTIONS = (
-    {
-        'label': 'Admin',
-        'role': 'Full system access',
-        'username': 'admin',
-        'password': '123',
-        'initials': 'AD',
-    },
-    {
-        'label': 'Evidence Uploader',
-        'role': 'Prepare and submit evidence',
-        'username': 'uploader',
-        'password': '123',
-        'initials': 'EU',
-    },
-    {
-        'label': 'Approver',
-        'role': 'Review and approve evidence',
-        'username': 'approver',
-        'password': '123',
-        'initials': 'AP',
-    },
-)
+from .demo_accounts import DEMO_LOGIN_OPTIONS
 
 
 class PortalLoginView(LoginView):
     authentication_form = PortalAuthenticationForm
     template_name = 'accounts/login.html'
     # Allow an authenticated development user to return to the account picker
-    # and switch between the Admin, Uploader, and Approver demo personas.
+    # and switch between the three development personas.
     redirect_authenticated_user = False
     extra_context = {'page_title': 'Sign in'}
 
