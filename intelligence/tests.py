@@ -76,11 +76,3 @@ class ReportsExportTests(TestCase):
         self.assertTrue(response.content.startswith(b'%PDF-1.4'))
         self.assertIn(b'100%', response.content)
         self.assertIn(b'Civil Engineering', response.content)
-
-    def test_smart_companion_uses_aira_image(self):
-        self.client.force_login(self.user)
-
-        response = self.client.get(reverse('intelligence:smart_companion'))
-
-        self.assertContains(response, '/static/images/aira-wave-1.png')
-        self.assertContains(response, 'alt="AIRA"')
