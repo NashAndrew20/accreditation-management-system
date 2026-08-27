@@ -176,10 +176,20 @@ class DocumentRepositoryAccessTests(TestCase):
 
         self.assertContains(
             response,
-            'Good morning, Prof. Reyes. I reviewed your Area II submission',
+            'Good morning. I reviewed the Area II submission',
         )
         self.assertContains(
             response,
             'Understood. I will compile everything and submit by July 20',
         )
-        self.assertNotContains(response, "{'author': 'Dr. A. Villanueva'")
+        self.assertNotContains(response, "{'author': 'Demo QA'")
+
+    def test_communication_lists_only_qa_dean_and_program_head(self):
+        self.client.force_login(self.uploader)
+
+        response = self.client.get(reverse('resources:communication'))
+
+        for contact in ('Demo QA', 'Demo Dean', 'Demo Program Head'):
+            self.assertContains(response, contact)
+        for excluded_contact in ('Dr. A. Villanueva', 'Prof. J. Reyes', 'Area III Review Team', 'Dr. E. Cruz'):
+            self.assertNotContains(response, excluded_contact)
