@@ -86,7 +86,9 @@
   flex: 1;
   min-height: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
+  gap: 18px;
   padding: 30px;
   overflow-y: auto;
   background:
@@ -100,7 +102,7 @@
   gap: 14px;
   width: 100%;
   max-width: 1040px;
-  margin: auto;
+  margin: 0;
 }
 
 .message-stack {
@@ -120,8 +122,9 @@
 }
 
 .companion-user-message {
+  width: 100%;
   max-width: min(720px, 75%);
-  margin: 18px 0 0 auto;
+  margin: 0 0 0 auto;
 }
 
 .companion-user-message .assistant-bubble {
@@ -131,7 +134,7 @@
 }
 
 .companion-reply {
-  margin-top: 18px;
+  margin-top: 0;
 }
 
 .companion-composer {
