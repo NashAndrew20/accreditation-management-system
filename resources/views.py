@@ -53,6 +53,7 @@ class DocumentRepositoryView(ApprovedUserRequiredMixin, TemplateView):
         context.update(
             {
                 'page_title': 'Document Repository',
+                'hide_topbar_title': True,
                 'documents': documents,
                 'departments': departments,
                 'is_repository_admin': repository_admin,
