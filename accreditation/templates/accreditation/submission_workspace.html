@@ -185,14 +185,16 @@
         <section class="workspace-card documents-card">
           <div class="documents-head">
             <h2>Evidence Documents</h2>
-            <button type="button" class="add-document-btn">+ Add Document</button>
+            {% if can_manage_submission %}<button type="button" class="add-document-btn">+ Add Document</button>{% endif %}
           </div>
 
-          <div class="upload-box">
-            {% icon 'cloud' 'upload-icon' %}
-            <strong>Drop files here or click to upload</strong>
-            <span>PDF, DOCX, XLSX up to 25MB</span>
-          </div>
+          {% if can_manage_submission %}
+            <div class="upload-box">
+              {% icon 'cloud' 'upload-icon' %}
+              <strong>Drop files here or click to upload</strong>
+              <span>PDF, DOCX, XLSX up to 25MB</span>
+            </div>
+          {% endif %}
 
           <div class="document-list">
             {% for document in documents %}
@@ -211,8 +213,10 @@
             <form method="post" class="workspace-actions workspace-document-actions" aria-label="Submission actions">
               {% csrf_token %}
               <a href="{% url 'accreditation:area_details' workspace.area_key %}" class="workspace-action-btn workspace-action-cancel">Cancel</a>
-              {% if can_resubmit %}<button type="submit" name="action" value="resubmit" class="workspace-action-btn workspace-action-resubmit">Resubmit</button>{% endif %}
-              {% if can_submit %}<button type="submit" name="action" value="submit" class="workspace-action-btn workspace-action-submit">Submit</button>{% endif %}
+              {% if can_manage_submission %}
+                {% if can_resubmit %}<button type="submit" name="action" value="resubmit" class="workspace-action-btn workspace-action-resubmit">Resubmit</button>{% endif %}
+                {% if can_submit %}<button type="submit" name="action" value="submit" class="workspace-action-btn workspace-action-submit">Submit</button>{% endif %}
+              {% endif %}
             </form>
           {% endif %}
         </section>

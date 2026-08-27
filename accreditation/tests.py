@@ -200,6 +200,19 @@ class AccreditationWorkflowTests(TestCase):
         self.assertContains(review_response, 'Review history')
         self.assertContains(review_response, 'Department review feedback should stay out of QA browsing.')
 
+    def test_qa_area_workspace_is_read_only(self):
+        self.make_submission()
+        self.client.force_login(self.qa)
+
+        response = self.client.get(
+            reverse('accreditation:submission_workspace_subarea', args=[self.area.slug, '1-1']),
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, 'name="action" value="submit"')
+        self.assertNotContains(response, 'name="action" value="resubmit"')
+        self.assertNotContains(response, 'add-document-btn')
+
     def test_my_tasks_landing_shows_assigned_and_missing_instead_of_subareas(self):
         self.client.force_login(self.program_head)
 
@@ -256,6 +269,8 @@ class AccreditationWorkflowTests(TestCase):
         self.assertTrue(AuditLog.objects.filter(action='AREA_ASSIGNED', object_type='AreaAssignment').exists())
         detail_response = self.client.get(reverse('accreditation:area_details', args=[self.area.slug]))
         self.assertContains(detail_response, 'Assign Area')
+        self.assertContains(detail_response, 'data-assignment-toggle')
+        self.assertNotContains(detail_response, '<details')
         self.assertContains(detail_response, 'Current assignments')
         self.assertContains(detail_response, deadline.strftime('%b %d, %Y'))
 

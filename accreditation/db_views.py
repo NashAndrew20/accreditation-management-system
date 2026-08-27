@@ -494,6 +494,7 @@ class SubmissionWorkspaceView(ApprovedUserRequiredMixin, TemplateView):
             level__cycle__is_active=True,
         )
         scoped = _scoped_submissions(self.request.user)
+        current_assignment = active_assignment(self.request.user)
         subarea = None
         if subarea_key:
             subarea = get_object_or_404(area.subareas, code=subarea_key.replace('-', '.'))
@@ -559,7 +560,7 @@ class SubmissionWorkspaceView(ApprovedUserRequiredMixin, TemplateView):
             'subarea_key': active_subarea['slug'] if active_subarea else '',
             'area_code': area.code,
             'area_name': area.name,
-            'department': first_submission.department.name if first_submission else (active_assignment(self.request.user).department.name if active_assignment(self.request.user) else 'No active department'),
+            'department': first_submission.department.name if first_submission else (current_assignment.department.name if current_assignment else 'No active department'),
             'program_head': first_submission.program_head.get_full_name() if first_submission else (self.request.user.get_full_name() or self.request.user.username),
             'active_subarea': f"{active_subarea['code']} — {active_subarea['title']}" if active_subarea else area.name,
             'subarea_code': active_subarea['code'] if active_subarea else '',
@@ -574,6 +575,7 @@ class SubmissionWorkspaceView(ApprovedUserRequiredMixin, TemplateView):
             'documents': latest_documents,
             'remarks': remarks,
             'show_feedback': show_workspace_feedback,
+            'can_manage_submission': bool(current_assignment and current_assignment.role.code == 'PROGRAM_HEAD'),
             'missing_requirements': [item['title'] for item in evidence_items if item['status'] in {'Draft', 'Needs Revision', 'Not Started'}],
             'can_submit': any(item['status'] == status_label(EvidenceSubmission.DRAFT) for item in evidence_items),
             'can_resubmit': any(item['status'] == status_label(EvidenceSubmission.NEEDS_REVISION) for item in evidence_items),
@@ -626,6 +628,7 @@ class SubmissionWorkspaceView(ApprovedUserRequiredMixin, TemplateView):
             'documents': workspace.get('documents', []),
             'remarks': workspace.get('remarks', []),
             'show_workspace_feedback': workspace.get('show_feedback', True),
+            'can_manage_submission': workspace.get('can_manage_submission', False),
             'missing_requirements': workspace.get('missing_requirements', []),
             'evidence_items': workspace.get('instructions', []),
             'can_submit': workspace.get('can_submit', False),

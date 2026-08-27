@@ -628,6 +628,22 @@
   }
 
   function bindAreaAssignmentForms() {
+    document.querySelectorAll('[data-assignment-toggle]').forEach(function (toggle) {
+      const panelId = toggle.getAttribute('aria-controls');
+      const panel = panelId && document.getElementById(panelId);
+      if (!panel) return;
+
+      function setPanelOpen(isOpen) {
+        panel.hidden = !isOpen;
+        toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      }
+
+      toggle.addEventListener('click', function () {
+        setPanelOpen(panel.hidden);
+      });
+      setPanelOpen(toggle.getAttribute('aria-expanded') === 'true');
+    });
+
     document.querySelectorAll('[data-assignment-form]').forEach(function (form) {
       const departmentScope = form.querySelectorAll('input[name="department_scope"]');
       const departmentField = form.querySelector('[data-assignment-departments]');

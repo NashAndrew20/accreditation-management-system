@@ -23,12 +23,18 @@
     </header>
 
     {% if can_assign_area %}
-      <details class="area-assignment-panel"{% if assignment_form.errors %} open{% endif %}>
-        <summary class="area-assignment-toggle">
-          <span>Assign Area</span>
-          <small>Set a deadline and choose who will prepare this area's evidence.</small>
-        </summary>
-        <div class="area-assignment-body">
+      <section class="area-assignment-panel">
+        <div class="area-assignment-trigger">
+          <button
+            type="button"
+            class="area-assignment-toggle"
+            data-assignment-toggle
+            aria-controls="area-assignment-form-panel"
+            aria-expanded="{% if assignment_form.errors %}true{% else %}false{% endif %}"
+          >Assign Area</button>
+          <p>Set a deadline and choose who will prepare this area's evidence.</p>
+        </div>
+        <div id="area-assignment-form-panel" class="area-assignment-body" data-assignment-panel{% if not assignment_form.errors %} hidden{% endif %}>
           <div class="area-assignment-intro">
             <div>
               <span class="area-assignment-kicker">QA assignment</span>
@@ -99,7 +105,7 @@
             </div>
           {% endif %}
         </div>
-      </details>
+      </section>
     {% endif %}
 
     {% if sub_areas %}
