@@ -379,7 +379,7 @@
     body.appendChild(reply);
     input.value = '';
     body.scrollTop = body.scrollHeight;
-    showToast('Smart Companion answered');
+    showToast('AIRA answered');
   }
 
   function bindMessaging() {

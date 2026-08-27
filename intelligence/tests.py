@@ -85,3 +85,6 @@ class ReportsExportTests(TestCase):
         self.assertContains(response, '/static/images/aira-wave-1.png')
         self.assertContains(response, 'data-aira-image="/static/images/aira-wave-1.png"')
         self.assertContains(response, 'alt="AIRA"')
+        self.assertContains(response, '<h2>AIRA</h2>')
+        self.assertContains(response, "Hello! I'm AIRA.")
+        self.assertNotContains(response, 'JMCFI Accreditation Companion')
