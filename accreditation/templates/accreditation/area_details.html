@@ -68,7 +68,7 @@
               {% for error in assignment_form.departments.errors %}<small class="assignment-error">{{ error }}</small>{% endfor %}
             </div>
 
-            <div class="assignment-field">
+            <div class="assignment-field assignment-deadline-field">
               <label for="{{ assignment_form.deadline.id_for_label }}">{{ assignment_form.deadline.label }}</label>
               {{ assignment_form.deadline }}
               {% for error in assignment_form.deadline.errors %}<small class="assignment-error">{{ error }}</small>{% endfor %}
