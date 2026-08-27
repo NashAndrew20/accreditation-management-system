@@ -766,21 +766,39 @@
       const departmentInputs = departmentField
         ? departmentField.querySelectorAll('input[name="departments"]')
         : [];
-      if (!departmentScope.length || !departmentField || !departmentInputs.length) return;
 
-      function updateDepartmentScope() {
-        const selectedScope = form.querySelector('input[name="department_scope"]:checked');
-        const isSpecific = selectedScope && selectedScope.value === 'specific';
-        departmentField.hidden = !isSpecific;
-        departmentInputs.forEach(function (input) {
-          input.disabled = !isSpecific;
+      if (departmentScope.length && departmentField && departmentInputs.length) {
+        function updateDepartmentScope() {
+          const selectedScope = form.querySelector('input[name="department_scope"]:checked');
+          const isSpecific = selectedScope && selectedScope.value === 'specific';
+          departmentField.hidden = !isSpecific;
+          departmentInputs.forEach(function (input) {
+            input.disabled = !isSpecific;
+          });
+        }
+
+        departmentScope.forEach(function (radio) {
+          radio.addEventListener('change', updateDepartmentScope);
         });
+        updateDepartmentScope();
       }
 
-      departmentScope.forEach(function (radio) {
-        radio.addEventListener('change', updateDepartmentScope);
-      });
-      updateDepartmentScope();
+      const deadlineField = form.querySelector('.assignment-deadline-field');
+      const deadlineInput = form.querySelector('input[name="deadline"]');
+      const noDeadlineInput = form.querySelector('input[name="no_deadline"]');
+      if (!deadlineField || !deadlineInput || !noDeadlineInput) return;
+
+      function updateDeadlineState() {
+        const noDeadline = noDeadlineInput.checked;
+        deadlineInput.disabled = noDeadline;
+        deadlineInput.required = !noDeadline;
+        deadlineInput.setAttribute('aria-disabled', noDeadline ? 'true' : 'false');
+        deadlineField.classList.toggle('is-no-deadline', noDeadline);
+        if (noDeadline) deadlineInput.value = '';
+      }
+
+      noDeadlineInput.addEventListener('change', updateDeadlineState);
+      updateDeadlineState();
     });
   }
 

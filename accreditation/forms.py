@@ -102,7 +102,13 @@ class AreaAssignmentForm(forms.Form):
     )
     deadline = forms.DateField(
         label='Deadline',
+        required=False,
         widget=forms.DateInput(attrs={'class': 'assignment-input', 'type': 'date'}),
+    )
+    no_deadline = forms.BooleanField(
+        label='No deadline',
+        required=False,
+        widget=forms.CheckboxInput(attrs={'class': 'assignment-no-deadline-toggle'}),
     )
     instructions = forms.CharField(
         label='Instructions (optional)',
@@ -131,4 +137,8 @@ class AreaAssignmentForm(forms.Form):
             self.add_error('departments', 'Select at least one department or program.')
         if cleaned.get('department_scope') == 'all':
             cleaned['departments'] = self.fields['departments'].queryset
+        if cleaned.get('no_deadline'):
+            cleaned['deadline'] = None
+        elif not cleaned.get('deadline'):
+            self.add_error('deadline', 'Choose a deadline or select No deadline.')
         return cleaned

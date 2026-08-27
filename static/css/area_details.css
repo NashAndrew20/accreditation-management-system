@@ -400,6 +400,68 @@ body.modal-open {
   max-width: 360px;
 }
 
+.assignment-deadline-control {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+}
+
+.assignment-deadline-control > input[type='date'] {
+  flex: 1;
+}
+
+.assignment-deadline-control > input[type='date']:disabled {
+  background: #f4efea;
+  color: var(--color-text-faint);
+  cursor: default;
+}
+
+.assignment-no-deadline-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 140px;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: #fffdf9;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.assignment-no-deadline-option:has(input:checked),
+.assignment-deadline-field.is-no-deadline .assignment-no-deadline-option {
+  border-color: var(--maroon-600);
+  background: #fff4f7;
+  color: var(--maroon-700);
+}
+
+.assignment-no-deadline-option input {
+  width: 16px;
+  height: 16px;
+  min-height: 0;
+  margin: 0;
+  accent-color: var(--maroon-700);
+  flex: 0 0 auto;
+}
+
+.assignment-no-deadline-option span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.assignment-no-deadline-option strong {
+  font-size: 11px;
+}
+
+.assignment-no-deadline-option small {
+  color: var(--color-text-muted);
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1.25;
+}
+
 .assignment-optional {
   color: var(--color-text-faint);
   font-size: 11px;
@@ -539,6 +601,16 @@ body.modal-open {
   border-radius: var(--radius-pill);
   background: var(--maroon-100);
   color: var(--maroon-700);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.area-assignment-no-deadline {
+  padding: 6px 10px;
+  border-radius: var(--radius-pill);
+  background: #f4efea;
+  color: var(--color-text-muted);
+  font-size: 11px;
   font-weight: 700;
   white-space: nowrap;
 }
@@ -724,6 +796,14 @@ body.modal-open {
 
   .assignment-deadline-field {
     max-width: none;
+  }
+
+  .assignment-deadline-control {
+    flex-direction: column;
+  }
+
+  .assignment-no-deadline-option {
+    min-width: 0;
   }
 
   .assignment-actions {

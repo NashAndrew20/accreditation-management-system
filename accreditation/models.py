@@ -115,7 +115,7 @@ class AreaAssignment(models.Model):
         on_delete=models.PROTECT,
         related_name='created_area_assignments',
     )
-    deadline = models.DateField()
+    deadline = models.DateField(null=True, blank=True)
     instructions = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

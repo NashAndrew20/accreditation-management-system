@@ -423,6 +423,26 @@ class AccreditationWorkflowTests(TestCase):
         self.assertTrue(AreaAssignment.objects.filter(area=self.area, department=self.program, deadline=deadline).exists())
         self.assertFalse(AreaAssignment.objects.filter(area=self.area, department=self.department).exists())
 
+    def test_qa_can_assign_area_without_a_deadline(self):
+        self.client.force_login(self.qa)
+
+        response = self.client.post(
+            reverse('accreditation:area_details', args=[self.area.slug]),
+            {
+                'department_scope': 'specific',
+                'departments': [str(self.program.pk)],
+                'no_deadline': 'on',
+                'instructions': 'Submit the evidence when it is ready.',
+            },
+        )
+
+        self.assertRedirects(response, reverse('accreditation:area_details', args=[self.area.slug]))
+        assignment = AreaAssignment.objects.get(area=self.area, department=self.program)
+        self.assertIsNone(assignment.deadline)
+        self.assertTrue(Notification.objects.filter(user=self.program_head, message__contains='No deadline').exists())
+        detail_response = self.client.get(reverse('accreditation:area_details', args=[self.area.slug]))
+        self.assertContains(detail_response, 'No deadline')
+
     def test_only_qa_or_administrators_can_assign_an_area(self):
         self.client.force_login(self.dean)
 

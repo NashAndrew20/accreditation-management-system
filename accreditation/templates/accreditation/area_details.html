@@ -104,7 +104,16 @@
               <div class="assignment-field assignment-deadline-field">
                 <label for="{{ assignment_form.deadline.id_for_label }}">{{ assignment_form.deadline.label }}</label>
                 <p class="assignment-field-help">Choose the final date the evidence should be ready.</p>
-                {{ assignment_form.deadline }}
+                <div class="assignment-deadline-control">
+                  {{ assignment_form.deadline }}
+                  <label class="assignment-no-deadline-option">
+                    {{ assignment_form.no_deadline }}
+                    <span>
+                      <strong>No deadline</strong>
+                      <small>Leave this assignment open-ended.</small>
+                    </span>
+                  </label>
+                </div>
                 {% for error in assignment_form.deadline.errors %}<small class="assignment-error">{{ error }}</small>{% endfor %}
               </div>
 
@@ -133,7 +142,11 @@
                       <strong>{{ area_assignment.department.name }}</strong>
                       <small>Assigned by {{ area_assignment.assigned_by.get_full_name|default:area_assignment.assigned_by.username }}</small>
                     </div>
-                    <time datetime="{{ area_assignment.deadline|date:'Y-m-d' }}">Due {{ area_assignment.deadline|date:'M d, Y' }}</time>
+                    {% if area_assignment.deadline %}
+                      <time datetime="{{ area_assignment.deadline|date:'Y-m-d' }}">Due {{ area_assignment.deadline|date:'M d, Y' }}</time>
+                    {% else %}
+                      <span class="area-assignment-no-deadline">No deadline</span>
+                    {% endif %}
                   </div>
                 {% endfor %}
               </div>

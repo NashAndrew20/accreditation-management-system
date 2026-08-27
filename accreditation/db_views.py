@@ -243,6 +243,7 @@ class AreaDetailsView(ApprovedUserRequiredMixin, TemplateView):
         departments = list(self.assignment_form.cleaned_data['departments'])
         deadline = self.assignment_form.cleaned_data['deadline']
         instructions = self.assignment_form.cleaned_data['instructions'].strip()
+        deadline_label = deadline.strftime('%b %d, %Y') if deadline else 'No deadline'
         recipients = {}
         created_count = 0
         updated_count = 0
@@ -290,7 +291,7 @@ class AreaDetailsView(ApprovedUserRequiredMixin, TemplateView):
                     details={
                         'area': area.code,
                         'department': department.name,
-                        'deadline': deadline.isoformat(),
+                        'deadline': deadline.isoformat() if deadline else None,
                         'instructions': instructions,
                     },
                 )
@@ -314,7 +315,7 @@ class AreaDetailsView(ApprovedUserRequiredMixin, TemplateView):
                     title='New area assignment',
                     message=(
                         f'{area.code} — {area.name} is assigned to your department. '
-                        f'Deadline: {deadline:%b %d, %Y}.'
+                        f'Deadline: {deadline_label}.'
                     ),
                 )
 
