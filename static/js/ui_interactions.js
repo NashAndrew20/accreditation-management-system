@@ -333,6 +333,20 @@
     return 'Start with the items marked pending or needs revision, then assign each item to an owner with a target upload date. I can also summarize this into a checklist.';
   }
 
+  function createCompanionAvatar(imageUrl) {
+    const avatar = document.createElement('div');
+    avatar.className = 'companion-bot-icon companion-aira-avatar';
+
+    if (imageUrl) {
+      const image = document.createElement('img');
+      image.src = imageUrl;
+      image.alt = 'AIRA';
+      avatar.appendChild(image);
+    }
+
+    return avatar;
+  }
+
   function submitCompanionQuestion(input) {
     const question = input.value.trim();
     if (!question) {
@@ -342,6 +356,7 @@
 
     const body = document.querySelector('.companion-body');
     if (!body) return;
+    const airaImage = body.dataset.airaImage;
 
     const userMessage = document.createElement('article');
     userMessage.className = 'companion-user-message';
@@ -350,11 +365,15 @@
 
     const reply = document.createElement('article');
     reply.className = 'companion-message companion-reply';
-    reply.innerHTML =
-      '<div class="companion-bot-icon">' +
-      '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M6 6l2 2M16 16l2 2M6 18l2-2M16 8l2-2"/><circle cx="12" cy="12" r="3"/></svg>' +
-      '</div><div class="message-stack"><div class="assistant-bubble"></div></div>';
-    reply.querySelector('.assistant-bubble').textContent = companionAnswer(question);
+    reply.appendChild(createCompanionAvatar(airaImage));
+
+    const messageStack = document.createElement('div');
+    messageStack.className = 'message-stack';
+    const bubble = document.createElement('div');
+    bubble.className = 'assistant-bubble';
+    bubble.textContent = companionAnswer(question);
+    messageStack.appendChild(bubble);
+    reply.appendChild(messageStack);
 
     body.appendChild(userMessage);
     body.appendChild(reply);

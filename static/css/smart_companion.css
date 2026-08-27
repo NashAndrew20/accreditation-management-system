@@ -66,9 +66,42 @@
   color: #f3d15a;
 }
 
+.companion-aira-avatar {
+  position: relative;
+  width: 48px;
+  height: 58px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  align-items: flex-start;
+  background: transparent;
+}
+
+.companion-aira-avatar img {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 130%;
+  max-width: none;
+  height: auto;
+  transform: translateX(-50%);
+}
+
+.companion-card-head .companion-aira-avatar {
+  width: 52px;
+  height: 64px;
+  border: 0;
+  background: transparent;
+}
+
 .companion-message > .companion-bot-icon {
   background: var(--maroon-100);
   color: var(--maroon-700);
+}
+
+.companion-message > .companion-aira-avatar {
+  background: transparent;
 }
 
 .companion-card-head h2 {
@@ -98,7 +131,7 @@
 
 .companion-message {
   display: grid;
-  grid-template-columns: 36px minmax(0, 1fr);
+  grid-template-columns: 48px minmax(0, 1fr);
   gap: 14px;
   width: 100%;
   max-width: 1040px;

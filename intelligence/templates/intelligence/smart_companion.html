@@ -14,16 +14,20 @@
 
     <section class="companion-card">
       <div class="companion-card-head">
-        <div class="companion-bot-icon">{% icon 'sparkle' %}</div>
+        <div class="companion-bot-icon companion-aira-avatar">
+          <img src="{% static 'images/aira-wave-1.png' %}" alt="AIRA">
+        </div>
         <div>
           <h2>JMCFI Accreditation Companion</h2>
           <p>Advisory · Powered by AI · Not a substitute for official guidance</p>
         </div>
       </div>
 
-      <div class="companion-body">
+      <div class="companion-body" data-aira-image="{% static 'images/aira-wave-1.png' %}">
         <article class="companion-message">
-          <div class="companion-bot-icon">{% icon 'sparkle' %}</div>
+          <div class="companion-bot-icon companion-aira-avatar">
+            <img src="{% static 'images/aira-wave-1.png' %}" alt="AIRA">
+          </div>
           <div class="message-stack">
             <div class="assistant-bubble">
               Hello! I'm your JMCFI Accreditation Smart Companion. Ask me about requirements, evidence, deadlines, or review status.
