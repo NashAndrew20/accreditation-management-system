@@ -88,7 +88,7 @@ class ReportsExportTests(TestCase):
         self.assertContains(response, '<h2>AIRA</h2>')
         self.assertContains(
             response,
-            'Your accreditation assistant for requirements, evidence, deadlines, and review status.',
+            "I'm your Smart Companion for requirements, evidence, deadlines, and review status.",
         )
         self.assertContains(response, "Hello! I'm AIRA.")
         self.assertNotContains(response, 'JMCFI Accreditation Companion')
