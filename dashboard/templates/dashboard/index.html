@@ -29,7 +29,7 @@
 
   <section class="stat-grid">
     {% for stat in stats %}
-      <div class="stat-card" data-tooltip="{{ stat.label }}: {{ stat.value }}. {{ stat.note }}">
+      <div class="stat-card">
         <div class="stat-card-top">
           <div class="stat-icon tone-{{ stat.tone }}">{% icon stat.icon %}</div>
           <div class="stat-trend">{% icon 'trend-up' %}</div>

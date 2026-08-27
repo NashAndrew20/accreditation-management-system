@@ -329,7 +329,7 @@
   fill: #fff;
   stroke: var(--maroon-700);
   stroke-width: 2;
-  cursor: help;
+  cursor: default;
   transition: fill 160ms ease, stroke-width 160ms ease;
 }
 
@@ -370,7 +370,7 @@
 
 .approval-points circle,
 .revision-points circle {
-  cursor: help;
+  cursor: default;
   transition: fill 160ms ease, stroke-width 160ms ease;
 }
 

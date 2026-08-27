@@ -292,7 +292,7 @@
 .trend-point {
   fill: var(--color-surface);
   stroke-width: 2;
-  cursor: help;
+  cursor: default;
   pointer-events: all;
   transition: fill 160ms ease, transform 160ms ease;
 }

@@ -73,12 +73,6 @@
   box-shadow: var(--shadow-card);
   color: var(--color-text);
   text-decoration: none;
-  transition: border-color 160ms ease, transform 160ms ease;
-}
-
-.subarea-card:hover {
-  border-color: #d2a7b8;
-  transform: translateY(-2px);
 }
 
 .subarea-card-top {

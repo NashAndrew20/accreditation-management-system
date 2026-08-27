@@ -49,7 +49,7 @@
       <section class="report-panel overview-panel">
         <section class="report-kpi-grid" aria-label="Report metrics">
           {% for kpi in kpis %}
-            <article class="report-kpi-card" data-tooltip="{{ kpi.label }}: {{ kpi.value }}. {{ kpi.delta }}">
+            <article class="report-kpi-card">
               <strong>{{ kpi.value }}</strong>
               <span>{{ kpi.label }}</span>
               <em class="tone-{{ kpi.tone }}">{{ kpi.delta }}</em>
