@@ -122,8 +122,6 @@
   color: var(--color-text-muted);
 }
 
-.alert-text strong { color: var(--maroon-800); }
-
 /* ---------- KPI stat cards ---------- */
 
 .stat-grid {
