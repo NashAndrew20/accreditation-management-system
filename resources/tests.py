@@ -129,6 +129,12 @@ class DocumentRepositoryAccessTests(TestCase):
 
         response = self.client.get(reverse('resources:document_repository'))
 
+        self.assertContains(response, '1.1 - Mission')
+        self.assertContains(response, '1.1.1 - Mission evidence')
+        self.assertContains(
+            response,
+            reverse('accreditation:evidence_detail', args=[self.civil_submission.id]),
+        )
         self.assertContains(response, 'Departments')
         self.assertContains(response, 'All Documents')
         self.assertContains(response, 'College of Engineering')

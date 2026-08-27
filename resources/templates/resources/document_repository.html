@@ -68,7 +68,8 @@
               </div>
 
               <div class="repo-document-copy">
-                <h2>{{ document.name }}</h2>
+                <h2><a class="repo-document-link" href="{{ document.detail_url }}">{{ document.label }}</a></h2>
+                <p class="repo-document-requirement">{{ document.requirement_label }} · {{ document.name }}</p>
                 <p>{{ document.department }} · {{ document.details }}</p>
                 <div class="repo-tags">
                   {% for tag in document.tags %}
@@ -85,7 +86,7 @@
               <span class="repo-status tone-{{ document.tone }}">{{ document.status }}</span>
 
               <div class="repo-actions">
-                {% icon 'search' %}
+                <a href="{{ document.detail_url }}" aria-label="View {{ document.requirement_label }}">{% icon 'search' %}</a>
                 {% icon 'cloud' %}
               </div>
             </article>

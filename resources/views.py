@@ -1,3 +1,4 @@
+from django.urls import reverse
 from django.views.generic import TemplateView
 
 from accreditation.constants import COMPLETED_STATUSES, PENDING_STATUSES
@@ -28,8 +29,15 @@ class DocumentRepositoryView(ApprovedUserRequiredMixin, TemplateView):
             submission = evidence_file.version.submission
             requirement = submission.requirement
             name = evidence_file.original_name or evidence_file.file.name or evidence_file.link_url
+            if requirement.subarea:
+                label = f'{requirement.subarea.code} - {requirement.subarea.title}'
+            else:
+                label = f'{requirement.code} - {requirement.title}'
             documents.append({
                 'name': name,
+                'label': label,
+                'requirement_label': f'{requirement.code} - {requirement.title}',
+                'detail_url': reverse('accreditation:evidence_detail', args=[submission.id]),
                 'department': submission.department.name,
                 'details': f'{requirement.area.code} · {requirement.area.level.name} · {submission.program_head.get_full_name() or submission.program_head.username}',
                 'tags': [requirement.area.name, requirement.subarea.code if requirement.subarea else 'Evidence'],
