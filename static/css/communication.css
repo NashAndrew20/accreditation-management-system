@@ -77,7 +77,17 @@
   border: 0;
   border-top: 1px solid var(--color-border);
   background: transparent;
+  color: inherit;
+  font: inherit;
   text-align: left;
+  text-decoration: none;
+}
+
+.conversation-empty {
+  margin: 20px 18px;
+  color: var(--color-text-faint);
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 .conversation-item.is-active {
@@ -228,6 +238,13 @@
   padding: 16px 24px 24px;
 }
 
+.message-empty {
+  margin: auto;
+  color: var(--color-text-faint);
+  font-size: 14px;
+  text-align: center;
+}
+
 .message-row {
   max-width: 68%;
   margin-top: 16px;
@@ -292,6 +309,34 @@
   align-items: center;
   padding: 12px 20px;
   border-top: 1px solid var(--color-border);
+}
+
+.message-form-error {
+  margin: 10px 20px 0;
+  color: #a12b48;
+  font-size: 12px;
+}
+
+.chat-empty-state {
+  display: flex;
+  min-height: 100%;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 8px;
+  padding: 32px;
+  color: var(--color-text-faint);
+  text-align: center;
+}
+
+.chat-empty-state h2 {
+  color: var(--color-text);
+  font-size: 18px;
+}
+
+.chat-empty-state p {
+  max-width: 360px;
+  line-height: 1.5;
 }
 
 .message-composer input {

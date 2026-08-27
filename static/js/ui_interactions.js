@@ -341,26 +341,6 @@
     });
   }
 
-  function addChatMessage(input, listSelector, mineClass) {
-    const text = input.value.trim();
-    if (!text) {
-      showToast('Type a message first');
-      return;
-    }
-
-    const list = document.querySelector(listSelector);
-    if (!list) return;
-
-    const article = document.createElement('article');
-    article.className = mineClass;
-    article.innerHTML =
-      '<div class="message-bubble"></div><time>Now</time>';
-    article.querySelector('.message-bubble').textContent = text;
-    list.appendChild(article);
-    input.value = '';
-    list.scrollTop = list.scrollHeight;
-  }
-
   function companionAnswer(question) {
     const lower = normalize(question);
     if (lower.includes('missing') || lower.includes('documents')) {
@@ -427,22 +407,6 @@
   }
 
   function bindMessaging() {
-    document.querySelectorAll('.message-composer button').forEach(function (button) {
-      button.addEventListener('click', function () {
-        const input = button.closest('.message-composer').querySelector('input');
-        addChatMessage(input, '.message-list', 'message-row is-mine');
-      });
-    });
-
-    document.querySelectorAll('.message-composer input').forEach(function (input) {
-      input.addEventListener('keydown', function (event) {
-        if (event.key === 'Enter') {
-          event.preventDefault();
-          addChatMessage(input, '.message-list', 'message-row is-mine');
-        }
-      });
-    });
-
     document.querySelectorAll('.sample-prompt-list button').forEach(function (button) {
       button.addEventListener('click', function () {
         const input = document.querySelector('.composer-row input');

@@ -14,6 +14,7 @@ from accreditation.models import (
 )
 from core.access import accessible_repository_submissions
 from core.models import Department, Role, RoleAssignment, UserProfile
+from resources.models import CommunicationMessage, Conversation, ConversationParticipant
 
 
 class DocumentRepositoryAccessTests(TestCase):
@@ -22,6 +23,7 @@ class DocumentRepositoryAccessTests(TestCase):
         cls.program_head_role = Role.objects.create(code='PROGRAM_HEAD', name='Program Head')
         cls.admin_role = Role.objects.create(code='ADMIN', name='Admin')
         cls.qa_role = Role.objects.create(code='QA', name='QA')
+        cls.dean_role = Role.objects.create(code='DEAN', name='Dean')
         cls.engineering = Department.objects.create(
             code='ENG',
             name='College of Engineering',
@@ -67,6 +69,37 @@ class DocumentRepositoryAccessTests(TestCase):
         )
         cls.admin = cls.make_user('admin', cls.admin_role, cls.business)
         cls.qa = cls.make_user('qa', cls.qa_role, cls.business)
+        cls.dean = cls.make_user('dean', cls.dean_role, cls.business)
+
+        cls.communication_conversation = Conversation.objects.create()
+        ConversationParticipant.objects.bulk_create(
+            [
+                ConversationParticipant(
+                    conversation=cls.communication_conversation,
+                    user=cls.uploader,
+                ),
+                ConversationParticipant(
+                    conversation=cls.communication_conversation,
+                    user=cls.qa,
+                ),
+            ],
+        )
+        CommunicationMessage.objects.create(
+            conversation=cls.communication_conversation,
+            sender=cls.qa,
+            body=(
+                'Good morning. I reviewed the Area II submission and found '
+                'that the faculty credentials need to be updated for AY 2025-2026.'
+            ),
+        )
+        CommunicationMessage.objects.create(
+            conversation=cls.communication_conversation,
+            sender=cls.uploader,
+            body=(
+                'Understood. I will compile everything and submit by July 20 '
+                'to give enough buffer for review.'
+            ),
+        )
 
         cls.civil_submission = cls.make_submission(cls.civil, cls.uploader)
         cls.business_submission = cls.make_submission(cls.business, cls.uploader)
@@ -172,7 +205,10 @@ class DocumentRepositoryAccessTests(TestCase):
     def test_communication_messages_render_as_chat_content(self):
         self.client.force_login(self.uploader)
 
-        response = self.client.get(reverse('resources:communication'))
+        response = self.client.get(
+            reverse('resources:communication'),
+            {'user_id': self.qa.pk},
+        )
 
         self.assertContains(
             response,
@@ -189,7 +225,62 @@ class DocumentRepositoryAccessTests(TestCase):
 
         response = self.client.get(reverse('resources:communication'))
 
-        for contact in ('Demo QA', 'Demo Dean', 'Demo Program Head'):
-            self.assertContains(response, contact)
+        contacts = response.context['conversations']
+        contact_names = {contact['name'] for contact in contacts}
+        contact_ids = {contact['user_id'] for contact in contacts}
+
+        self.assertEqual(contact_names, {'qa', 'dean'})
+        self.assertNotIn(self.uploader.pk, contact_ids)
+        self.assertNotIn(self.admin.pk, contact_ids)
         for excluded_contact in ('Dr. A. Villanueva', 'Prof. J. Reyes', 'Area III Review Team', 'Dr. E. Cruz'):
             self.assertNotContains(response, excluded_contact)
+
+    def test_communication_message_submission_persists_after_refresh(self):
+        self.client.force_login(self.uploader)
+
+        response = self.client.post(
+            reverse('resources:communication'),
+            {
+                'action': 'send',
+                'recipient_id': self.dean.pk,
+                'body': 'Please confirm when the department evidence is ready.',
+            },
+        )
+
+        self.assertRedirects(
+            response,
+            f'{reverse("resources:communication")}?user_id={self.dean.pk}',
+        )
+        self.assertTrue(
+            CommunicationMessage.objects.filter(
+                sender=self.uploader,
+                body='Please confirm when the department evidence is ready.',
+            )
+            .filter(conversation__participant_links__user=self.uploader)
+            .filter(conversation__participant_links__user=self.dean)
+            .exists(),
+        )
+
+        refreshed = self.client.get(
+            reverse('resources:communication'),
+            {'user_id': self.dean.pk},
+        )
+
+        self.assertContains(
+            refreshed,
+            'Please confirm when the department evidence is ready.',
+        )
+
+    def test_communication_rejects_recipients_outside_allowed_roles(self):
+        self.client.force_login(self.uploader)
+
+        response = self.client.post(
+            reverse('resources:communication'),
+            {
+                'action': 'send',
+                'recipient_id': self.admin.pk,
+                'body': 'This should not be sent.',
+            },
+        )
+
+        self.assertEqual(response.status_code, 403)

@@ -21,7 +21,7 @@
 
         <div class="conversation-list">
           {% for conversation in conversations %}
-            <button type="button" class="conversation-item{% if conversation.active %} is-active{% endif %}">
+            <a href="?user_id={{ conversation.user_id }}" class="conversation-item{% if conversation.active %} is-active{% endif %}"{% if conversation.active %} aria-current="page"{% endif %}>
               <span class="conversation-avatar">
                 {{ conversation.initials }}
                 {% if conversation.online %}<i></i>{% endif %}
@@ -37,51 +37,67 @@
               {% if conversation.unread %}
                 <span class="conversation-badge">{{ conversation.unread }}</span>
               {% endif %}
-            </button>
+            </a>
+          {% empty %}
+            <p class="conversation-empty">No other QA, Dean, or Program Head accounts are available.</p>
           {% endfor %}
         </div>
       </aside>
 
       <main class="chat-main">
-        <header class="chat-thread-header">
-          <div class="thread-user">
-            <div class="thread-avatar">{{ active_conversation.initials }}</div>
-            <div>
-              <h2>{{ active_conversation.name }}</h2>
-              <p>Online</p>
+        {% if active_conversation %}
+          <header class="chat-thread-header">
+            <div class="thread-user">
+              <div class="thread-avatar">{{ active_conversation.initials }}</div>
+              <div>
+                <h2>{{ active_conversation.name }}</h2>
+                <p>{% if active_conversation.online %}Available{% else %}Unavailable{% endif %}</p>
+              </div>
             </div>
-          </div>
 
-          <div class="thread-actions">
-            <span>Linked: Area II Submission</span>
-            <button type="button" aria-label="Thread options">...</button>
-          </div>
-        </header>
+            <div class="thread-actions">
+              <span>{{ active_conversation.context }}</span>
+              <button type="button" aria-label="Thread options">...</button>
+            </div>
+          </header>
 
-        <section class="message-list">
-          {% for message in chat_messages %}
-            <article class="message-row{% if message.mine %} is-mine{% endif %}">
-              {% if not message.mine %}
-                <div class="message-author">{{ message.author }}</div>
-                <div class="message-wrap">
-                  <span class="message-avatar">{{ message.initials }}</span>
-                  <div>
-                    <div class="message-bubble">{{ message.text }}</div>
-                    <time>{{ message.time }}</time>
+          <section class="message-list">
+            {% for message in chat_messages %}
+              <article class="message-row{% if message.mine %} is-mine{% endif %}">
+                {% if not message.mine %}
+                  <div class="message-author">{{ message.author }}</div>
+                  <div class="message-wrap">
+                    <span class="message-avatar">{{ message.initials }}</span>
+                    <div>
+                      <div class="message-bubble">{{ message.text }}</div>
+                      <time>{{ message.time }}</time>
+                    </div>
                   </div>
-                </div>
-              {% else %}
-                <div class="message-bubble">{{ message.text }}</div>
-                <time>{{ message.time }}</time>
-              {% endif %}
-            </article>
-          {% endfor %}
-        </section>
+                {% else %}
+                  <div class="message-bubble">{{ message.text }}</div>
+                  <time>{{ message.time }}</time>
+                {% endif %}
+              </article>
+            {% empty %}
+              <p class="message-empty">No messages yet. Start the conversation below.</p>
+            {% endfor %}
+          </section>
 
-        <footer class="message-composer">
-          <input type="text" placeholder="Type a message...">
-          <button type="button" aria-label="Send message">{% icon 'chevron-right' %}</button>
-        </footer>
+          {% if message_form.body.errors %}
+            <p class="message-form-error">{{ message_form.body.errors|striptags }}</p>
+          {% endif %}
+          <form method="post" class="message-composer">
+            {% csrf_token %}
+            {{ message_form.body }}
+            <input type="hidden" name="recipient_id" value="{{ active_conversation.user_id }}">
+            <button type="submit" name="action" value="send" aria-label="Send message">{% icon 'chevron-right' %}</button>
+          </form>
+        {% else %}
+          <section class="chat-empty-state">
+            <h2>No communication contacts</h2>
+            <p>Approved QA, Dean, and Program Head accounts will appear here when they are available.</p>
+          </section>
+        {% endif %}
       </main>
     </section>
   </div>
