@@ -8,6 +8,8 @@ from django.db import transaction
 
 from core.models import AuditLog, Department, Notification, Role, RoleAssignment, UserProfile
 
+from .querysets import visible_user_accounts
+
 
 class PortalAuthenticationForm(AuthenticationForm):
     username = forms.CharField(
@@ -234,6 +236,8 @@ class RoleAssignmentForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['user'].queryset = get_user_model().objects.filter(is_superuser=False).order_by('last_name', 'first_name', 'username')
+        self.fields['user'].queryset = visible_user_accounts().filter(is_superuser=False).order_by(
+            'last_name', 'first_name', 'username'
+        )
         for field in self.fields.values():
             field.widget.attrs.setdefault('class', 'settings-input')

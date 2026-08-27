@@ -121,6 +121,45 @@ class LoginPageTests(TestCase):
         self.assertEqual(pending_profile.approval_status, UserProfile.APPROVED)
         self.assertTrue(pending.role_assignments.get().is_approved)
 
+    def test_user_management_hides_retired_demo_accounts_but_keeps_real_accounts(self):
+        retired_demo = get_user_model().objects.create_user(
+            username='legacy-demo',
+            first_name='Legacy',
+            last_name='Demo',
+            password='legacy-password',
+            is_active=False,
+        )
+        UserProfile.objects.create(
+            user=retired_demo,
+            department=self.department,
+            approval_status=UserProfile.REJECTED,
+            is_demo_account=True,
+        )
+
+        qa_role = Role.objects.create(code='QA', name='QA')
+        qa = get_user_model().objects.create_user(username='qa-reviewer', password='qa-password')
+        qa_profile = UserProfile.objects.create(
+            user=qa,
+            department=self.department,
+            approval_status=UserProfile.APPROVED,
+        )
+        qa_assignment = RoleAssignment.objects.create(
+            user=qa,
+            role=qa_role,
+            department=self.department,
+            is_approved=True,
+        )
+        qa_profile.active_assignment = qa_assignment
+        qa_profile.save(update_fields=['active_assignment'])
+
+        self.client.force_login(qa)
+        response = self.client.get(reverse('accounts:user_management'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'qa-admin')
+        self.assertNotContains(response, 'Legacy Demo')
+        self.assertNotContains(response, 'legacy-demo')
+
     def test_profile_settings_are_saved_to_database(self):
         self.client.force_login(self.user)
         response = self.client.post(reverse('accounts:settings_profile'), {

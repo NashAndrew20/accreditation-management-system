@@ -26,6 +26,7 @@ from .forms import (
     RoleSelectionForm,
 )
 from .demo_accounts import DEMO_LOGIN_OPTIONS
+from .querysets import visible_user_accounts
 
 
 class PortalLoginView(LoginView):
@@ -255,7 +256,7 @@ class UserManagementView(AccountApprovalMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        user_queryset = get_user_model().objects.select_related('profile', 'profile__department').prefetch_related(
+        user_queryset = visible_user_accounts().select_related('profile', 'profile__department').prefetch_related(
             'role_assignments__role', 'role_assignments__department'
         ).order_by('last_name', 'first_name', 'username')
         users = []
@@ -284,16 +285,16 @@ class UserManagementView(AccountApprovalMixin, TemplateView):
                 'is_demo': bool(profile and profile.is_demo_account),
                 'assignments': assignments,
             })
-        user_model = get_user_model()
+        visible_users = visible_user_accounts()
         assignment_form = RoleAssignmentForm()
         context.update({
             'page_title': 'User Management',
             'users': users,
             'user_stats': [
-                {'label': 'Total Users', 'value': user_model.objects.count(), 'tone': 'rose'},
-                {'label': 'Active', 'value': user_model.objects.filter(is_active=True).count(), 'tone': 'green'},
-                {'label': 'Pending Approval', 'value': UserProfile.objects.filter(approval_status=UserProfile.PENDING).count(), 'tone': 'gold'},
-                {'label': 'Inactive', 'value': user_model.objects.filter(is_active=False).count(), 'tone': 'slate'},
+                {'label': 'Total Users', 'value': visible_users.count(), 'tone': 'rose'},
+                {'label': 'Active', 'value': visible_users.filter(is_active=True).count(), 'tone': 'green'},
+                {'label': 'Pending Approval', 'value': visible_users.filter(profile__approval_status=UserProfile.PENDING).count(), 'tone': 'gold'},
+                {'label': 'Inactive', 'value': visible_users.filter(is_active=False).count(), 'tone': 'slate'},
             ],
             'assignment_form': assignment_form,
             'can_manage_assignments': is_admin_user(self.request.user),
