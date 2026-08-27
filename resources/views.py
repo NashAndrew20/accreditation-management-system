@@ -153,7 +153,7 @@ class CommunicationView(ApprovedUserRequiredMixin, TemplateView):
             {
                 'page_title': 'Communication',
                 'conversations': conversations,
-                'messages': messages,
+                'chat_messages': messages,
                 'active_conversation': conversations[0],
             }
         )

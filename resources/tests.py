@@ -153,3 +153,18 @@ class DocumentRepositoryAccessTests(TestCase):
 
         self.assertContains(response, '<h1>Communication</h1>')
         self.assertNotContains(response, 'class="topbar-title">Communication</div>')
+
+    def test_communication_messages_render_as_chat_content(self):
+        self.client.force_login(self.uploader)
+
+        response = self.client.get(reverse('resources:communication'))
+
+        self.assertContains(
+            response,
+            'Good morning, Prof. Reyes. I reviewed your Area II submission',
+        )
+        self.assertContains(
+            response,
+            'Understood. I will compile everything and submit by July 20',
+        )
+        self.assertNotContains(response, "{'author': 'Dr. A. Villanueva'")

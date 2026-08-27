@@ -59,7 +59,7 @@
         </header>
 
         <section class="message-list">
-          {% for message in messages %}
+          {% for message in chat_messages %}
             <article class="message-row{% if message.mine %} is-mine{% endif %}">
               {% if not message.mine %}
                 <div class="message-author">{{ message.author }}</div>
