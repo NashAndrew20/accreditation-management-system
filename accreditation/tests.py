@@ -212,6 +212,15 @@ class AccreditationWorkflowTests(TestCase):
         self.assertNotContains(response, 'name="action" value="submit"')
         self.assertNotContains(response, 'name="action" value="resubmit"')
         self.assertNotContains(response, 'add-document-btn')
+        self.assertNotContains(response, 'Missing Requirements')
+        self.assertNotContains(response, 'Version History')
+
+        self.client.force_login(self.program_head)
+        program_response = self.client.get(
+            reverse('accreditation:submission_workspace_subarea', args=[self.area.slug, '1-1']),
+        )
+        self.assertContains(program_response, 'Missing Requirements')
+        self.assertContains(program_response, 'Version History')
 
     def test_my_tasks_landing_shows_assigned_and_missing_instead_of_subareas(self):
         self.client.force_login(self.program_head)

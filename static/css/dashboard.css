@@ -25,7 +25,7 @@
   margin-left: -226px;
   margin-right: -24px;
   margin-bottom: calc(var(--alert-head-space) * -1);
-  padding: 15px 24px 15px var(--alert-content-left);
+  padding: 10px 24px 10px var(--alert-content-left);
   border-radius: var(--radius-lg);
   background: linear-gradient(120deg, var(--maroon-800), var(--maroon-700));
   box-shadow: var(--shadow-card);
@@ -552,8 +552,8 @@
     margin-left: -14px;
     margin-right: -14px;
     margin-bottom: 0;
-    min-height: 160px;
-    padding: 15px 14px;
+    min-height: 150px;
+    padding: 10px 14px;
   }
 
   .alert-greeting { left: 14px; }

@@ -99,7 +99,7 @@
         </section>
       </section>
     {% else %}
-    <section class="workspace-layout">
+    <section class="workspace-layout{% if workspace.is_qa_browse %} qa-browse-layout{% endif %}">
       <aside class="subarea-panel">
         <div class="subarea-title">Sub-Areas</div>
         <div class="subarea-list">
@@ -222,6 +222,7 @@
         </section>
       </main>
 
+      {% if not workspace.is_qa_browse %}
       <aside class="workspace-side">
         {% if show_workspace_feedback %}
           <section class="workspace-card remarks-card">
@@ -251,6 +252,7 @@
           {% icon 'chevron-down' %}
         </section>
       </aside>
+      {% endif %}
     </section>
     {% endif %}
   </div>

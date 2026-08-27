@@ -533,7 +533,8 @@ class SubmissionWorkspaceView(ApprovedUserRequiredMixin, TemplateView):
         submission_values = list(submissions.values()) if subarea_key and submissions else []
         latest_documents = []
         remarks = []
-        show_workspace_feedback = not has_role(self.request.user, 'QA')
+        is_qa_browse = has_role(self.request.user, 'QA')
+        show_workspace_feedback = not is_qa_browse
         if submission_values:
             for submission in submission_values:
                 version = submission.latest_version
@@ -575,6 +576,7 @@ class SubmissionWorkspaceView(ApprovedUserRequiredMixin, TemplateView):
             'documents': latest_documents,
             'remarks': remarks,
             'show_feedback': show_workspace_feedback,
+            'is_qa_browse': is_qa_browse,
             'can_manage_submission': bool(current_assignment and current_assignment.role.code == 'PROGRAM_HEAD'),
             'missing_requirements': [item['title'] for item in evidence_items if item['status'] in {'Draft', 'Needs Revision', 'Not Started'}],
             'can_submit': any(item['status'] == status_label(EvidenceSubmission.DRAFT) for item in evidence_items),
@@ -633,6 +635,7 @@ class SubmissionWorkspaceView(ApprovedUserRequiredMixin, TemplateView):
             'evidence_items': workspace.get('instructions', []),
             'can_submit': workspace.get('can_submit', False),
             'can_resubmit': workspace.get('can_resubmit', False),
+            'is_qa_browse': workspace.get('is_qa_browse', False),
         })
         return context
 

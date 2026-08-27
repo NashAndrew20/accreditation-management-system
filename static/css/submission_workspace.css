@@ -271,6 +271,10 @@
   align-items: start;
 }
 
+.workspace-layout.qa-browse-layout {
+  grid-template-columns: 220px minmax(420px, 1fr);
+}
+
 .subarea-panel,
 .workspace-card {
   border: 1px solid var(--color-border);
