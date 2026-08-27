@@ -407,21 +407,14 @@
   }
 
   function downloadReport() {
-    const body = [
-      'JMCFI AMS Report',
-      'Academic Year 2025-2026',
-      '',
-      'Overall Readiness: 74.3%',
-      'Total Submissions: 247',
-      'Compliance Rate: 73.7%',
-      'Overdue Items: 12',
-    ].join('\n');
-    const blob = new Blob([body], { type: 'text/plain' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = 'jmcfi-ams-report.txt';
-    link.click();
-    URL.revokeObjectURL(link.href);
+    const button = document.querySelector('.export-btn');
+    const exportUrl = button && button.dataset.exportUrl;
+    if (!exportUrl) {
+      showToast('Report export is unavailable');
+      return;
+    }
+
+    window.location.assign(exportUrl);
   }
 
   function applyProfilePhoto(photoUrl) {
