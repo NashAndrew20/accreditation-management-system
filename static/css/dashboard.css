@@ -1,12 +1,15 @@
 /* ---------- AI alert banner ---------- */
 
 .alert-banner {
+  --alert-bottom-gap: 20px;
+  --alert-head-space: 16px;
+  --alert-greeting-top: 32px;
   position: relative;
   display: flex;
   align-items: flex-end;
   gap: 18px;
   min-height: 190px;
-  padding: 70px 24px 20px 226px;
+  padding: 70px 24px var(--alert-bottom-gap) 226px;
   margin-bottom: 22px;
   isolation: isolate;
 }
@@ -20,7 +23,8 @@
   width: calc(100% + 250px);
   margin-left: -226px;
   margin-right: -24px;
-  padding: 8px 24px 8px 226px;
+  margin-bottom: calc(var(--alert-head-space) * -1);
+  padding: 10px 24px 10px 213px;
   border-radius: var(--radius-lg);
   background: linear-gradient(120deg, var(--maroon-800), var(--maroon-700));
   box-shadow: var(--shadow-card);
@@ -29,8 +33,8 @@
 .alert-greeting {
   position: absolute;
   z-index: 1;
-  top: 0;
-  left: 226px;
+  top: var(--alert-greeting-top);
+  left: 213px;
   display: grid;
   gap: 2px;
 }
@@ -53,9 +57,9 @@
   position: absolute;
   z-index: 2;
   left: 8px;
-  bottom: 0;
-  width: 196px;
-  height: 214px;
+  bottom: calc(var(--alert-bottom-gap) - var(--alert-head-space));
+  width: 186px;
+  height: 204px;
   pointer-events: none;
   overflow: hidden;
 }
@@ -507,23 +511,26 @@
 
 @media (max-width: 760px) {
   .alert-banner {
-    min-height: 282px;
-    padding: 92px 18px 18px 148px;
+    --alert-bottom-gap: 18px;
+    --alert-head-space: 0px;
+    --alert-greeting-top: 32px;
+    min-height: 260px;
+    padding: 72px 18px var(--alert-bottom-gap) 148px;
   }
 
   .alert-surface {
     width: calc(100% + 166px);
     margin-left: -148px;
     margin-right: -18px;
-    padding-left: 148px;
+    padding-left: 135px;
   }
 
-  .alert-greeting { left: 148px; }
+  .alert-greeting { left: 135px; }
 
   .alert-avatar {
     left: 2px;
-    width: 142px;
-    height: 190px;
+    width: 132px;
+    height: 180px;
   }
 
   .alert-body { max-width: none; }
@@ -533,23 +540,26 @@
   .stat-grid { grid-template-columns: 1fr; }
   .alert-banner {
     display: block;
-    min-height: 344px;
-    padding: 90px 14px 18px;
+    --alert-greeting-top: 24px;
+    min-height: 240px;
+    padding: 72px 14px var(--alert-bottom-gap);
   }
 
   .alert-surface {
     width: calc(100% + 28px);
     margin-left: -14px;
     margin-right: -14px;
-    padding: 8px 14px;
+    margin-bottom: 0;
+    min-height: 150px;
+    padding: 10px 14px;
   }
 
   .alert-greeting { left: 14px; }
 
   .alert-avatar {
     left: 2px;
-    width: 112px;
-    height: 152px;
+    width: 102px;
+    height: 142px;
   }
 
   .alert-body { margin-left: 78px; }
