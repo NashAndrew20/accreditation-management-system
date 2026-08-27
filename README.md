@@ -62,6 +62,57 @@ curl http://127.0.0.1:8000/api/auth/me/ \
   -H 'Authorization: Bearer <access-token>'
 ```
 
+## Redis caching
+
+Redis runs in Docker; it does not need to be installed directly on the host.
+The project uses Django's built-in Redis cache backend and caches only the
+active accreditation cycle structure used by the Levels &amp; Areas page. This
+configuration data is not user-specific or sensitive, and it expires after
+five minutes.
+
+Start Redis for Django running directly on the host:
+
+```bash
+docker compose up -d redis
+REDIS_URL=redis://127.0.0.1:6379/1 ./.venv/bin/python manage.py runserver 127.0.0.1:8000
+```
+
+If port 6379 is already in use, choose another host port for this Compose
+service and use the same URL for Django:
+
+```bash
+REDIS_PORT=6380 docker compose up -d redis
+REDIS_URL=redis://127.0.0.1:6380/1 ./.venv/bin/python manage.py runserver 127.0.0.1:8000
+```
+
+When Django runs inside Docker, set `REDIS_URL=redis://redis:6379/1` in the
+Django service because `redis` is the Compose service hostname.
+
+Check the container and connection:
+
+```bash
+docker compose ps redis
+docker compose exec redis redis-cli ping
+```
+
+To prove Django is writing to Redis, run this while the Redis service is up:
+
+```bash
+./.venv/bin/python manage.py shell -c "from django.core.cache import cache; cache.set('d2-cache-check', 'redis-ok', 300); print(cache.get('d2-cache-check'))"
+docker compose exec redis redis-cli -n 1 --scan --pattern '*d2-cache-check*'
+```
+
+Open the PACUCOA Levels &amp; Areas page once, then inspect the cached structure:
+
+```bash
+docker compose exec redis redis-cli -n 1 --scan --pattern '*accreditation:active-structure*'
+```
+
+Stop Redis with `docker compose stop redis` and restart it with
+`docker compose start redis`. `docker compose down` removes the container and
+network but keeps the named Redis volume; `docker compose down -v` also removes
+the cached Redis data.
+
 ## Login rate limiting
 
 The normal website login (`POST /login/`) and the API token endpoint

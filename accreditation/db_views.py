@@ -19,6 +19,7 @@ from core.mixins import ApprovedUserRequiredMixin
 from core.models import AuditLog, Notification, RoleAssignment
 
 from .constants import ACTIVE_REVIEW_STATUSES, COMPLETED_STATUSES
+from .cache import get_active_structure
 from .forms import AreaAssignmentForm, EvidenceSubmissionForm, ReviewActionForm
 from .models import (
     AccreditationArea,
@@ -111,15 +112,19 @@ def _subarea_context(subarea, scoped_submissions):
 
 
 def _area_context(area, scoped_submissions):
-    requirements = EvidenceRequirement.objects.filter(area=area)
-    submissions = scoped_submissions.filter(requirement__area=area)
+    area_id = area['id'] if isinstance(area, dict) else area.id
+    area_code = area['code'] if isinstance(area, dict) else area.code
+    area_name = area['name'] if isinstance(area, dict) else area.name
+    area_slug = area['slug'] if isinstance(area, dict) else area.slug
+    requirements = EvidenceRequirement.objects.filter(area_id=area_id)
+    submissions = scoped_submissions.filter(requirement__area_id=area_id)
     completed = submissions.filter(status__in=COMPLETED_STATUSES).count()
     revision = submissions.filter(status=EvidenceSubmission.NEEDS_REVISION).count()
     pending = submissions.exclude(status__in=COMPLETED_STATUSES | {EvidenceSubmission.DRAFT}).count()
     return {
-        'code': area.code,
-        'name': area.name,
-        'workspace_key': area.slug,
+        'code': area_code,
+        'name': area_name,
+        'workspace_key': area_slug,
         'progress': _progress(submissions, requirements.count()),
         'tone': 'green' if _progress(submissions, requirements.count()) >= 80 else 'gold',
         'compiled': completed,
@@ -135,39 +140,39 @@ class LevelsAreasView(ApprovedUserRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        cycle = _current_cycle()
-        if not cycle:
+        structure = get_active_structure()
+        if not structure['cycle']:
             context.update({'page_title': 'Levels & Areas', 'levels': [], 'areas': [], 'overview': {}})
             return context
         scoped = _scoped_submissions(self.request.user)
         levels = []
         active_level = None
-        for level in cycle.levels.all():
-            level_submissions = scoped.filter(requirement__area__level=level)
+        for level in structure['levels']:
+            level_submissions = scoped.filter(requirement__area__level_id=level['id'])
             compiled = level_submissions.filter(status__in=COMPLETED_STATUSES).count()
             revision = level_submissions.filter(status=EvidenceSubmission.NEEDS_REVISION).count()
             pending = level_submissions.exclude(status__in=COMPLETED_STATUSES | {EvidenceSubmission.DRAFT}).count()
             level_data = {
-                'name': level.name,
-                'status': level.status_label,
+                'id': level['id'],
+                'code': level['code'],
+                'name': level['name'],
+                'status': level['status_label'],
                 'compiled': compiled,
                 'pending': pending,
                 'revision': revision,
-                'active': level.code == 'I',
-                'model': level,
+                'active': level['code'] == 'I',
             }
             levels.append(level_data)
             if level_data['active']:
                 active_level = level
-        active_level = active_level or cycle.levels.first()
-        area_models = list(active_level.areas.all()) if active_level else []
-        areas = [_area_context(area, scoped) for area in area_models]
-        active_submissions = scoped.filter(requirement__area__level=active_level) if active_level else scoped.none()
+        active_level = active_level or (structure['levels'][0] if structure['levels'] else None)
+        areas = [_area_context(area, scoped) for area in active_level['areas']] if active_level else []
+        active_submissions = scoped.filter(requirement__area__level_id=active_level['id']) if active_level else scoped.none()
         context.update({
             'page_title': 'Levels & Areas',
             'levels': levels,
             'areas': areas,
-            'active_level': next((item for item in levels if item['model'] == active_level), None),
+            'active_level': next((item for item in levels if item['id'] == active_level['id']), None) if active_level else None,
             'overview': {
                 'compiled': active_submissions.filter(status__in=COMPLETED_STATUSES).count(),
                 'pending': active_submissions.exclude(status__in=COMPLETED_STATUSES | {EvidenceSubmission.DRAFT}).count(),

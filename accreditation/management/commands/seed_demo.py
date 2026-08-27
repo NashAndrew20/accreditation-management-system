@@ -7,6 +7,7 @@ from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
 
+from accreditation.cache import clear_active_structure_cache
 from accreditation.evidence_data import EVIDENCE_ITEMS
 from accreditation.models import (
     AccreditationArea,
@@ -202,6 +203,7 @@ class Command(BaseCommand):
             roles=roles,
             users=demo_users,
         )
+        clear_active_structure_cache()
         self.stdout.write(self.style.SUCCESS(
             f'Seeded {len(roles)} internal roles, {len(departments)} departments/programs, '
             f'{len(areas)} areas, {len(DEMO_USERS)} demo accounts, and {sample_count} new sample submissions.'

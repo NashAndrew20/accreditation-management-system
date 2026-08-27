@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
 from django.test import TestCase
 from django.urls import reverse
@@ -21,6 +22,7 @@ from .models import (
     EvidenceSubmission,
     EvidenceVersion,
 )
+from .cache import ACTIVE_STRUCTURE_CACHE_KEY
 from .workflow import approve_submission, request_revision, submit_submission
 
 
@@ -69,6 +71,9 @@ class AccreditationWorkflowTests(TestCase):
         cls.area_chair = cls.make_user('area-chair', 'Area Chair', cls.roles['AREA_CHAIR'], cls.department)
         cls.qa = cls.make_user('qa', 'QA', cls.roles['QA'], cls.department)
         cls.area_chair.role_assignment.assigned_areas.add(cls.area)
+
+    def setUp(self):
+        cache.clear()
 
     @classmethod
     def make_user(cls, username, name, role, department):
@@ -165,6 +170,16 @@ class AccreditationWorkflowTests(TestCase):
         self.assertEqual(response.status_code, 200)
         submission = EvidenceSubmission.objects.get(requirement=self.requirement, department=self.program)
         self.assertEqual(self.client.get(reverse('accreditation:evidence_detail', args=[submission.id])).status_code, 200)
+
+    def test_levels_and_areas_cache_public_accreditation_structure(self):
+        self.client.force_login(self.program_head)
+
+        response = self.client.get(reverse('accreditation:levels_areas'))
+
+        self.assertEqual(response.status_code, 200)
+        cached_structure = cache.get(ACTIVE_STRUCTURE_CACHE_KEY)
+        self.assertEqual(cached_structure['cycle']['name'], 'Test Cycle')
+        self.assertEqual(cached_structure['levels'][0]['areas'][0]['code'], 'Area I')
 
     def test_jwt_evidence_api_uses_existing_role_scope(self):
         submission = self.make_submission()

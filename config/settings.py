@@ -176,6 +176,21 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# Django's built-in Redis cache backend. Django running directly on the host
+# uses 127.0.0.1; a Django container should set REDIS_HOST=redis or provide
+# REDIS_URL=redis://redis:6379/1 through its environment.
+REDIS_HOST = os.getenv('REDIS_HOST', '127.0.0.1')
+REDIS_PORT = os.getenv('REDIS_PORT', '6379')
+REDIS_DB = os.getenv('REDIS_DB', '1')
+REDIS_URL = os.getenv('REDIS_URL') or f'redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}'
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': REDIS_URL,
+        'TIMEOUT': env_int('CACHE_TIMEOUT_SECONDS', 300),
+    },
+}
+
 # API authentication is deliberately separate from the website's Django
 # session authentication. Website pages continue to use the session cookie;
 # API clients must send a JWT bearer token.
