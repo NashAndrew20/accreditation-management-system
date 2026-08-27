@@ -17,6 +17,90 @@
     }, 2200);
   }
 
+  function bindDataTooltips() {
+    const targets = document.querySelectorAll('[data-tooltip]');
+    if (!targets.length) return;
+
+    const tooltip = document.createElement('div');
+    tooltip.className = 'ui-data-tooltip';
+    tooltip.id = 'ui-data-tooltip';
+    tooltip.setAttribute('role', 'tooltip');
+    tooltip.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(tooltip);
+
+    let activeTarget = null;
+
+    function placeTooltip(target, event) {
+      const rect = target.getBoundingClientRect();
+      const pointerX = event && Number.isFinite(event.clientX)
+        ? event.clientX
+        : rect.left + rect.width / 2;
+      const pointerY = event && Number.isFinite(event.clientY)
+        ? event.clientY
+        : rect.top;
+      const gap = 12;
+      const width = tooltip.offsetWidth;
+      const height = tooltip.offsetHeight;
+      const maxLeft = window.innerWidth - width - gap;
+      const maxTop = window.innerHeight - height - gap;
+      let left = pointerX + gap;
+      let top = pointerY - height - gap;
+
+      if (left > maxLeft) left = pointerX - width - gap;
+      if (top < gap) top = rect.bottom + gap;
+
+      tooltip.style.left = Math.max(gap, Math.min(left, maxLeft)) + 'px';
+      tooltip.style.top = Math.max(gap, Math.min(top, maxTop)) + 'px';
+    }
+
+    function showTooltip(target, event) {
+      const message = target.dataset.tooltip;
+      if (!message) return;
+
+      activeTarget = target;
+      tooltip.textContent = message;
+      tooltip.classList.add('is-visible');
+      tooltip.setAttribute('aria-hidden', 'false');
+      target.setAttribute('aria-describedby', tooltip.id);
+      placeTooltip(target, event);
+    }
+
+    function hideTooltip(target) {
+      if (activeTarget !== target) return;
+      activeTarget = null;
+      tooltip.classList.remove('is-visible');
+      tooltip.setAttribute('aria-hidden', 'true');
+    }
+
+    targets.forEach(function (target) {
+      target.addEventListener('mouseenter', function (event) {
+        showTooltip(target, event);
+      });
+      target.addEventListener('mousemove', function (event) {
+        if (activeTarget === target) placeTooltip(target, event);
+      });
+      target.addEventListener('mouseleave', function () {
+        hideTooltip(target);
+      });
+      target.addEventListener('focus', function () {
+        showTooltip(target);
+      });
+      target.addEventListener('blur', function () {
+        hideTooltip(target);
+      });
+      target.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+          hideTooltip(target);
+          target.blur();
+        }
+      });
+    });
+
+    window.addEventListener('resize', function () {
+      if (activeTarget) placeTooltip(activeTarget);
+    });
+  }
+
   function normalize(value) {
     return value.trim().toLowerCase();
   }
@@ -543,5 +627,6 @@
     bindWorkspaceActions();
     bindUserManagement();
     bindDashboardLinks();
+    bindDataTooltips();
   });
 })();

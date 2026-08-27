@@ -27,6 +27,19 @@ def build_line_chart(categories, series, max_value):
     """
     plot_width = WIDTH - PAD_LEFT - PAD_RIGHT
     plot_height = HEIGHT - PAD_TOP - PAD_BOTTOM
+    baseline_y = PAD_TOP + plot_height
+
+    if not categories:
+        return {
+            'width': WIDTH,
+            'height': HEIGHT,
+            'baseline_y': baseline_y,
+            'series': [],
+            'x_labels': [],
+        }
+
+    # A zero ceiling is valid when a new dashboard has no activity yet.
+    max_value = max(float(max_value), 1)
     steps = max(len(categories) - 1, 1)
     x_step = plot_width / steps
 
@@ -42,7 +55,6 @@ def build_line_chart(categories, series, max_value):
     for s in series:
         pts = coords(s['values'])
         points_str = ' '.join(f'{x},{y}' for x, y in pts)
-        baseline_y = PAD_TOP + plot_height
         area_str = (
             f'{pts[0][0]},{baseline_y} ' + points_str +
             f' {pts[-1][0]},{baseline_y}'
@@ -51,6 +63,15 @@ def build_line_chart(categories, series, max_value):
             'name': s['name'],
             'color': s['color'],
             'points': points_str,
+            'point_data': [
+                {
+                    'x': x,
+                    'y': y,
+                    'category': categories[index],
+                    'value': s['values'][index],
+                }
+                for index, (x, y) in enumerate(pts)
+            ],
             'area_points': area_str,
             'last_point': pts[-1],
         })

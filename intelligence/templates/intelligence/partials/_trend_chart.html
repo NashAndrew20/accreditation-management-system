@@ -22,26 +22,48 @@
     <text x="390" y="242">W1 Jul</text>
     <text x="475" y="242">W2 Jul</text>
   </g>
-  <polyline class="approval-line" points="{{ trend_approval_points }}"></polyline>
-  <polyline class="revision-line" points="{{ trend_revision_points }}"></polyline>
+  <polyline
+    class="approval-line"
+    points="{{ trend_approval_points }}"
+    data-tooltip="Approvals · weekly submission totals"
+  >
+    <title>Approvals · weekly submission totals</title>
+  </polyline>
+  <polyline
+    class="revision-line"
+    points="{{ trend_revision_points }}"
+    data-tooltip="Revisions · weekly revision totals"
+  >
+    <title>Revisions · weekly revision totals</title>
+  </polyline>
   <g class="approval-points">
-    <circle cx="30" cy="220" r="3"></circle>
-    <circle cx="120" cy="182" r="3"></circle>
-    <circle cx="210" cy="158" r="3"></circle>
-    <circle cx="300" cy="132" r="3"></circle>
-    <circle cx="390" cy="92" r="3"></circle>
-    <circle cx="480" cy="48" r="3"></circle>
+    {% for point in trend_approval_data %}
+      <circle
+        cx="{{ point.x }}"
+        cy="{{ point.y }}"
+        r="4"
+        tabindex="0"
+        data-tooltip="Approvals · week of {{ point.label }}: {{ point.value }} submissions"
+      >
+        <title>Approvals · week of {{ point.label }}: {{ point.value }} submissions</title>
+      </circle>
+    {% endfor %}
   </g>
   <g class="revision-points">
-    <circle cx="30" cy="152" r="3"></circle>
-    <circle cx="120" cy="170" r="3"></circle>
-    <circle cx="210" cy="188" r="3"></circle>
-    <circle cx="300" cy="202" r="3"></circle>
-    <circle cx="390" cy="210" r="3"></circle>
-    <circle cx="480" cy="218" r="3"></circle>
+    {% for point in trend_revision_data %}
+      <circle
+        cx="{{ point.x }}"
+        cy="{{ point.y }}"
+        r="4"
+        tabindex="0"
+        data-tooltip="Revisions · week of {{ point.label }}: {{ point.value }} revisions"
+      >
+        <title>Revisions · week of {{ point.label }}: {{ point.value }} revisions</title>
+      </circle>
+    {% endfor %}
   </g>
 </svg>
 <div class="chart-legend">
-  <span class="approval">Approvals</span>
-  <span class="revision">Revisions</span>
+  <span class="approval" data-tooltip="Approvals · weekly submission totals">Approvals</span>
+  <span class="revision" data-tooltip="Revisions · weekly revision totals">Revisions</span>
 </div>

@@ -4,23 +4,29 @@ from datetime import timedelta
 from django.utils import timezone
 from django.views.generic import TemplateView
 
+from accreditation.constants import ACTIVE_REVIEW_STATUSES, COMPLETED_STATUSES
 from accreditation.models import AccreditationCycle, AccreditationLevel, EvidenceRequirement, EvidenceSubmission
 from core.access import accessible_submissions, department_scope_ids
 from core.mixins import ApprovedUserRequiredMixin
 from core.models import Department
 
 
-COMPLETED_STATUSES = {EvidenceSubmission.COMPLIED, EvidenceSubmission.CLOSED}
-ACTIVE_REVIEW_STATUSES = {
-    EvidenceSubmission.UNDER_DEAN_REVIEW,
-    EvidenceSubmission.UNDER_AREA_CHAIR_REVIEW,
-    EvidenceSubmission.UNDER_QA_REVIEW,
-}
-
-
 def _points(values, max_value=36):
     x_values = [30, 120, 210, 300, 390, 480]
     return ' '.join(f'{x},{220 - round(min(value, max_value) / max_value * 172)}' for x, value in zip(x_values, values))
+
+
+def _point_data(values, labels, max_value=36):
+    x_values = [30, 120, 210, 300, 390, 480]
+    return [
+        {
+            'x': x,
+            'y': 220 - round(min(value, max_value) / max_value * 172),
+            'label': label,
+            'value': value,
+        }
+        for x, value, label in zip(x_values, values, labels)
+    ]
 
 
 class ReportsMonitoringView(ApprovedUserRequiredMixin, TemplateView):
@@ -56,24 +62,38 @@ class ReportsMonitoringView(ApprovedUserRequiredMixin, TemplateView):
             })
 
         level = AccreditationLevel.objects.filter(cycle=cycle).filter(code='I').first() if cycle else None
-        radar_values = []
+        radar_areas = []
         if level:
             for area in level.areas.all():
                 required = EvidenceRequirement.objects.filter(area=area).count()
                 done = submissions.filter(requirement__area=area, status__in=COMPLETED_STATUSES).count()
-                radar_values.append(round(done * 100 / required) if required else 0)
-        radar_values = (radar_values + [0] * 11)[:11]
+                radar_areas.append({
+                    'code': area.code,
+                    'name': area.name,
+                    'value': round(done * 100 / required) if required else 0,
+                })
+        radar_areas += [
+            {'code': f'Area {index + 1}', 'name': 'Not configured', 'value': 0}
+            for index in range(11 - len(radar_areas))
+        ]
+        radar_areas = radar_areas[:11]
+        radar_values = [area['value'] for area in radar_areas]
         radar_points = ' '.join(
             f'{130 + round(105 * value / 100 * math.cos(2 * math.pi * index / 11 - math.pi / 2)):.0f},{125 + round(105 * value / 100 * math.sin(2 * math.pi * index / 11 - math.pi / 2)):.0f}'
             for index, value in enumerate(radar_values)
         )
+        for index, area in enumerate(radar_areas):
+            area['x'] = 130 + round(105 * area['value'] / 100 * math.cos(2 * math.pi * index / 11 - math.pi / 2))
+            area['y'] = 125 + round(105 * area['value'] / 100 * math.sin(2 * math.pi * index / 11 - math.pi / 2))
 
         recent = timezone.now()
         weekly_submitted = []
         weekly_revisions = []
+        weekly_labels = []
         for week in range(6, 0, -1):
             start = recent - timedelta(days=week * 7)
             end = start + timedelta(days=7)
+            weekly_labels.append(start.strftime('%b %d'))
             weekly_submitted.append(submissions.filter(created_at__gte=start, created_at__lt=end).count())
             weekly_revisions.append(submissions.filter(
                 reviews__created_at__gte=start,
@@ -108,8 +128,11 @@ class ReportsMonitoringView(ApprovedUserRequiredMixin, TemplateView):
             ],
             'departments': departments,
             'radar_points': radar_points,
+            'radar_areas': radar_areas,
             'trend_approval_points': _points(weekly_submitted),
             'trend_revision_points': _points(weekly_revisions),
+            'trend_approval_data': _point_data(weekly_submitted, weekly_labels),
+            'trend_revision_data': _point_data(weekly_revisions, weekly_labels),
         })
         return context
 

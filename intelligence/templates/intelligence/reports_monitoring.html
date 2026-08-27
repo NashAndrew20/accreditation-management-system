@@ -49,7 +49,7 @@
       <section class="report-panel overview-panel">
         <section class="report-kpi-grid" aria-label="Report metrics">
           {% for kpi in kpis %}
-            <article class="report-kpi-card">
+            <article class="report-kpi-card" data-tooltip="{{ kpi.label }}: {{ kpi.value }}. {{ kpi.delta }}">
               <strong>{{ kpi.value }}</strong>
               <span>{{ kpi.label }}</span>
               <em class="tone-{{ kpi.tone }}">{{ kpi.delta }}</em>
@@ -77,6 +77,20 @@
                 </g>
                 <polygon class="radar-fill" points="{{ radar_points }}"></polygon>
                 <polyline class="radar-line" points="{{ radar_points }} 145,20"></polyline>
+                <g class="radar-points">
+                  {% for radar_area in radar_areas %}
+                    <circle
+                      class="radar-point"
+                      cx="{{ radar_area.x }}"
+                      cy="{{ radar_area.y }}"
+                      r="5"
+                      tabindex="0"
+                      data-tooltip="{{ radar_area.code }} · {{ radar_area.name }}: {{ radar_area.value }}% readiness"
+                    >
+                      <title>{{ radar_area.code }} · {{ radar_area.name }}: {{ radar_area.value }}% readiness</title>
+                    </circle>
+                  {% endfor %}
+                </g>
               </svg>
             </div>
           </article>
@@ -110,7 +124,11 @@
             </div>
             <div class="department-bars">
               {% for department in departments %}
-                <div class="department-bar-item">
+                <div
+                  class="department-bar-item"
+                  tabindex="0"
+                  data-tooltip="{{ department.name }} · {{ department.compliance }}% compliance · {{ department.status }}"
+                >
                   <span class="bar tone-{{ department.tone }}" style="height: {{ department.compliance }}%;"></span>
                   <em>{{ department.name }}</em>
                 </div>
@@ -137,7 +155,7 @@
                   <td>{{ department.submitted }}</td>
                   <td>{{ department.compiled }}</td>
                   <td>
-                    <div class="compliance-cell">
+                    <div class="compliance-cell" tabindex="0" data-tooltip="{{ department.name }} compliance: {{ department.compliance }}%">
                       <span><i class="tone-{{ department.tone }}" style="width: {{ department.compliance }}%;"></i></span>
                       <strong>{{ department.compliance }}%</strong>
                     </div>
