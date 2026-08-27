@@ -359,7 +359,6 @@
     list.appendChild(article);
     input.value = '';
     list.scrollTop = list.scrollHeight;
-    showToast('Message sent');
   }
 
   function companionAnswer(question) {

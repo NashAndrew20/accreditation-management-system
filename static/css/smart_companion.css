@@ -1,14 +1,19 @@
 .companion-page {
   width: 100%;
-  min-height: calc(100vh - var(--topbar-height) - 66px);
+  height: calc(100vh - var(--topbar-height) - 66px);
+  height: calc(100dvh - var(--topbar-height) - 66px);
+  min-height: 0;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .companion-card {
   width: 100%;
+  min-width: 0;
   min-height: 0;
-  flex: 1;
+  height: 100%;
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -27,6 +32,10 @@
   border-bottom: 1px solid var(--color-border);
   background: var(--color-surface);
   color: var(--color-text);
+}
+
+.companion-card-head > div {
+  min-width: 0;
 }
 
 .companion-bot-icon {
@@ -86,6 +95,7 @@
   margin-top: 4px;
   color: var(--color-text-muted);
   font-size: 12px;
+  overflow-wrap: anywhere;
 }
 
 .companion-status {
@@ -111,6 +121,7 @@
 
 .companion-body {
   flex: 1;
+  min-width: 0;
   min-height: 0;
   display: flex;
   flex-direction: column;
@@ -118,6 +129,8 @@
   gap: 18px;
   padding: clamp(20px, 3vw, 34px) clamp(18px, 4vw, 44px);
   overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
   background:
     radial-gradient(circle at 95% 8%, rgba(247, 228, 235, 0.9), transparent 25%),
     #fff;
@@ -128,6 +141,7 @@
   grid-template-columns: 48px minmax(0, 1fr);
   gap: 14px;
   width: 100%;
+  min-width: 0;
   max-width: none;
   margin: 0;
 }
@@ -152,6 +166,7 @@
 
 .companion-user-message {
   width: 100%;
+  min-width: 0;
   max-width: min(860px, 88%);
   margin: 0 0 0 auto;
 }
@@ -234,6 +249,11 @@
 }
 
 @media (max-width: 700px) {
+  .companion-page {
+    height: calc(100vh - var(--topbar-height) - 40px);
+    height: calc(100dvh - var(--topbar-height) - 40px);
+  }
+
   .companion-message {
     grid-template-columns: 1fr;
     gap: 8px;
