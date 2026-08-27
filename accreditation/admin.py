@@ -5,6 +5,7 @@ from .models import (
     AccreditationCycle,
     AccreditationLevel,
     AccreditationSubArea,
+    AreaAssignment,
     EvidenceComment,
     EvidenceFile,
     EvidenceRequirement,
@@ -47,6 +48,14 @@ class EvidenceRequirementAdmin(admin.ModelAdmin):
     list_display = ('code', 'title', 'area', 'subarea', 'deadline', 'is_required', 'sort_order')
     list_filter = ('area__level', 'area', 'is_required')
     search_fields = ('code', 'title', 'required_description')
+
+
+@admin.register(AreaAssignment)
+class AreaAssignmentAdmin(admin.ModelAdmin):
+    list_display = ('area', 'department', 'deadline', 'assigned_by', 'updated_at')
+    list_filter = ('area__level', 'area', 'department')
+    search_fields = ('area__code', 'area__name', 'department__name', 'assigned_by__username')
+    readonly_fields = ('created_at', 'updated_at')
 
 
 @admin.register(EvidenceSubmission)

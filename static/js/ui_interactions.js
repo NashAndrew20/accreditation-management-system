@@ -627,6 +627,27 @@
     });
   }
 
+  function bindAreaAssignmentForms() {
+    document.querySelectorAll('[data-assignment-form]').forEach(function (form) {
+      const departmentScope = form.querySelectorAll('input[name="department_scope"]');
+      const departmentField = form.querySelector('[data-assignment-departments]');
+      const departmentSelect = departmentField && departmentField.querySelector('select');
+      if (!departmentScope.length || !departmentField || !departmentSelect) return;
+
+      function updateDepartmentScope() {
+        const selectedScope = form.querySelector('input[name="department_scope"]:checked');
+        const isSpecific = selectedScope && selectedScope.value === 'specific';
+        departmentField.hidden = !isSpecific;
+        departmentSelect.disabled = !isSpecific;
+      }
+
+      departmentScope.forEach(function (radio) {
+        radio.addEventListener('change', updateDepartmentScope);
+      });
+      updateDepartmentScope();
+    });
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
     bindSearches();
     bindFilterTabs();
@@ -642,5 +663,6 @@
     bindDashboardLinks();
     bindProgressValues();
     bindDataTooltips();
+    bindAreaAssignmentForms();
   });
 })();

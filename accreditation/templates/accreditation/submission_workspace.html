@@ -62,6 +62,7 @@
                   <strong>{{ task.title }}</strong>
                   <small>{{ task.area_code }} · {{ task.submitted_count }}/{{ task.requirement_count }} requirements prepared{% if task.missing_count %} · {{ task.missing_count }} missing{% endif %}</small>
                   <small class="task-deadline{% if task.deadline_overdue %} is-overdue{% endif %}">Deadline: {% if task.deadline %}{{ task.deadline|date:"M d, Y" }}{% else %}Not set{% endif %}</small>
+                  {% if task.instructions %}<small class="task-instructions">{{ task.instructions }}</small>{% endif %}
                 </span>
                 <em class="status-pill tone-{{ task.tone }}">{{ task.status }}</em>
               </a>
@@ -87,6 +88,7 @@
                   <strong>{{ task.title }}</strong>
                   <small>{{ task.area_code }} · {{ task.missing_count }}/{{ task.requirement_count }} requirements missing</small>
                   <small class="task-deadline{% if task.deadline_overdue %} is-overdue{% endif %}">Deadline: {% if task.deadline %}{{ task.deadline|date:"M d, Y" }}{% else %}Not set{% endif %}</small>
+                  {% if task.instructions %}<small class="task-instructions">{{ task.instructions }}</small>{% endif %}
                 </span>
                 <em class="status-pill tone-rose">Missing</em>
               </a>
@@ -217,17 +219,19 @@
       </main>
 
       <aside class="workspace-side">
-        <section class="workspace-card remarks-card">
-          <h2>{% icon 'message' %} Reviewer Remarks</h2>
-          <div class="remarks-list">
-            {% for remark in remarks %}
-              <article class="remark-item tone-{{ remark.tone }}">
-                <h3>{{ remark.author }} · {{ remark.date }}</h3>
-                <p>{{ remark.message }}</p>
-              </article>
-            {% endfor %}
-          </div>
-        </section>
+        {% if show_workspace_feedback %}
+          <section class="workspace-card remarks-card">
+            <h2>{% icon 'message' %} Reviewer Remarks</h2>
+            <div class="remarks-list">
+              {% for remark in remarks %}
+                <article class="remark-item tone-{{ remark.tone }}">
+                  <h3>{{ remark.author }} · {{ remark.date }}</h3>
+                  <p>{{ remark.message }}</p>
+                </article>
+              {% endfor %}
+            </div>
+          </section>
+        {% endif %}
 
         <section class="workspace-card missing-card">
           <h2>{% icon 'alert' %} Missing Requirements</h2>

@@ -9,19 +9,24 @@ from core.access import (
     accessible_submissions,
     active_assignment,
     assignment_for_reviewer,
+    can_assign_areas,
     department_scope_ids,
     has_role,
     is_admin_user,
+    reviewer_department_ids,
 )
 from core.mixins import ApprovedUserRequiredMixin
+from core.models import AuditLog, Notification, RoleAssignment
 
 from .constants import ACTIVE_REVIEW_STATUSES, COMPLETED_STATUSES
-from .forms import EvidenceSubmissionForm, ReviewActionForm
+from .forms import AreaAssignmentForm, EvidenceSubmissionForm, ReviewActionForm
 from .models import (
     AccreditationArea,
     AccreditationCycle,
     AccreditationSubArea,
+    AreaAssignment,
     EvidenceRequirement,
+    EvidenceReview,
     EvidenceSubmission,
 )
 from .workflow import (
@@ -175,13 +180,18 @@ class LevelsAreasView(ApprovedUserRequiredMixin, TemplateView):
 class AreaDetailsView(ApprovedUserRequiredMixin, TemplateView):
     template_name = 'accreditation/area_details.html'
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        area = get_object_or_404(
-            AccreditationArea.objects.select_related('level', 'level__cycle').prefetch_related('subareas__evidence_requirements'),
-            slug=kwargs['area_key'],
+    def _get_area(self, area_key):
+        return get_object_or_404(
+            AccreditationArea.objects.select_related('level', 'level__cycle').prefetch_related(
+                'subareas__evidence_requirements',
+            ),
+            slug=area_key,
             level__cycle__is_active=True,
         )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        area = self._get_area(kwargs['area_key'])
         scoped = _scoped_submissions(self.request.user)
         sub_areas = []
         for subarea in area.subareas.all():
@@ -196,8 +206,122 @@ class AreaDetailsView(ApprovedUserRequiredMixin, TemplateView):
             'sub_areas': sub_areas,
             'area_count': area.level.areas.count(),
             'total_subarea_count': sum(item.subareas.count() for item in area.level.areas.all()),
+            'can_assign_area': can_assign_areas(self.request.user),
+            'assignment_form': getattr(self, 'assignment_form', None),
+            'area_assignments': [],
         })
+        if can_assign_areas(self.request.user):
+            context['assignment_form'] = context['assignment_form'] or AreaAssignmentForm()
+            context['area_assignments'] = AreaAssignment.objects.filter(area=area).select_related(
+                'department',
+                'assigned_by',
+            )
         return context
+
+    def post(self, request, *args, **kwargs):
+        if not can_assign_areas(request.user):
+            raise PermissionDenied('Only QA or administrators can assign area evidence.')
+
+        area = self._get_area(kwargs['area_key'])
+        self.assignment_form = AreaAssignmentForm(request.POST)
+        if not self.assignment_form.is_valid():
+            return self.render_to_response(self.get_context_data(area_key=area.slug))
+
+        requirements_exist = area.evidence_requirements.exists()
+        if not requirements_exist:
+            self.assignment_form.add_error(
+                None,
+                'This area has no evidence requirements to assign yet.',
+            )
+            return self.render_to_response(self.get_context_data(area_key=area.slug))
+
+        departments = list(self.assignment_form.cleaned_data['departments'])
+        deadline = self.assignment_form.cleaned_data['deadline']
+        instructions = self.assignment_form.cleaned_data['instructions'].strip()
+        recipients = {}
+        created_count = 0
+        updated_count = 0
+
+        with transaction.atomic():
+            for department in departments:
+                assignment, created = AreaAssignment.objects.get_or_create(
+                    area=area,
+                    department=department,
+                    defaults={
+                        'assigned_by': request.user,
+                        'deadline': deadline,
+                        'instructions': instructions,
+                    },
+                )
+                changed = created
+                if created:
+                    created_count += 1
+                else:
+                    changed = (
+                        assignment.deadline != deadline
+                        or assignment.instructions != instructions
+                        or assignment.assigned_by_id != request.user.id
+                    )
+                    if changed:
+                        assignment.deadline = deadline
+                        assignment.instructions = instructions
+                        assignment.assigned_by = request.user
+                        assignment.save(update_fields=(
+                            'deadline',
+                            'instructions',
+                            'assigned_by',
+                            'updated_at',
+                        ))
+                        updated_count += 1
+
+                if not changed:
+                    continue
+
+                AuditLog.objects.create(
+                    actor=request.user,
+                    action='AREA_ASSIGNMENT_UPDATED' if not created else 'AREA_ASSIGNED',
+                    object_type='AreaAssignment',
+                    object_id=str(assignment.pk),
+                    details={
+                        'area': area.code,
+                        'department': department.name,
+                        'deadline': deadline.isoformat(),
+                        'instructions': instructions,
+                    },
+                )
+                program_head_assignments = RoleAssignment.objects.filter(
+                    role__code='PROGRAM_HEAD',
+                    role__is_active=True,
+                    role__is_internal=True,
+                    is_approved=True,
+                    user__is_active=True,
+                    user__profile__approval_status='APPROVED',
+                    department__is_active=True,
+                    department_id__in=department_scope_ids(department),
+                ).select_related('user')
+                for program_head_assignment in program_head_assignments:
+                    recipients[program_head_assignment.user_id] = program_head_assignment.user
+
+            for recipient in recipients.values():
+                Notification.objects.create(
+                    user=recipient,
+                    kind='assignment',
+                    title='New area assignment',
+                    message=(
+                        f'{area.code} — {area.name} is assigned to your department. '
+                        f'Deadline: {deadline:%b %d, %Y}.'
+                    ),
+                )
+
+        if created_count or updated_count:
+            messages.success(
+                request,
+                f'{area.code} assigned to {len(departments)} department(s) or program(s). '
+                f'{len(recipients)} Program Head(s) notified.',
+            )
+        else:
+            messages.info(request, 'The selected area assignments are already up to date.')
+        return redirect('accreditation:area_details', area_key=area.slug)
 
 
 class SubmissionWorkspaceView(ApprovedUserRequiredMixin, TemplateView):
@@ -246,8 +370,32 @@ class SubmissionWorkspaceView(ApprovedUserRequiredMixin, TemplateView):
                 department_id__in=department_scope_ids(assignment.department),
             )
 
+        requirements_query = EvidenceRequirement.objects.filter(area__level__cycle=cycle)
+        area_assignment_deadlines = {}
+        area_assignment_instructions = {}
+        if assignment and assignment.role.code == 'PROGRAM_HEAD':
+            target_department_ids = reviewer_department_ids(assignment.department)
+            assigned_area_ids = set(
+                AreaAssignment.objects.filter(
+                    area__level__cycle=cycle,
+                    department_id__in=target_department_ids,
+                ).values_list('area_id', flat=True)
+            )
+            if AreaAssignment.objects.filter(area__level__cycle=cycle).exists():
+                requirements_query = requirements_query.filter(area_id__in=assigned_area_ids)
+
+            # A direct program assignment takes precedence over an assignment
+            # made to one of its parent departments.
+            for department_id in reversed(target_department_ids):
+                for area_assignment in AreaAssignment.objects.filter(
+                    area__level__cycle=cycle,
+                    department_id=department_id,
+                ).values('area_id', 'deadline', 'instructions'):
+                    area_assignment_deadlines[area_assignment['area_id']] = area_assignment['deadline']
+                    area_assignment_instructions[area_assignment['area_id']] = area_assignment['instructions']
+
         requirements = list(
-            EvidenceRequirement.objects.filter(area__level__cycle=cycle)
+            requirements_query
             .select_related('area', 'subarea')
             .order_by('area__sort_order', 'subarea__sort_order', 'sort_order', 'code')
         )
@@ -271,10 +419,12 @@ class SubmissionWorkspaceView(ApprovedUserRequiredMixin, TemplateView):
                 'submitted_requirement_ids': set(),
                 'action_statuses': set(),
                 'deadline_values': [],
+                'instructions': area_assignment_instructions.get(requirement.area_id, ''),
             })
             group['requirement_ids'].add(requirement.id)
-            if requirement.deadline:
-                group['deadline_values'].append(requirement.deadline)
+            deadline = area_assignment_deadlines.get(requirement.area_id, requirement.deadline)
+            if deadline:
+                group['deadline_values'].append(deadline)
 
         for submission in submissions:
             subarea = submission.requirement.subarea
@@ -382,8 +532,8 @@ class SubmissionWorkspaceView(ApprovedUserRequiredMixin, TemplateView):
         submission_values = list(submissions.values()) if subarea_key and submissions else []
         latest_documents = []
         remarks = []
+        show_workspace_feedback = not has_role(self.request.user, 'QA')
         if submission_values:
-            from accreditation.models import EvidenceReview
             for submission in submission_values:
                 version = submission.latest_version
                 if version:
@@ -394,13 +544,14 @@ class SubmissionWorkspaceView(ApprovedUserRequiredMixin, TemplateView):
                             'meta': f'Version {version.version_number} · {evidence_file.created_at:%b %d, %Y}',
                             'version': f'v{version.version_number}',
                         })
-                for review in submission.reviews.select_related('reviewer').all()[:3]:
-                    remarks.append({
-                        'author': review.reviewer.get_full_name() or review.reviewer.username,
-                        'date': review.created_at.strftime('%b %d, %Y'),
-                        'message': review.remarks or review.get_decision_display(),
-                        'tone': 'rose' if review.decision == EvidenceReview.REQUEST_REVISION else 'green',
-                    })
+                if show_workspace_feedback:
+                    for review in submission.reviews.select_related('reviewer').all()[:3]:
+                        remarks.append({
+                            'author': review.reviewer.get_full_name() or review.reviewer.username,
+                            'date': review.created_at.strftime('%b %d, %Y'),
+                            'message': review.remarks or review.get_decision_display(),
+                            'tone': 'rose' if review.decision == EvidenceReview.REQUEST_REVISION else 'green',
+                        })
         first_submission = submission_values[0] if submission_values else None
         status = first_submission.status if first_submission else EvidenceSubmission.DRAFT
         return {
@@ -422,6 +573,7 @@ class SubmissionWorkspaceView(ApprovedUserRequiredMixin, TemplateView):
             'sub_areas': sub_areas,
             'documents': latest_documents,
             'remarks': remarks,
+            'show_feedback': show_workspace_feedback,
             'missing_requirements': [item['title'] for item in evidence_items if item['status'] in {'Draft', 'Needs Revision', 'Not Started'}],
             'can_submit': any(item['status'] == status_label(EvidenceSubmission.DRAFT) for item in evidence_items),
             'can_resubmit': any(item['status'] == status_label(EvidenceSubmission.NEEDS_REVISION) for item in evidence_items),
@@ -473,6 +625,7 @@ class SubmissionWorkspaceView(ApprovedUserRequiredMixin, TemplateView):
             'sub_areas': workspace.get('sub_areas', []),
             'documents': workspace.get('documents', []),
             'remarks': workspace.get('remarks', []),
+            'show_workspace_feedback': workspace.get('show_feedback', True),
             'missing_requirements': workspace.get('missing_requirements', []),
             'evidence_items': workspace.get('instructions', []),
             'can_submit': workspace.get('can_submit', False),
@@ -489,6 +642,12 @@ class EvidenceDetailView(ApprovedUserRequiredMixin, View):
 
     def get_context(self, request, submission, form=None):
         latest = submission.latest_version
+        is_current_qa_review = (
+            has_role(request.user, 'QA')
+            and submission.current_reviewer_id == request.user.id
+            and assignment_for_reviewer(request.user, submission)
+        )
+        show_review_history = not has_role(request.user, 'QA') or is_current_qa_review
         return {
             'page_title': 'My Tasks',
             'hide_topbar_title': True,
@@ -498,8 +657,9 @@ class EvidenceDetailView(ApprovedUserRequiredMixin, View):
             'subarea': submission.requirement.subarea,
             'latest_version': latest,
             'versions': submission.versions.prefetch_related('files', 'reviews__reviewer').all(),
-            'reviews': submission.reviews.select_related('reviewer', 'reviewer_role').all(),
-            'comments': submission.comments.select_related('author').all(),
+            'reviews': submission.reviews.select_related('reviewer', 'reviewer_role').all() if show_review_history else [],
+            'comments': submission.comments.select_related('author').all() if show_review_history else [],
+            'show_review_history': show_review_history,
             'form': form or EvidenceSubmissionForm(instance=submission),
             'can_edit': has_role(request.user, 'PROGRAM_HEAD') and submission.program_head_id == request.user.id and submission.status in {EvidenceSubmission.DRAFT, EvidenceSubmission.NEEDS_REVISION},
             'status_label': status_label(submission.status),

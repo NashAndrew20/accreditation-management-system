@@ -50,6 +50,11 @@ def can_approve_accounts(user):
     return bool(user and user.is_authenticated and (is_admin_user(user) or has_role(user, 'QA')))
 
 
+def can_assign_areas(user):
+    """QA and administrators may assign an area's evidence work."""
+    return bool(user and user.is_authenticated and (is_admin_user(user) or has_role(user, 'QA')))
+
+
 def is_approved_user(user):
     if not user or not user.is_authenticated or not user.is_active:
         return False

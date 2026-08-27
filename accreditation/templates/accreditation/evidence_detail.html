@@ -83,23 +83,25 @@
           {% endif %}
         </section>
 
-        <section class="evidence-card">
-          <div class="evidence-card-head"><div><h2>Review history</h2><p>Every decision and remark remains attached to this submission.</p></div></div>
-          <div class="evidence-history">
-            {% for review in reviews %}
-              <article class="history-item">
-                <div class="history-marker"></div>
-                <div>
-                  <strong>{{ review.get_decision_display }}</strong>
-                  <span>{{ review.reviewer.get_full_name|default:review.reviewer.username }} · {{ review.reviewer_role.name }} · {{ review.created_at|date:'M d, Y H:i' }}</span>
-                  {% if review.remarks %}<p>{{ review.remarks }}</p>{% endif %}
-                </div>
-              </article>
-            {% empty %}
-              <p class="empty-copy">No review decisions yet.</p>
-            {% endfor %}
-          </div>
-        </section>
+        {% if show_review_history %}
+          <section class="evidence-card">
+            <div class="evidence-card-head"><div><h2>Review history</h2><p>Every decision and remark remains attached to this submission.</p></div></div>
+            <div class="evidence-history">
+              {% for review in reviews %}
+                <article class="history-item">
+                  <div class="history-marker"></div>
+                  <div>
+                    <strong>{{ review.get_decision_display }}</strong>
+                    <span>{{ review.reviewer.get_full_name|default:review.reviewer.username }} · {{ review.reviewer_role.name }} · {{ review.created_at|date:'M d, Y H:i' }}</span>
+                    {% if review.remarks %}<p>{{ review.remarks }}</p>{% endif %}
+                  </div>
+                </article>
+              {% empty %}
+                <p class="empty-copy">No review decisions yet.</p>
+              {% endfor %}
+            </div>
+          </section>
+        {% endif %}
       </main>
 
       <aside>
@@ -128,14 +130,16 @@
           </div>
         </section>
 
-        <section class="evidence-card evidence-side-card">
-          <h2>Comments</h2>
-          {% for comment in comments %}
-            <article class="comment-item"><strong>{{ comment.author.get_full_name|default:comment.author.username }}</strong><span>{{ comment.created_at|date:'M d, Y H:i' }}</span><p>{{ comment.body }}</p></article>
-          {% empty %}
-            <p class="empty-copy">No comments yet.</p>
-          {% endfor %}
-        </section>
+        {% if show_review_history %}
+          <section class="evidence-card evidence-side-card">
+            <h2>Comments</h2>
+            {% for comment in comments %}
+              <article class="comment-item"><strong>{{ comment.author.get_full_name|default:comment.author.username }}</strong><span>{{ comment.created_at|date:'M d, Y H:i' }}</span><p>{{ comment.body }}</p></article>
+            {% empty %}
+              <p class="empty-copy">No comments yet.</p>
+            {% endfor %}
+          </section>
+        {% endif %}
       </aside>
     </div>
   </div>

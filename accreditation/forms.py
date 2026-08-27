@@ -1,5 +1,7 @@
 from django import forms
 
+from core.models import Department
+
 from .models import EvidenceSubmission
 
 
@@ -65,4 +67,55 @@ class ReviewActionForm(forms.Form):
         cleaned = super().clean()
         if cleaned.get('action') == 'revision' and not cleaned.get('remarks', '').strip():
             self.add_error('remarks', 'Remarks are required when requesting a revision.')
+        return cleaned
+
+
+class AreaAssignmentForm(forms.Form):
+    department_scope = forms.ChoiceField(
+        label='Assignment scope',
+        choices=(
+            ('all', 'All departments / programs'),
+            ('specific', 'Specific departments / programs'),
+        ),
+        initial='all',
+        widget=forms.RadioSelect,
+    )
+    departments = forms.ModelMultipleChoiceField(
+        label='Departments / programs',
+        queryset=Department.objects.none(),
+        required=False,
+        help_text='Choose one or more departments when using the specific option.',
+        widget=forms.SelectMultiple(attrs={'class': 'assignment-select', 'size': 5}),
+    )
+    deadline = forms.DateField(
+        label='Deadline',
+        widget=forms.DateInput(attrs={'class': 'assignment-input', 'type': 'date'}),
+    )
+    instructions = forms.CharField(
+        label='Instructions (optional)',
+        required=False,
+        widget=forms.Textarea(attrs={
+            'class': 'assignment-input',
+            'rows': 4,
+            'placeholder': 'Add guidance for the assigned Program Head(s).',
+        }),
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        departments = Department.objects.filter(
+            is_active=True,
+            kind__in=(Department.DEPARTMENT, Department.PROGRAM),
+        ).order_by('kind', 'name')
+        self.fields['departments'].queryset = departments
+        self.fields['departments'].label_from_instance = (
+            lambda department: f'{department.name} · {department.get_kind_display()}'
+        )
+
+    def clean(self):
+        cleaned = super().clean()
+        if cleaned.get('department_scope') == 'specific' and not cleaned.get('departments'):
+            self.add_error('departments', 'Select at least one department or program.')
+        if cleaned.get('department_scope') == 'all':
+            cleaned['departments'] = self.fields['departments'].queryset
         return cleaned

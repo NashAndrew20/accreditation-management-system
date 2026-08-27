@@ -1,16 +1,19 @@
+from datetime import timedelta
+
 from django.contrib.auth import get_user_model
 from django.core.exceptions import PermissionDenied
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from core.models import Department, Role, RoleAssignment, UserProfile
+from core.models import AuditLog, Department, Notification, Role, RoleAssignment, UserProfile
 
 from .models import (
     AccreditationArea,
     AccreditationCycle,
     AccreditationLevel,
     AccreditationSubArea,
+    AreaAssignment,
     EvidenceFile,
     EvidenceRequirement,
     EvidenceReview,
@@ -162,6 +165,41 @@ class AccreditationWorkflowTests(TestCase):
         submission = EvidenceSubmission.objects.get(requirement=self.requirement, department=self.program)
         self.assertEqual(self.client.get(reverse('accreditation:evidence_detail', args=[submission.id])).status_code, 200)
 
+    def test_qa_does_not_see_feedback_in_pacucoa_workspace_until_reviewing_submission(self):
+        submission = self.make_submission()
+        submission.status = EvidenceSubmission.UNDER_DEAN_REVIEW
+        submission.current_reviewer = self.dean
+        submission.current_review_role = self.roles['DEAN']
+        submission.save(update_fields=['status', 'current_reviewer', 'current_review_role', 'last_updated'])
+        EvidenceReview.objects.create(
+            submission=submission,
+            reviewer=self.dean,
+            reviewer_role=self.roles['DEAN'],
+            from_status=EvidenceSubmission.UNDER_DEAN_REVIEW,
+            to_status=EvidenceSubmission.UNDER_AREA_CHAIR_REVIEW,
+            decision=EvidenceReview.APPROVED,
+            remarks='Department review feedback should stay out of QA browsing.',
+        )
+
+        self.client.force_login(self.qa)
+        workspace_response = self.client.get(
+            reverse('accreditation:submission_workspace_subarea', args=[self.area.slug, '1-1']),
+        )
+        self.assertNotContains(workspace_response, 'Reviewer Remarks')
+        self.assertNotContains(workspace_response, 'Department review feedback should stay out of QA browsing.')
+
+        evidence_response = self.client.get(reverse('accreditation:evidence_detail', args=[submission.id]))
+        self.assertNotContains(evidence_response, 'Review history')
+        self.assertNotContains(evidence_response, 'Department review feedback should stay out of QA browsing.')
+
+        submission.status = EvidenceSubmission.UNDER_QA_REVIEW
+        submission.current_reviewer = self.qa
+        submission.current_review_role = self.roles['QA']
+        submission.save(update_fields=['status', 'current_reviewer', 'current_review_role', 'last_updated'])
+        review_response = self.client.get(reverse('accreditation:evidence_review', args=[submission.id]))
+        self.assertContains(review_response, 'Review history')
+        self.assertContains(review_response, 'Department review feedback should stay out of QA browsing.')
+
     def test_my_tasks_landing_shows_assigned_and_missing_instead_of_subareas(self):
         self.client.force_login(self.program_head)
 
@@ -195,3 +233,99 @@ class AccreditationWorkflowTests(TestCase):
         self.assertRedirects(response, reverse('accreditation:submission_workspace_subarea', args=[self.area.slug, '1-1']))
         submission.refresh_from_db()
         self.assertEqual(submission.status, EvidenceSubmission.UNDER_DEAN_REVIEW)
+
+    def test_qa_can_assign_area_to_all_departments_and_notify_program_heads(self):
+        self.client.force_login(self.qa)
+        deadline = timezone.localdate() + timedelta(days=21)
+
+        response = self.client.post(
+            reverse('accreditation:area_details', args=[self.area.slug]),
+            {
+                'department_scope': 'all',
+                'deadline': deadline.isoformat(),
+                'instructions': 'Upload the approved evidence before the checkpoint.',
+            },
+        )
+
+        self.assertRedirects(response, reverse('accreditation:area_details', args=[self.area.slug]))
+        self.assertEqual(AreaAssignment.objects.filter(area=self.area).count(), 2)
+        assignment = AreaAssignment.objects.get(area=self.area, department=self.program)
+        self.assertEqual(assignment.deadline, deadline)
+        self.assertEqual(assignment.assigned_by, self.qa)
+        self.assertTrue(Notification.objects.filter(user=self.program_head, kind='assignment').exists())
+        self.assertTrue(AuditLog.objects.filter(action='AREA_ASSIGNED', object_type='AreaAssignment').exists())
+        detail_response = self.client.get(reverse('accreditation:area_details', args=[self.area.slug]))
+        self.assertContains(detail_response, 'Assign Area')
+        self.assertContains(detail_response, 'Current assignments')
+        self.assertContains(detail_response, deadline.strftime('%b %d, %Y'))
+
+    def test_qa_can_assign_area_to_specific_department_only(self):
+        self.client.force_login(self.qa)
+        deadline = timezone.localdate() + timedelta(days=14)
+
+        response = self.client.post(
+            reverse('accreditation:area_details', args=[self.area.slug]),
+            {
+                'department_scope': 'specific',
+                'departments': [str(self.program.pk)],
+                'deadline': deadline.isoformat(),
+            },
+        )
+
+        self.assertRedirects(response, reverse('accreditation:area_details', args=[self.area.slug]))
+        self.assertEqual(AreaAssignment.objects.filter(area=self.area).count(), 1)
+        self.assertTrue(AreaAssignment.objects.filter(area=self.area, department=self.program, deadline=deadline).exists())
+        self.assertFalse(AreaAssignment.objects.filter(area=self.area, department=self.department).exists())
+
+    def test_only_qa_or_administrators_can_assign_an_area(self):
+        self.client.force_login(self.dean)
+
+        response = self.client.post(
+            reverse('accreditation:area_details', args=[self.area.slug]),
+            {
+                'department_scope': 'all',
+                'deadline': (timezone.localdate() + timedelta(days=7)).isoformat(),
+            },
+        )
+        self.assertEqual(response.status_code, 403)
+
+        response = self.client.get(reverse('accreditation:area_details', args=[self.area.slug]))
+        self.assertNotContains(response, 'Assign Area')
+
+    def test_program_head_tasks_follow_assignment_scope_and_deadline(self):
+        other_program = Department.objects.create(
+            code='BUS-BSBA',
+            name='Bachelor of Science in Business Administration',
+            kind=Department.PROGRAM,
+        )
+        deadline = timezone.localdate() + timedelta(days=30)
+        self.client.force_login(self.qa)
+        self.client.post(
+            reverse('accreditation:area_details', args=[self.area.slug]),
+            {
+                'department_scope': 'specific',
+                'departments': [str(other_program.pk)],
+                'deadline': deadline.isoformat(),
+                'instructions': 'Business program instructions',
+            },
+        )
+
+        self.client.force_login(self.program_head)
+        response = self.client.get(reverse('accreditation:submission_workspace'))
+        self.assertContains(response, 'You have no assigned evidence tasks right now.')
+        self.assertContains(response, 'No missing evidence requirements.')
+
+        self.client.force_login(self.qa)
+        self.client.post(
+            reverse('accreditation:area_details', args=[self.area.slug]),
+            {
+                'department_scope': 'specific',
+                'departments': [str(self.program.pk)],
+                'deadline': deadline.isoformat(),
+                'instructions': 'Upload the signed mission evidence.',
+            },
+        )
+        self.client.force_login(self.program_head)
+        response = self.client.get(reverse('accreditation:submission_workspace'))
+        self.assertContains(response, deadline.strftime('%b %d, %Y'))
+        self.assertContains(response, 'Upload the signed mission evidence.')

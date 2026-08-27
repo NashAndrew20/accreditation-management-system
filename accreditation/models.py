@@ -101,6 +101,38 @@ class EvidenceRequirement(models.Model):
         return f'{self.code} · {self.title}'
 
 
+class AreaAssignment(models.Model):
+    """Record which department or program owns an area's evidence work."""
+
+    area = models.ForeignKey(AccreditationArea, on_delete=models.CASCADE, related_name='assignments')
+    department = models.ForeignKey(
+        'core.Department',
+        on_delete=models.PROTECT,
+        related_name='accreditation_area_assignments',
+    )
+    assigned_by = models.ForeignKey(
+        'auth.User',
+        on_delete=models.PROTECT,
+        related_name='created_area_assignments',
+    )
+    deadline = models.DateField()
+    instructions = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ('deadline', 'department__name')
+        constraints = [
+            models.UniqueConstraint(
+                fields=('area', 'department'),
+                name='unique_area_assignment_department',
+            ),
+        ]
+
+    def __str__(self):
+        return f'{self.area.code} · {self.department.name}'
+
+
 class EvidenceSubmission(models.Model):
     DRAFT = 'DRAFT'
     SUBMITTED = 'SUBMITTED'

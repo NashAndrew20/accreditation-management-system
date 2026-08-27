@@ -206,6 +206,11 @@
   color: #bf164c;
 }
 
+.task-copy .task-instructions {
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
 .task-empty {
   padding: 28px 20px;
   color: var(--color-text-faint);

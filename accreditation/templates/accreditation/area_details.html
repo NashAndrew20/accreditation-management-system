@@ -22,6 +22,86 @@
       </div>
     </header>
 
+    {% if can_assign_area %}
+      <details class="area-assignment-panel"{% if assignment_form.errors %} open{% endif %}>
+        <summary class="area-assignment-toggle">
+          <span>Assign Area</span>
+          <small>Set a deadline and choose who will prepare this area's evidence.</small>
+        </summary>
+        <div class="area-assignment-body">
+          <div class="area-assignment-intro">
+            <div>
+              <span class="area-assignment-kicker">QA assignment</span>
+              <h2>{{ area.code }} · {{ area.name }}</h2>
+            </div>
+            <p>Assignments are saved to the database and appear in the selected Program Head's My Tasks list.</p>
+          </div>
+
+          {% if assignment_form.non_field_errors %}
+            <div class="assignment-error" role="alert">{{ assignment_form.non_field_errors }}</div>
+          {% endif %}
+
+          <form method="post" class="area-assignment-form" data-assignment-form>
+            {% csrf_token %}
+            <div class="assignment-field assignment-scope-field">
+              <label>{{ assignment_form.department_scope.label }}</label>
+              <div class="assignment-scope-options">
+                {% for radio in assignment_form.department_scope %}
+                  <label class="assignment-scope-option">
+                    {{ radio.tag }}
+                    <span>{{ radio.choice_label }}</span>
+                  </label>
+                {% endfor %}
+              </div>
+              {% for error in assignment_form.department_scope.errors %}<small class="assignment-error">{{ error }}</small>{% endfor %}
+            </div>
+
+            <div class="assignment-field assignment-departments-field" data-assignment-departments>
+              <label for="{{ assignment_form.departments.id_for_label }}">{{ assignment_form.departments.label }}</label>
+              {{ assignment_form.departments }}
+              {% if assignment_form.departments.help_text %}<small>{{ assignment_form.departments.help_text }}</small>{% endif %}
+              {% for error in assignment_form.departments.errors %}<small class="assignment-error">{{ error }}</small>{% endfor %}
+            </div>
+
+            <div class="assignment-field">
+              <label for="{{ assignment_form.deadline.id_for_label }}">{{ assignment_form.deadline.label }}</label>
+              {{ assignment_form.deadline }}
+              {% for error in assignment_form.deadline.errors %}<small class="assignment-error">{{ error }}</small>{% endfor %}
+            </div>
+
+            <div class="assignment-field assignment-instructions-field">
+              <label for="{{ assignment_form.instructions.id_for_label }}">{{ assignment_form.instructions.label }}</label>
+              {{ assignment_form.instructions }}
+              {% for error in assignment_form.instructions.errors %}<small class="assignment-error">{{ error }}</small>{% endfor %}
+            </div>
+
+            <div class="assignment-actions">
+              <a href="{% url 'accreditation:area_details' area_key %}" class="assignment-cancel">Cancel</a>
+              <button type="submit" class="assignment-submit">Assign Area</button>
+            </div>
+          </form>
+
+          {% if area_assignments %}
+            <div class="area-assignment-list">
+              <div class="area-assignment-list-head">
+                <h3>Current assignments</h3>
+                <span>{{ area_assignments|length }}</span>
+              </div>
+              {% for area_assignment in area_assignments %}
+                <div class="area-assignment-row">
+                  <div>
+                    <strong>{{ area_assignment.department.name }}</strong>
+                    <small>Assigned by {{ area_assignment.assigned_by.get_full_name|default:area_assignment.assigned_by.username }}</small>
+                  </div>
+                  <time datetime="{{ area_assignment.deadline|date:'Y-m-d' }}">Due {{ area_assignment.deadline|date:'M d, Y' }}</time>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+      </details>
+    {% endif %}
+
     {% if sub_areas %}
       <section class="subarea-grid" aria-label="{{ area.code }} sub-areas">
         {% for sub_area in sub_areas %}
