@@ -72,6 +72,16 @@
           <strong>{{ current_user_summary.name }}</strong>
           <span>{{ current_user_summary.role }}</span>
         </div>
+        <button
+          type="button"
+          class="profile-menu-action theme-toggle-action"
+          data-theme-toggle
+          aria-pressed="false"
+          aria-label="Switch to dark mode"
+        >
+          <span class="theme-toggle-icon" data-theme-icon aria-hidden="true">☾</span>
+          <span data-theme-label>Dark mode</span>
+        </button>
         <form method="post" action="{% url 'logout' %}" class="profile-menu-logout-form">
           {% csrf_token %}
           <button type="submit" class="profile-menu-action">Sign out</button>

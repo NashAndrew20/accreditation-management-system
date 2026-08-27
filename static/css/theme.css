@@ -1,0 +1,662 @@
+/*
+ * Theme overrides live in one place so every page uses the same dark palette.
+ * Page styles remain responsible for layout; this file changes theme values
+ * and the legacy light-only surfaces that predate the token system.
+ */
+
+html[data-theme='dark'] {
+  color-scheme: dark;
+
+  --color-bg: #171216;
+  --color-surface: #211A20;
+  --color-border: #45353E;
+  --color-border-strong: #624853;
+
+  --color-text: #F7EEF2;
+  --color-text-muted: #C5B5BC;
+  --color-text-faint: #9D8A93;
+
+  --surface-warm: #2A2026;
+  --surface-soft: #261D23;
+  --surface-muted: #2B2228;
+  --surface-subtle: #32282E;
+  --color-input: #1B161A;
+  --color-success: #72DCA0;
+  --color-success-soft: #1D3B2D;
+  --color-warning: #F0C866;
+  --color-warning-soft: #433619;
+  --color-danger: #FF8798;
+  --color-danger-soft: #47242E;
+  --color-info: #9CBDF2;
+  --color-info-soft: #223149;
+
+  --maroon-900: #270915;
+  --maroon-800: #4B132C;
+  --maroon-700: #842A50;
+  --maroon-600: #A83D68;
+  --maroon-100: #3D202F;
+
+  --rose-500: #E26A8E;
+  --rose-100: #472333;
+  --green-600: #59C98D;
+  --green-500: #47B97E;
+  --green-100: #1D3B2D;
+  --gold-600: #E3B95C;
+  --gold-500: #D8A94E;
+  --gold-100: #433619;
+  --red-600: #F07882;
+  --red-100: #47242E;
+
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.24), 0 12px 30px rgba(0, 0, 0, 0.2);
+}
+
+html[data-theme='dark'] body {
+  background: var(--color-bg);
+}
+
+html[data-theme='dark'] ::selection {
+  background: var(--maroon-600);
+  color: #fff;
+}
+
+html[data-theme='dark'] input:not([type='checkbox']):not([type='radio']),
+html[data-theme='dark'] select,
+html[data-theme='dark'] textarea {
+  border-color: var(--color-border-strong);
+  background-color: var(--color-input);
+  color: var(--color-text);
+}
+
+html[data-theme='dark'] input::placeholder,
+html[data-theme='dark'] textarea::placeholder {
+  color: var(--color-text-faint);
+}
+
+html[data-theme='dark'] .login-form input:not([type='checkbox']),
+html[data-theme='dark'] .login-form select,
+html[data-theme='dark'] .login-form textarea {
+  border-color: var(--color-border-strong);
+  background-color: var(--color-input);
+  color: var(--color-text);
+}
+
+html[data-theme='dark'] .login-form input::placeholder,
+html[data-theme='dark'] .login-form textarea::placeholder {
+  color: var(--color-text-faint);
+}
+
+html[data-theme='dark'] .login-form input:not([type='checkbox']):focus,
+html[data-theme='dark'] .login-form select:focus,
+html[data-theme='dark'] .login-form textarea:focus {
+  background-color: var(--color-input);
+}
+
+html[data-theme='dark'] option {
+  background: var(--color-input);
+  color: var(--color-text);
+}
+
+html[data-theme='dark'] .flash-message {
+  background: var(--surface-warm);
+}
+
+html[data-theme='dark'] .flash-success {
+  border-color: #326B4B;
+  background: var(--color-success-soft);
+  color: var(--color-success);
+}
+
+html[data-theme='dark'] .flash-error,
+html[data-theme='dark'] .login-alert,
+html[data-theme='dark'] .evidence-alert {
+  border-color: #7D3D4C;
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+}
+
+/* Shared menus and theme control */
+
+html[data-theme='dark'] .notification-popover,
+html[data-theme='dark'] .profile-popover {
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.4);
+}
+
+.theme-toggle-action {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.theme-toggle-icon {
+  width: 17px;
+  color: var(--gold-600);
+  font-size: 15px;
+  line-height: 1;
+  text-align: center;
+}
+
+.standalone-theme-toggle {
+  position: absolute;
+  top: 22px;
+  right: 24px;
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: var(--shadow-card);
+}
+
+.standalone-theme-toggle:hover {
+  border-color: var(--maroon-600);
+  color: var(--color-text);
+}
+
+.standalone-theme-toggle .theme-toggle-icon {
+  color: var(--maroon-600);
+}
+
+html[data-theme='dark'] .standalone-theme-toggle {
+  background: var(--surface-warm);
+}
+
+/* Dashboard */
+
+html[data-theme='dark'] .alert-body {
+  background: var(--surface-soft);
+  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.28);
+}
+
+html[data-theme='dark'] .alert-body::before {
+  border-color: transparent var(--surface-soft) transparent transparent;
+}
+
+html[data-theme='dark'] .activity-dot.tone-blue {
+  background: var(--color-info);
+}
+
+html[data-theme='dark'] .deadline-card {
+  background: var(--surface-muted);
+}
+
+html[data-theme='dark'] .deadline-card.is-urgent {
+  border-color: #7D3D4C;
+  background: #3C222B;
+}
+
+html[data-theme='dark'] .deadline-flag {
+  color: var(--color-danger);
+}
+
+/* Status colors shared by PACUCOA, tasks, reviews, repository, and reports */
+
+html[data-theme='dark'] .status-pill.tone-green,
+html[data-theme='dark'] .repo-status.tone-green,
+html[data-theme='dark'] .review-status.tone-green,
+html[data-theme='dark'] .department-status.tone-green,
+html[data-theme='dark'] .completion-pill.tone-green,
+html[data-theme='dark'] .user-chip.tone-green,
+html[data-theme='dark'] .user-presence.tone-green {
+  background: var(--color-success-soft);
+  color: var(--color-success);
+}
+
+html[data-theme='dark'] .status-pill.tone-gold,
+html[data-theme='dark'] .repo-status.tone-gold,
+html[data-theme='dark'] .review-status.tone-gold,
+html[data-theme='dark'] .department-status.tone-gold,
+html[data-theme='dark'] .completion-pill.tone-gold,
+html[data-theme='dark'] .user-chip.tone-gold,
+html[data-theme='dark'] .user-presence.tone-gold {
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+}
+
+html[data-theme='dark'] .status-pill.tone-rose,
+html[data-theme='dark'] .repo-status.tone-rose,
+html[data-theme='dark'] .review-status.tone-rose,
+html[data-theme='dark'] .department-status.tone-rose,
+html[data-theme='dark'] .completion-pill.tone-rose,
+html[data-theme='dark'] .user-chip.tone-rose {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+}
+
+html[data-theme='dark'] .status-pill.tone-slate,
+html[data-theme='dark'] .completion-pill.tone-slate,
+html[data-theme='dark'] .user-chip.tone-slate,
+html[data-theme='dark'] .user-presence.tone-slate {
+  background: var(--surface-subtle);
+  color: var(--color-text-muted);
+}
+
+html[data-theme='dark'] .tone-green {
+  color: var(--color-success);
+}
+
+html[data-theme='dark'] .tone-gold {
+  color: var(--color-warning);
+}
+
+html[data-theme='dark'] .tone-rose {
+  color: var(--color-danger);
+}
+
+/* Accreditation areas and assignment modal */
+
+html[data-theme='dark'] .area-assignment-modal,
+html[data-theme='dark'] .user-manage-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.68);
+}
+
+html[data-theme='dark'] .area-assignment-dialog,
+html[data-theme='dark'] .user-manage-dialog {
+  border-color: var(--color-border-strong);
+  background: linear-gradient(180deg, #2C2027 0%, var(--surface-warm) 100%);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.48);
+}
+
+html[data-theme='dark'] .area-assignment-modal-header {
+  border-bottom-color: var(--color-border);
+  background: linear-gradient(120deg, var(--maroon-100), #2C2027);
+}
+
+html[data-theme='dark'] .area-assignment-close {
+  border-color: var(--color-border-strong);
+  background: var(--surface-warm);
+}
+
+html[data-theme='dark'] .area-assignment-modal-description,
+html[data-theme='dark'] .assignment-field,
+html[data-theme='dark'] .assignment-scope-option,
+html[data-theme='dark'] .assignment-department-option,
+html[data-theme='dark'] .area-assignment-row {
+  background: var(--surface-soft);
+}
+
+html[data-theme='dark'] .area-assignment-modal-description {
+  border-left-color: var(--maroon-600);
+}
+
+html[data-theme='dark'] .assignment-scope-option:hover,
+html[data-theme='dark'] .assignment-department-option:hover,
+html[data-theme='dark'] .assignment-scope-option:has(input:checked),
+html[data-theme='dark'] .assignment-department-option:has(input:checked),
+html[data-theme='dark'] .assignment-no-deadline-option:has(input:checked),
+html[data-theme='dark'] .assignment-deadline-field.is-no-deadline .assignment-no-deadline-option {
+  background: var(--color-danger-soft);
+}
+
+html[data-theme='dark'] .assignment-deadline-control > input[type='date']:disabled,
+html[data-theme='dark'] .area-assignment-no-deadline,
+html[data-theme='dark'] .subarea-progress {
+  background: var(--surface-subtle);
+}
+
+html[data-theme='dark'] .assignment-cancel {
+  background: var(--surface-warm);
+}
+
+html[data-theme='dark'] .assignment-cancel:hover {
+  border-color: var(--color-border-strong);
+  background: var(--surface-subtle);
+}
+
+html[data-theme='dark'] .subarea-progress span {
+  background: var(--gold-500);
+}
+
+html[data-theme='dark'] .subarea-percent {
+  color: var(--color-warning);
+}
+
+html[data-theme='dark'] .area-progress {
+  background: var(--surface-subtle);
+}
+
+html[data-theme='dark'] .area-progress .tone-green {
+  background: var(--color-success);
+}
+
+html[data-theme='dark'] .area-progress .tone-gold {
+  background: var(--gold-500);
+}
+
+html[data-theme='dark'] .subarea-empty-state {
+  border-color: var(--color-border-strong);
+}
+
+/* Repository and communication */
+
+html[data-theme='dark'] .department-item.is-active,
+html[data-theme='dark'] .conversation-item.is-active,
+html[data-theme='dark'] .thread-actions span {
+  background: var(--rose-100);
+}
+
+html[data-theme='dark'] .repo-file-icon.tone-rose,
+html[data-theme='dark'] .notification-icon.tone-rose {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+}
+
+html[data-theme='dark'] .repo-file-icon.tone-green,
+html[data-theme='dark'] .notification-icon.tone-green {
+  background: var(--color-success-soft);
+  color: var(--color-success);
+}
+
+html[data-theme='dark'] .repo-file-icon.tone-blue,
+html[data-theme='dark'] .notification-icon.tone-blue {
+  background: var(--color-info-soft);
+  color: var(--color-info);
+}
+
+html[data-theme='dark'] .repo-tags span,
+html[data-theme='dark'] .conversation-panel {
+  background: var(--surface-muted);
+}
+
+html[data-theme='dark'] .version-chip {
+  background: var(--maroon-100);
+  color: var(--maroon-600);
+}
+
+html[data-theme='dark'] .message-row:not(.is-mine) .message-bubble {
+  background: var(--surface-muted);
+}
+
+html[data-theme='dark'] .message-avatar {
+  background: var(--surface-subtle);
+}
+
+html[data-theme='dark'] .conversation-avatar.is-gold {
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+}
+
+html[data-theme='dark'] .conversation-avatar i {
+  border-color: var(--surface-muted);
+  background: var(--color-success);
+}
+
+html[data-theme='dark'] .message-composer button {
+  background: var(--maroon-700);
+}
+
+html[data-theme='dark'] .message-form-error,
+html[data-theme='dark'] .assignment-error,
+html[data-theme='dark'] .login-field-error {
+  color: var(--color-danger) !important;
+}
+
+/* Notifications, reports, and charts */
+
+html[data-theme='dark'] .filter-chip,
+html[data-theme='dark'] .notification-filters,
+html[data-theme='dark'] .report-tabs,
+html[data-theme='dark'] .review-pagination button {
+  background: var(--surface-subtle);
+}
+
+html[data-theme='dark'] .filter-chip.is-active,
+html[data-theme='dark'] #report-overview:checked ~ .report-tabs label[for='report-overview'],
+html[data-theme='dark'] #report-department:checked ~ .report-tabs label[for='report-department'],
+html[data-theme='dark'] #report-trends:checked ~ .report-tabs label[for='report-trends'] {
+  background: var(--color-surface);
+  color: var(--maroon-600);
+}
+
+html[data-theme='dark'] .notification-list-card,
+html[data-theme='dark'] .notification-row {
+  background: var(--surface-muted);
+}
+
+html[data-theme='dark'] .notification-row.is-unread {
+  background: var(--rose-100);
+}
+
+html[data-theme='dark'] .notification-row:not(.is-unread) .notification-topline h2,
+html[data-theme='dark'] .notification-row:not(.is-unread) .notification-message {
+  color: var(--color-text-muted);
+}
+
+html[data-theme='dark'] .notification-icon.tone-maroon {
+  background: var(--maroon-100);
+}
+
+html[data-theme='dark'] .notification-icon.tone-gold {
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+}
+
+html[data-theme='dark'] .notification-icon.tone-slate {
+  background: var(--surface-subtle);
+  color: var(--color-text-muted);
+}
+
+html[data-theme='dark'] .insight-head span {
+  background: var(--rose-100);
+}
+
+html[data-theme='dark'] .insight-card.tone-rose {
+  background: #43232E;
+  color: var(--color-danger);
+}
+
+html[data-theme='dark'] .insight-card.tone-green {
+  background: #1C392C;
+  color: var(--color-success);
+}
+
+html[data-theme='dark'] .insight-card.tone-gold {
+  background: #413519;
+  color: var(--color-warning);
+}
+
+html[data-theme='dark'] .radar-grid polygon,
+html[data-theme='dark'] .radar-grid line,
+html[data-theme='dark'] .line-grid line {
+  stroke: #55454E;
+}
+
+html[data-theme='dark'] .radar-fill {
+  fill: rgba(226, 106, 142, 0.2);
+}
+
+html[data-theme='dark'] .radar-point {
+  fill: var(--color-surface);
+}
+
+html[data-theme='dark'] .radar-point:hover,
+html[data-theme='dark'] .radar-point:focus-visible {
+  fill: var(--maroon-100);
+}
+
+html[data-theme='dark'] .approval-line {
+  stroke: var(--color-success);
+}
+
+html[data-theme='dark'] .revision-line {
+  stroke: var(--color-danger);
+}
+
+html[data-theme='dark'] .approval-points circle {
+  fill: var(--color-success);
+  stroke: var(--color-success);
+}
+
+html[data-theme='dark'] .revision-points circle {
+  fill: var(--color-danger);
+  stroke: var(--color-danger);
+}
+
+html[data-theme='dark'] .chart-legend .approval::before,
+html[data-theme='dark'] .department-bar-item .bar.tone-green,
+html[data-theme='dark'] .compliance-cell i.tone-green {
+  background: var(--color-success);
+}
+
+html[data-theme='dark'] .chart-legend .revision::before,
+html[data-theme='dark'] .department-bar-item .bar.tone-rose,
+html[data-theme='dark'] .compliance-cell i.tone-rose {
+  background: var(--color-danger);
+}
+
+html[data-theme='dark'] .department-bar-item .bar.tone-gold,
+html[data-theme='dark'] .compliance-cell i.tone-gold {
+  background: var(--gold-500);
+}
+
+html[data-theme='dark'] .department-bars,
+html[data-theme='dark'] .compliance-cell > span {
+  border-color: var(--color-border-strong);
+  background-color: var(--surface-subtle);
+  background-image: linear-gradient(to bottom, var(--color-border-strong) 1px, transparent 1px);
+}
+
+/* Settings, smart companion, workspace, and user-management surfaces */
+
+html[data-theme='dark'] .profile-hero,
+html[data-theme='dark'] .settings-option,
+html[data-theme='dark'] .role-assignment,
+html[data-theme='dark'] .task-row:hover,
+html[data-theme='dark'] .subarea-item:not(.is-active):hover,
+html[data-theme='dark'] .actual-text,
+html[data-theme='dark'] .upload-box,
+html[data-theme='dark'] .companion-message,
+html[data-theme='dark'] .companion-reply,
+html[data-theme='dark'] .user-manage-form,
+html[data-theme='dark'] .assignment-form {
+  background: var(--surface-muted);
+}
+
+html[data-theme='dark'] .settings-tab.is-active,
+html[data-theme='dark'] .role-chip {
+  background: var(--rose-100);
+}
+
+html[data-theme='dark'] .settings-note {
+  border-color: var(--color-border);
+  background: var(--color-warning-soft);
+}
+
+html[data-theme='dark'] .settings-note strong {
+  color: var(--color-warning);
+}
+
+html[data-theme='dark'] .settings-option input {
+  background: var(--surface-subtle);
+}
+
+html[data-theme='dark'] .settings-option input::before {
+  background: var(--color-text);
+}
+
+html[data-theme='dark'] .task-summary-card-missing strong,
+html[data-theme='dark'] .task-count-missing,
+html[data-theme='dark'] .task-copy .task-deadline.is-overdue {
+  color: var(--color-danger);
+}
+
+html[data-theme='dark'] .subarea-item.is-active {
+  background: var(--rose-100);
+}
+
+html[data-theme='dark'] .score-btn,
+html[data-theme='dark'] .document-item {
+  background: var(--surface-muted);
+}
+
+html[data-theme='dark'] .workspace-action-resubmit {
+  border-color: var(--color-border-strong);
+}
+
+html[data-theme='dark'] .companion-body {
+  background:
+    radial-gradient(circle at 95% 8%, rgba(132, 42, 80, 0.28), transparent 25%),
+    var(--color-surface);
+}
+
+html[data-theme='dark'] .companion-message {
+  border-color: var(--color-border);
+}
+
+html[data-theme='dark'] .assistant-bubble {
+  border-color: var(--color-border);
+  background: var(--surface-muted);
+}
+
+html[data-theme='dark'] .companion-user-message .assistant-bubble {
+  background: var(--maroon-700);
+  color: #fff;
+}
+
+html[data-theme='dark'] .composer-row input:focus {
+  background: var(--color-input);
+}
+
+html[data-theme='dark'] .companion-bot-icon .icon {
+  background: var(--color-success);
+  box-shadow: 0 0 0 3px rgba(114, 220, 160, 0.16);
+}
+
+html[data-theme='dark'] .user-chip.tone-blue {
+  background: var(--color-info-soft);
+  color: var(--color-info);
+}
+
+html[data-theme='dark'] .manage-btn,
+html[data-theme='dark'] .manage-btn-muted {
+  border-color: var(--color-border-strong);
+  background: var(--surface-soft);
+  color: var(--color-text-muted);
+}
+
+html[data-theme='dark'] .dialog-close,
+html[data-theme='dark'] .managed-user-summary {
+  background: var(--surface-subtle);
+}
+
+html[data-theme='dark'] .dialog-cancel {
+  background: var(--surface-warm);
+}
+
+html[data-theme='dark'] .review-pagination button:not(.is-active) {
+  color: var(--color-text-muted);
+}
+
+/* Login and account screens */
+
+.login-page {
+  position: relative;
+}
+
+html[data-theme='dark'] .demo-login-button {
+  background: var(--surface-soft);
+}
+
+html[data-theme='dark'] .demo-login-button:hover {
+  background: var(--maroon-100);
+}
+
+html[data-theme='dark'] .login-visual-overlay {
+  background:
+    linear-gradient(180deg, rgba(39, 9, 21, 0.82) 0%, rgba(39, 9, 21, 0.42) 44%, rgba(15, 8, 12, 0.9) 100%),
+    linear-gradient(90deg, rgba(39, 9, 21, 0.38), transparent 65%);
+}
+
+@media (max-width: 760px) {
+  .standalone-theme-toggle {
+    top: 14px;
+    right: 14px;
+  }
+}

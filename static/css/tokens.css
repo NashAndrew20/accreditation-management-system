@@ -12,6 +12,21 @@
   --color-text-muted: #6F665D;
   --color-text-faint: #A79E90;
 
+  /* Shared semantic surfaces and states */
+  --surface-warm: #FFFDFB;
+  --surface-soft: #FFFDF9;
+  --surface-muted: #FBFAF8;
+  --surface-subtle: #EFEBE7;
+  --color-input: #FFFDF9;
+  --color-success: #007D5B;
+  --color-success-soft: #E0F4E9;
+  --color-warning: #9A710A;
+  --color-warning-soft: #FFF7DF;
+  --color-danger: #BF164C;
+  --color-danger-soft: #FFE8EF;
+  --color-info: #446191;
+  --color-info-soft: #EEF4FB;
+
   /* Brand — maroon */
   --maroon-900: #430D22;
   --maroon-800: #57112C;

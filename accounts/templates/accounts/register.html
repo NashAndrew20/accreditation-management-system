@@ -8,12 +8,18 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="{% static 'js/theme.js' %}"></script>
   <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
   <link rel="stylesheet" href="{% static 'css/base.css' %}">
   <link rel="stylesheet" href="{% static 'css/login.css' %}">
+  <link rel="stylesheet" href="{% static 'css/theme.css' %}">
 </head>
 <body class="login-body">
   <main class="login-page">
+    <button type="button" class="standalone-theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch to dark mode">
+      <span class="theme-toggle-icon" data-theme-icon aria-hidden="true">☾</span>
+      <span data-theme-label>Dark mode</span>
+    </button>
     <section class="login-panel" aria-labelledby="register-title">
       <div class="login-panel-inner">
         <a class="login-brand" href="{% url 'login' %}">
