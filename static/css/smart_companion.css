@@ -12,7 +12,7 @@
 }
 
 .companion-header h1 {
-  font-size: clamp(30px, 3vw, 38px);
+  font-size: 22px;
   line-height: 1;
   letter-spacing: -0.045em;
 }
