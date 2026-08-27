@@ -129,7 +129,7 @@
                   tabindex="0"
                   data-tooltip="{{ department.name }} · {{ department.compliance }}% compliance · {{ department.status }}"
                 >
-                  <span class="bar tone-{{ department.tone }}" style="height: {{ department.compliance }}%;"></span>
+                  <span class="bar tone-{{ department.tone }}" data-progress-height="{{ department.compliance }}"></span>
                   <em>{{ department.name }}</em>
                 </div>
               {% endfor %}
@@ -156,7 +156,7 @@
                   <td>{{ department.compiled }}</td>
                   <td>
                     <div class="compliance-cell" tabindex="0" data-tooltip="{{ department.name }} compliance: {{ department.compliance }}%">
-                      <span><i class="tone-{{ department.tone }}" style="width: {{ department.compliance }}%;"></i></span>
+                      <span><i class="tone-{{ department.tone }}" data-progress-width="{{ department.compliance }}"></i></span>
                       <strong>{{ department.compliance }}%</strong>
                     </div>
                   </td>

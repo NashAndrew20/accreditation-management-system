@@ -33,7 +33,7 @@
             <h2>{{ sub_area.title }}</h2>
             <div class="subarea-progress-row">
               <div class="subarea-progress">
-                <span class="tone-{{ sub_area.tone }}" style="width: {{ sub_area.progress }}%;"></span>
+                <span class="tone-{{ sub_area.tone }}" data-progress-width="{{ sub_area.progress }}"></span>
               </div>
               <strong class="subarea-percent tone-{{ sub_area.tone }}">{{ sub_area.progress }}%</strong>
             </div>

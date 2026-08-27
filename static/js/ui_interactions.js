@@ -101,6 +101,26 @@
     });
   }
 
+  function bindProgressValues() {
+    function clampPercent(value) {
+      return Math.max(0, Math.min(value, 100));
+    }
+
+    document.querySelectorAll('[data-progress-width]').forEach(function (element) {
+      const value = Number(element.dataset.progressWidth);
+      if (Number.isFinite(value)) {
+        element.style.width = clampPercent(value) + '%';
+      }
+    });
+
+    document.querySelectorAll('[data-progress-height]').forEach(function (element) {
+      const value = Number(element.dataset.progressHeight);
+      if (Number.isFinite(value)) {
+        element.style.height = clampPercent(value) + '%';
+      }
+    });
+  }
+
   function normalize(value) {
     return value.trim().toLowerCase();
   }
@@ -627,6 +647,7 @@
     bindWorkspaceActions();
     bindUserManagement();
     bindDashboardLinks();
+    bindProgressValues();
     bindDataTooltips();
   });
 })();

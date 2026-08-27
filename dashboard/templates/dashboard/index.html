@@ -109,7 +109,7 @@
           <div class="readiness-row" tabindex="0" data-tooltip="{{ area.code }} readiness: {{ area.value }}%">
             <span class="readiness-label">{{ area.code }}</span>
             <div class="readiness-track">
-              <div class="readiness-fill tone-{{ area.tone }}" style="width: {{ area.value }}%;"></div>
+              <div class="readiness-fill tone-{{ area.tone }}" data-progress-width="{{ area.value }}"></div>
             </div>
           </div>
         {% endfor %}
