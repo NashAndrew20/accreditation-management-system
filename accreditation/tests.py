@@ -104,6 +104,19 @@ class AccreditationWorkflowTests(TestCase):
             created_by=self.program_head,
         )
 
+    def move_submission_to_qa_review(self, submission):
+        submit_submission(
+            submission,
+            self.program_head,
+            'meets the requirement',
+            'implemented in the program',
+            link_url='https://example.com/evidence',
+        )
+        approve_submission(submission, self.dean, 'Dean review complete.')
+        approve_submission(submission, self.area_chair, 'Area Chair review complete.')
+        submission.refresh_from_db()
+        return submission
+
     def test_submission_moves_through_all_internal_review_stages_and_closes(self):
         submission = self.make_submission()
         submit_submission(submission, self.program_head, 'meets', 'implemented', link_url='https://example.com/mission')
@@ -233,6 +246,66 @@ class AccreditationWorkflowTests(TestCase):
         review_response = self.client.get(reverse('accreditation:evidence_review', args=[submission.id]))
         self.assertContains(review_response, 'Review history')
         self.assertContains(review_response, 'Department review feedback should stay out of QA browsing.')
+        evidence_response = self.client.get(reverse('accreditation:evidence_detail', args=[submission.id]))
+        self.assertContains(evidence_response, 'Review submission')
+
+    def test_qa_can_review_assigned_submission_from_area_workspace_and_request_revision(self):
+        submission = self.move_submission_to_qa_review(self.make_submission())
+        self.client.force_login(self.qa)
+
+        workspace_response = self.client.get(
+            reverse('accreditation:submission_workspace_subarea', args=[self.area.slug, '1-1']),
+        )
+        self.assertContains(workspace_response, 'Review submission')
+        self.assertContains(
+            workspace_response,
+            reverse('accreditation:evidence_review', args=[submission.id]),
+        )
+
+        review_response = self.client.get(reverse('accreditation:evidence_review', args=[submission.id]))
+        self.assertContains(review_response, 'Review decision')
+        self.assertContains(review_response, 'Approve / Mark Complied')
+        self.assertContains(review_response, 'Mark non-complied')
+        self.assertContains(review_response, 'Feedback / remarks')
+        self.assertContains(review_response, 'Area Chair review complete.')
+        self.assertContains(review_response, 'https://example.com/evidence')
+
+        response = self.client.post(
+            reverse('accreditation:evidence_review', args=[submission.id]),
+            {
+                'action': 'revision',
+                'remarks': 'Please add the signed approval page.',
+            },
+        )
+        self.assertRedirects(response, reverse('accreditation:review_workflow'))
+        submission.refresh_from_db()
+        self.assertEqual(submission.status, EvidenceSubmission.NEEDS_REVISION)
+        self.assertEqual(submission.current_reviewer_id, self.program_head.id)
+        self.assertEqual(
+            submission.reviews.latest('created_at').remarks,
+            'Please add the signed approval page.',
+        )
+
+    def test_qa_can_approve_assigned_submission_from_review_page(self):
+        submission = self.move_submission_to_qa_review(self.make_submission())
+        self.client.force_login(self.qa)
+
+        response = self.client.post(
+            reverse('accreditation:evidence_review', args=[submission.id]),
+            {
+                'action': 'approve',
+                'remarks': 'Final internal compliance verified.',
+            },
+        )
+        self.assertRedirects(response, reverse('accreditation:review_workflow'))
+        submission.refresh_from_db()
+        self.assertEqual(submission.status, EvidenceSubmission.CLOSED)
+        self.assertTrue(
+            submission.reviews.filter(
+                decision=EvidenceReview.COMPLIED_DECISION,
+                remarks='Final internal compliance verified.',
+            ).exists()
+        )
 
     def test_qa_area_workspace_is_read_only(self):
         self.make_submission()

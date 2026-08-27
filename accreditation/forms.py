@@ -55,12 +55,25 @@ class ReviewActionForm(forms.Form):
         widget=forms.Textarea(attrs={'rows': 5, 'placeholder': 'Add reviewer remarks...'}),
     )
 
-    def __init__(self, *args, allow_non_complied=True, **kwargs):
+    def __init__(
+        self,
+        *args,
+        allow_non_complied=True,
+        approve_label='Approve and forward',
+        **kwargs,
+    ):
         super().__init__(*args, **kwargs)
+        approve_choice = ('approve', approve_label)
         if not allow_non_complied:
             self.fields['action'].choices = (
-                ('approve', 'Approve and forward'),
+                approve_choice,
                 ('revision', 'Request revision'),
+            )
+        else:
+            self.fields['action'].choices = (
+                approve_choice,
+                ('revision', 'Request revision'),
+                ('non_complied', 'Mark non-complied'),
             )
 
     def clean(self):

@@ -22,7 +22,12 @@
         <h1>{{ requirement.code }} — {{ requirement.title }}</h1>
         <p>{{ submission.department.name }} · Program Head: {{ submission.program_head.get_full_name|default:submission.program_head.username }}</p>
       </div>
-      <span class="completion-pill tone-{{ status_tone }}">{{ status_label }}</span>
+      <div class="evidence-detail-header-actions">
+        <span class="completion-pill tone-{{ status_tone }}">{{ status_label }}</span>
+        {% if can_review %}
+          <a href="{% url 'accreditation:evidence_review' submission.id %}" class="evidence-primary-btn">Review submission</a>
+        {% endif %}
+      </div>
     </header>
 
     {% if form.non_field_errors %}

@@ -574,6 +574,21 @@
   line-height: 1.4;
 }
 
+.requirement-review-link {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 8px;
+  color: var(--maroon-700);
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.requirement-review-link:hover {
+  color: var(--maroon-900);
+  text-decoration: underline;
+}
+
 .add-document-btn {
   min-height: 30px;
   padding: 0 14px;

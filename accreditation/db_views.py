@@ -500,6 +500,7 @@ class SubmissionWorkspaceView(ApprovedUserRequiredMixin, TemplateView):
         )
         scoped = _scoped_submissions(self.request.user)
         current_assignment = active_assignment(self.request.user)
+        is_qa_browse = has_role(self.request.user, 'QA')
         subarea = None
         if subarea_key:
             subarea = get_object_or_404(area.subareas, code=subarea_key.replace('-', '.'))
@@ -517,6 +518,13 @@ class SubmissionWorkspaceView(ApprovedUserRequiredMixin, TemplateView):
                     'status': status_label(submission.status) if submission else 'Not Started',
                     'tone': status_tone(submission.status) if submission else 'slate',
                     'submission_id': submission.id if submission else None,
+                    'can_review': bool(
+                        is_qa_browse
+                        and submission
+                        and submission.status == EvidenceSubmission.UNDER_QA_REVIEW
+                        and submission.current_reviewer_id == self.request.user.id
+                        and assignment_for_reviewer(self.request.user, submission)
+                    ),
                 })
             active_subarea = {
                 'code': subarea.code,
@@ -538,7 +546,6 @@ class SubmissionWorkspaceView(ApprovedUserRequiredMixin, TemplateView):
         submission_values = list(submissions.values()) if subarea_key and submissions else []
         latest_documents = []
         remarks = []
-        is_qa_browse = has_role(self.request.user, 'QA')
         show_workspace_feedback = not is_qa_browse
         if submission_values:
             for submission in submission_values:
@@ -656,6 +663,7 @@ class EvidenceDetailView(ApprovedUserRequiredMixin, View):
         is_current_qa_review = (
             has_role(request.user, 'QA')
             and submission.current_reviewer_id == request.user.id
+            and submission.status == EvidenceSubmission.UNDER_QA_REVIEW
             and assignment_for_reviewer(request.user, submission)
         )
         show_review_history = not has_role(request.user, 'QA') or is_current_qa_review
@@ -671,6 +679,7 @@ class EvidenceDetailView(ApprovedUserRequiredMixin, View):
             'reviews': submission.reviews.select_related('reviewer', 'reviewer_role').all() if show_review_history else [],
             'comments': submission.comments.select_related('author').all() if show_review_history else [],
             'show_review_history': show_review_history,
+            'can_review': is_current_qa_review,
             'form': form or EvidenceSubmissionForm(instance=submission),
             'can_edit': has_role(request.user, 'PROGRAM_HEAD') and submission.program_head_id == request.user.id and submission.status in {EvidenceSubmission.DRAFT, EvidenceSubmission.NEEDS_REVISION},
             'status_label': status_label(submission.status),
@@ -717,6 +726,18 @@ class EvidenceReviewView(ApprovedUserRequiredMixin, View):
             raise PermissionDenied('This submission is not assigned to you.')
         return submission
 
+    @staticmethod
+    def _review_form(submission, data=None, allow_non_complied=True):
+        is_final_review = (
+            submission.current_review_role_id
+            and submission.current_review_role.code in {'QA', 'ACCREDITATION_HEAD'}
+        )
+        return ReviewActionForm(
+            data,
+            allow_non_complied=allow_non_complied,
+            approve_label='Approve / Mark Complied' if is_final_review else 'Approve and forward',
+        )
+
     def get(self, request, submission_id):
         submission = self.get_submission(request, submission_id)
         can_mark_non_complied = has_role(request.user, 'QA', 'ACCREDITATION_HEAD')
@@ -728,7 +749,7 @@ class EvidenceReviewView(ApprovedUserRequiredMixin, View):
             'latest_version': submission.latest_version,
             'reviews': submission.reviews.select_related('reviewer', 'reviewer_role').all(),
             'comments': submission.comments.select_related('author').all(),
-            'form': ReviewActionForm(allow_non_complied=can_mark_non_complied),
+            'form': self._review_form(submission, allow_non_complied=can_mark_non_complied),
             'can_mark_non_complied': can_mark_non_complied,
             'status_label': status_label(submission.status),
             'status_tone': status_tone(submission.status),
@@ -737,7 +758,11 @@ class EvidenceReviewView(ApprovedUserRequiredMixin, View):
     def post(self, request, submission_id):
         submission = self.get_submission(request, submission_id)
         can_mark_non_complied = has_role(request.user, 'QA', 'ACCREDITATION_HEAD')
-        form = ReviewActionForm(request.POST, allow_non_complied=can_mark_non_complied)
+        form = self._review_form(
+            submission,
+            request.POST,
+            allow_non_complied=can_mark_non_complied,
+        )
         if form.is_valid():
             try:
                 action = form.cleaned_data['action']

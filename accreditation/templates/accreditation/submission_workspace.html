@@ -175,6 +175,9 @@
                     {% endif %}
                   </h3>
                   <p>{{ item.description }}</p>
+                  {% if item.can_review %}
+                    <a class="requirement-review-link" href="{% url 'accreditation:evidence_review' item.submission_id %}">Review submission</a>
+                  {% endif %}
                 </div>
                 <em class="status-pill tone-{{ item.tone }}">{{ item.status }}</em>
               </li>

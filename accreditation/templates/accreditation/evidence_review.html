@@ -52,11 +52,11 @@
       <aside>
         <section class="evidence-card review-action-card">
           <h2>Review decision</h2>
-          <p class="review-assignment">You are the assigned reviewer for this stage.</p>
+          <p class="review-assignment">Review the evidence, add feedback, and choose an outcome for this submission.</p>
           <form method="post" class="evidence-form">
             {% csrf_token %}
             <label><span>Decision</span>{{ form.action }}</label>
-            <label><span>Remarks</span>{{ form.remarks }}{% for error in form.remarks.errors %}<em>{{ error }}</em>{% endfor %}</label>
+            <label><span>Feedback / remarks</span>{{ form.remarks }}{% for error in form.remarks.errors %}<em>{{ error }}</em>{% endfor %}</label>
             <button type="submit" class="evidence-primary-btn">Save review decision</button>
           </form>
         </section>
