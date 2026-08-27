@@ -408,7 +408,6 @@
     body.appendChild(reply);
     input.value = '';
     body.scrollTop = body.scrollHeight;
-    showToast('AIRA answered');
   }
 
   function bindMessaging() {

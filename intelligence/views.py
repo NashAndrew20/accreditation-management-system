@@ -175,6 +175,7 @@ class SmartCompanionView(ApprovedUserRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update({
-            'page_title': 'Smart Companion',
+            'page_title': 'Chat with Aira',
+            'hide_topbar_title': True,
         })
         return context

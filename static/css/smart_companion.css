@@ -19,13 +19,38 @@
 }
 
 .companion-card-head {
-  min-height: 64px;
+  min-height: 82px;
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 6px 24px;
+  padding: 14px clamp(18px, 3vw, 32px);
   background: linear-gradient(120deg, var(--maroon-900), var(--maroon-700));
   color: #fff;
+}
+
+.companion-title-mark {
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.companion-eyebrow {
+  display: block;
+  margin-bottom: 2px;
+  color: rgba(255, 255, 255, 0.66);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
 .companion-bot-icon {
@@ -77,14 +102,35 @@
 }
 
 .companion-card-head h2 {
-  font-size: 15px;
+  font-size: 18px;
   line-height: 1.2;
 }
 
 .companion-card-head p {
-  margin-top: 2px;
+  margin-top: 4px;
   color: rgba(255, 255, 255, 0.72);
   font-size: 12px;
+}
+
+.companion-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-left: auto;
+  padding: 7px 11px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: var(--radius-pill);
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.companion-status i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #7de0a8;
+  box-shadow: 0 0 0 3px rgba(125, 224, 168, 0.16);
 }
 
 .companion-body {
@@ -92,9 +138,9 @@
   min-height: 0;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   gap: 18px;
-  padding: 30px;
+  padding: clamp(20px, 3vw, 34px) clamp(18px, 4vw, 44px);
   overflow-y: auto;
   background:
     radial-gradient(circle at 95% 8%, rgba(247, 228, 235, 0.9), transparent 25%),
@@ -106,7 +152,7 @@
   grid-template-columns: 48px minmax(0, 1fr);
   gap: 14px;
   width: 100%;
-  max-width: 1040px;
+  max-width: none;
   margin: 0;
 }
 
@@ -115,7 +161,8 @@
 }
 
 .assistant-bubble {
-  max-width: min(100%, 980px);
+  max-width: none;
+  overflow-wrap: anywhere;
   padding: 18px 20px;
   border: 1px solid #e9e1da;
   border-radius: 4px 16px 16px;
@@ -128,7 +175,7 @@
 
 .companion-user-message {
   width: 100%;
-  max-width: min(720px, 75%);
+  max-width: min(860px, 88%);
   margin: 0 0 0 auto;
 }
 
@@ -143,7 +190,7 @@
 }
 
 .companion-composer {
-  padding: 18px 30px 14px;
+  padding: 18px clamp(18px, 4vw, 44px) 14px;
   border-top: 1px solid var(--color-border);
   background: var(--color-surface);
 }
@@ -152,7 +199,8 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) 46px;
   gap: 10px;
-  max-width: 1100px;
+  width: 100%;
+  max-width: none;
   margin: 0 auto;
 }
 
@@ -211,24 +259,71 @@
 @media (max-width: 700px) {
   .companion-message {
     grid-template-columns: 1fr;
+    gap: 8px;
   }
 
   .companion-user-message {
     max-width: 100%;
   }
 
+  .companion-card-head {
+    align-items: flex-start;
+  }
+
+  .companion-status {
+    align-self: center;
+  }
+
   .companion-card {
     min-height: 0;
   }
 
-  .companion-body,
-  .companion-composer {
-    padding-left: 18px;
-    padding-right: 18px;
+  .companion-aira-avatar {
+    width: 40px;
+    height: 48px;
+  }
+}
+
+@media (max-width: 460px) {
+  .companion-card-head {
+    display: grid;
+    grid-template-columns: 38px minmax(0, 1fr);
+    gap: 10px;
+    min-height: 0;
+    padding: 16px;
   }
 
-  .companion-card-head {
-    padding-left: 18px;
-    padding-right: 18px;
+  .companion-title-mark {
+    width: 38px;
+    height: 38px;
+    font-size: 18px;
+  }
+
+  .companion-card-head h2 {
+    font-size: 16px;
+  }
+
+  .companion-card-head p {
+    max-width: 250px;
+    line-height: 1.4;
+  }
+
+  .companion-status {
+    grid-column: 2;
+    justify-self: start;
+    margin-left: 0;
+  }
+
+  .companion-body {
+    gap: 14px;
+    padding: 18px 14px;
+  }
+
+  .companion-composer {
+    padding: 14px 14px 12px;
+  }
+
+  .composer-row input {
+    padding: 0 13px;
   }
 }
