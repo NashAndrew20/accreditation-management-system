@@ -173,4 +173,5 @@ class DashboardView(ApprovedUserRequiredMixin, TemplateView):
         context['recent_activity'] = recent_activity
         context['upcoming_deadlines'] = []
         context['quick_actions'] = ['Submit Evidence', 'Review Queue', 'Upload Document', 'View Reports']
+        context['hide_topbar_title'] = True
         return context

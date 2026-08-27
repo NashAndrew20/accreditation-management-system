@@ -6,7 +6,9 @@
       <input type="search" placeholder="Search submissions...">
     </label>
 
-    <div class="topbar-title{% if hide_topbar_title %} topbar-title-hidden{% endif %}">{% block topbar_title %}{{ page_title|default:"Dashboard" }}{% endblock %}</div>
+    {% if not hide_topbar_title %}
+      <div class="topbar-title">{% block topbar_title %}{{ page_title|default:"Dashboard" }}{% endblock %}</div>
+    {% endif %}
   </div>
 
   <div class="topbar-right">
