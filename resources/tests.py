@@ -149,7 +149,8 @@ class DocumentRepositoryAccessTests(TestCase):
         response = self.client.get(reverse('resources:document_repository'))
 
         self.assertContains(response, 'data-global-search')
-        self.assertContains(response, 'aria-label="Search submissions"')
+        self.assertContains(response, 'placeholder="Search..."')
+        self.assertContains(response, 'aria-label="Search"')
 
     def test_program_head_repository_hides_department_panel(self):
         self.client.force_login(self.uploader)
