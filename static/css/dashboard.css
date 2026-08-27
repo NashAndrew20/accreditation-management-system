@@ -3,7 +3,7 @@
 .alert-banner {
   --alert-bottom-gap: 20px;
   --alert-head-space: 16px;
-  --alert-greeting-top: 42px;
+  --alert-greeting-top: 24px;
   --alert-content-left: 203px;
   position: relative;
   display: flex;
@@ -514,7 +514,7 @@
   .alert-banner {
     --alert-bottom-gap: 18px;
     --alert-head-space: 0px;
-    --alert-greeting-top: 42px;
+    --alert-greeting-top: 24px;
     --alert-content-left: 125px;
     min-height: 260px;
     padding: 72px 18px var(--alert-bottom-gap) 148px;
@@ -542,7 +542,7 @@
   .stat-grid { grid-template-columns: 1fr; }
   .alert-banner {
     display: block;
-    --alert-greeting-top: 34px;
+    --alert-greeting-top: 24px;
     min-height: 240px;
     padding: 72px 14px var(--alert-bottom-gap);
   }
