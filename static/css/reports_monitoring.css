@@ -2,6 +2,96 @@
   width: 100%;
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  .reports-header,
+  .report-tabs,
+  .insight-panel,
+  .report-tab-panels {
+    opacity: 0;
+    animation: ui-page-enter 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .reports-header { animation-delay: 80ms; }
+  .report-tabs { animation-delay: 150ms; }
+  .insight-panel { animation-delay: 220ms; }
+  .report-tab-panels { animation-delay: 290ms; }
+
+  .report-panel {
+    animation: ui-page-enter 520ms cubic-bezier(0.22, 1, 0.36, 1) 320ms both;
+  }
+
+  .insight-card,
+  .report-kpi-card,
+  .report-chart-card,
+  .department-table-card {
+    opacity: 0;
+    animation: ui-surface-enter 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .insight-card:nth-child(1) { animation-delay: 330ms; }
+  .insight-card:nth-child(2) { animation-delay: 390ms; }
+  .insight-card:nth-child(3) { animation-delay: 450ms; }
+  .insight-card:nth-child(4) { animation-delay: 510ms; }
+
+  .report-kpi-card:nth-child(1) { animation-delay: 380ms; }
+  .report-kpi-card:nth-child(2) { animation-delay: 440ms; }
+  .report-kpi-card:nth-child(3) { animation-delay: 500ms; }
+  .report-kpi-card:nth-child(4) { animation-delay: 560ms; }
+
+  .overview-panel .report-chart-card:nth-child(1) { animation-delay: 620ms; }
+  .overview-panel .report-chart-card:nth-child(2) { animation-delay: 700ms; }
+  .department-panel .report-chart-card { animation-delay: 420ms; }
+  .department-panel .department-table-card { animation-delay: 520ms; }
+  .trends-panel .report-chart-card { animation-delay: 420ms; }
+
+  .radar-chart svg,
+  .line-chart svg {
+    transform-origin: center;
+    animation: ui-scale-enter 680ms cubic-bezier(0.22, 1, 0.36, 1) 720ms both;
+  }
+
+  .radar-fill {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: ui-scale-enter 760ms cubic-bezier(0.22, 1, 0.36, 1) 820ms both;
+  }
+
+  .radar-line,
+  .approval-line,
+  .revision-line {
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+    animation: ui-draw-line 1100ms ease-out 820ms forwards;
+  }
+
+  .revision-line {
+    animation-delay: 900ms;
+  }
+
+  .approval-points circle,
+  .revision-points circle {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: ui-point-pop 360ms ease-out 1100ms both;
+  }
+
+  .department-bar-item .bar {
+    transform-origin: bottom;
+    animation: ui-grow-bar 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .department-bar-item:nth-child(1) .bar { animation-delay: 500ms; }
+  .department-bar-item:nth-child(2) .bar { animation-delay: 570ms; }
+  .department-bar-item:nth-child(3) .bar { animation-delay: 640ms; }
+  .department-bar-item:nth-child(4) .bar { animation-delay: 710ms; }
+  .department-bar-item:nth-child(5) .bar { animation-delay: 780ms; }
+
+  .compliance-cell i {
+    transform-origin: left;
+    animation: ui-fill-progress 650ms cubic-bezier(0.22, 1, 0.36, 1) 700ms both;
+  }
+}
+
 .reports-header {
   display: flex;
   align-items: flex-start;
