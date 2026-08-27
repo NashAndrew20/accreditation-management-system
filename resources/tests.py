@@ -145,3 +145,11 @@ class DocumentRepositoryAccessTests(TestCase):
         self.assertNotContains(response, 'Departments')
         self.assertContains(response, 'Accreditor')
         self.assertContains(response, 'PACUCOA')
+
+    def test_communication_title_is_not_repeated_in_topbar(self):
+        self.client.force_login(self.uploader)
+
+        response = self.client.get(reverse('resources:communication'))
+
+        self.assertContains(response, '<h1>Communication</h1>')
+        self.assertNotContains(response, 'class="topbar-title">Communication</div>')

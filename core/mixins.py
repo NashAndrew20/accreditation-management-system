@@ -9,6 +9,11 @@ from .access import can_approve_accounts, is_admin_user, is_approved_user
 class ApprovedUserRequiredMixin(LoginRequiredMixin):
     login_url = '/login/'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.setdefault('hide_topbar_title', True)
+        return context
+
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return self.handle_no_permission()

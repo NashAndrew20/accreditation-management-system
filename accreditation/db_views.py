@@ -496,6 +496,7 @@ class EvidenceDetailView(ApprovedUserRequiredMixin, View):
         latest = submission.latest_version
         return {
             'page_title': 'My Tasks',
+            'hide_topbar_title': True,
             'submission': submission,
             'requirement': submission.requirement,
             'area': submission.requirement.area,
@@ -555,6 +556,7 @@ class EvidenceReviewView(ApprovedUserRequiredMixin, View):
         can_mark_non_complied = has_role(request.user, 'QA', 'ACCREDITATION_HEAD')
         return render(request, self.template_name, {
             'page_title': 'Review Workflow',
+            'hide_topbar_title': True,
             'submission': submission,
             'requirement': submission.requirement,
             'latest_version': submission.latest_version,
@@ -588,6 +590,7 @@ class EvidenceReviewView(ApprovedUserRequiredMixin, View):
                 form.add_error(None, str(error))
         return render(request, self.template_name, {
             'page_title': 'Review Workflow',
+            'hide_topbar_title': True,
             'submission': submission,
             'requirement': submission.requirement,
             'latest_version': submission.latest_version,
