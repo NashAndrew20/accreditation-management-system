@@ -25,15 +25,11 @@
         <strong>{{ alert.area_code }} ({{ alert.area_name }})</strong> {{ alert.message }}
       </p>
     </div>
-    <a href="{% url 'accreditation:review_workflow' %}" class="btn btn-ghost-light">
-      Review
-      {% icon 'chevron-right' 'icon' %}
-    </a>
   </section>
 
   <section class="stat-grid">
     {% for stat in stats %}
-      <div class="stat-card">
+      <div class="stat-card" data-tooltip="{{ stat.label }}: {{ stat.value }}. {{ stat.note }}">
         <div class="stat-card-top">
           <div class="stat-icon tone-{{ stat.tone }}">{% icon stat.icon %}</div>
           <div class="stat-trend">{% icon 'trend-up' %}</div>
@@ -54,7 +50,7 @@
         </div>
         <div class="legend">
           {% for s in trend.chart.series %}
-            <span class="legend-item">
+            <span class="legend-item" data-tooltip="{{ s.name }} series in the monthly submission trend">
               <span class="legend-dot c-{{ s.color }}"></span>{{ s.name }}
             </span>
           {% endfor %}
@@ -66,14 +62,32 @@
           {% for tick in trend.y_ticks %}<span>{{ tick }}</span>{% endfor %}
         </div>
         <div class="trend-svg-area">
-          <svg viewBox="0 0 {{ trend.chart.width }} {{ trend.chart.height }}" preserveAspectRatio="none">
+          <svg viewBox="0 0 {{ trend.chart.width }} {{ trend.chart.height }}" preserveAspectRatio="none" role="img" aria-label="Monthly submission trend chart">
             {% for s in trend.chart.series %}
               {% if forloop.first %}
                 <polygon class="trend-area" fill="var(--maroon-700)" points="{{ s.area_points }}"></polygon>
               {% endif %}
             {% endfor %}
             {% for s in trend.chart.series %}
-              <polyline class="trend-line c-{{ s.color }}" points="{{ s.points }}"></polyline>
+              <polyline
+                class="trend-line c-{{ s.color }}"
+                points="{{ s.points }}"
+                data-tooltip="{{ s.name }} series · monthly submission totals"
+              >
+                <title>{{ s.name }} monthly submission trend</title>
+              </polyline>
+              {% for point in s.point_data %}
+                <circle
+                  class="trend-point c-{{ s.color }}"
+                  cx="{{ point.x }}"
+                  cy="{{ point.y }}"
+                  r="5"
+                  tabindex="0"
+                  data-tooltip="{{ s.name }} · {{ point.category }}: {{ point.value }} submissions"
+                >
+                  <title>{{ s.name }} · {{ point.category }}: {{ point.value }} submissions</title>
+                </circle>
+              {% endfor %}
             {% endfor %}
           </svg>
           <div class="trend-x-axis">
@@ -93,7 +107,7 @@
 
       <div class="readiness-list">
         {% for area in area_readiness.areas %}
-          <div class="readiness-row">
+          <div class="readiness-row" tabindex="0" data-tooltip="{{ area.code }} readiness: {{ area.value }}%">
             <span class="readiness-label">{{ area.code }}</span>
             <div class="readiness-track">
               <div class="readiness-fill tone-{{ area.tone }}" style="width: {{ area.value }}%;"></div>
