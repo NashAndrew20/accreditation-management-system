@@ -47,12 +47,65 @@
   display: block;
 }
 
+.repo-layout.has-department-panel {
+  display: grid;
+  grid-template-columns: 192px minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.department-panel,
 .document-list-card,
 .repo-stat-card {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   background: var(--color-surface);
   box-shadow: var(--shadow-card);
+}
+
+.department-panel {
+  overflow: hidden;
+}
+
+.department-title {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.department-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.department-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 37px;
+  padding: 0 16px;
+  border: 0;
+  border-bottom: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text-muted);
+  text-align: left;
+}
+
+.department-item .icon {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+.department-item.is-active {
+  background: #fff3f8;
+  color: var(--maroon-700);
+  font-weight: 700;
+  box-shadow: inset 3px 0 0 var(--maroon-700);
 }
 
 .repo-main {
@@ -286,6 +339,17 @@
   }
 }
 
+@media (max-width: 1180px) {
+  .repo-layout.has-department-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .repo-layout.has-department-panel .department-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 640px) {
   .repo-breadcrumb {
     margin-bottom: 28px;
@@ -298,6 +362,10 @@
   }
 
   .repo-stat-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .repo-layout.has-department-panel .department-list {
     grid-template-columns: 1fr;
   }
 }

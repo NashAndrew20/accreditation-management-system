@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
+from django.urls import reverse
 
 from accreditation.models import (
     AccreditationArea,
@@ -122,3 +123,20 @@ class DocumentRepositoryAccessTests(TestCase):
             set(accessible_repository_submissions(self.qa)),
             {self.civil_submission, self.business_submission},
         )
+
+    def test_admin_repository_shows_all_departments(self):
+        self.client.force_login(self.admin)
+
+        response = self.client.get(reverse('resources:document_repository'))
+
+        self.assertContains(response, 'Departments')
+        self.assertContains(response, 'All Documents')
+        self.assertContains(response, 'College of Engineering')
+        self.assertContains(response, 'College of Business')
+
+    def test_program_head_repository_hides_department_panel(self):
+        self.client.force_login(self.uploader)
+
+        response = self.client.get(reverse('resources:document_repository'))
+
+        self.assertNotContains(response, 'Departments')

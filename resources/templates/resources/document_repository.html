@@ -21,7 +21,21 @@
       <a href="{% url 'accreditation:submission_workspace' %}" class="upload-document-btn">Open Evidence Workspace</a>
     </header>
 
-    <section class="repo-layout">
+    <section class="repo-layout{% if is_repository_admin %} has-department-panel{% endif %}">
+      {% if is_repository_admin %}
+        <aside class="department-panel">
+          <div class="department-title">Departments</div>
+          <div class="department-list">
+            {% for department in departments %}
+              <button type="button" class="department-item{% if department.active %} is-active{% endif %}">
+                {% icon 'folder' %}
+                <span>{{ department.label }}</span>
+              </button>
+            {% endfor %}
+          </div>
+        </aside>
+      {% endif %}
+
       <main class="repo-main">
         <section class="repo-toolbar" aria-label="Document search and filters">
           <label class="repo-search">

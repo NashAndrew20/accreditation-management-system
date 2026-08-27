@@ -2,8 +2,9 @@ from django.views.generic import TemplateView
 
 from accreditation.db_views import status_label, status_tone
 from accreditation.models import EvidenceFile, EvidenceSubmission
-from core.access import accessible_repository_submissions
+from core.access import accessible_repository_submissions, is_admin_user
 from core.mixins import ApprovedUserRequiredMixin
+from core.models import Department
 
 
 class DocumentRepositoryView(ApprovedUserRequiredMixin, TemplateView):
@@ -12,6 +13,7 @@ class DocumentRepositoryView(ApprovedUserRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         submissions = accessible_repository_submissions(self.request.user)
+        repository_admin = is_admin_user(self.request.user)
         evidence_files = EvidenceFile.objects.filter(
             version__submission__in=submissions,
         ).select_related(
@@ -36,6 +38,15 @@ class DocumentRepositoryView(ApprovedUserRequiredMixin, TemplateView):
                 'tone': status_tone(submission.status),
                 'icon_tone': 'rose',
             })
+        departments = []
+        if repository_admin:
+            departments = [{'label': 'All Documents', 'active': True}]
+            departments.extend(
+                {'label': name, 'active': False}
+                for name in Department.objects.filter(is_active=True)
+                .order_by('name')
+                .values_list('name', flat=True)
+            )
         total = len(documents)
         completed = submissions.filter(status__in={EvidenceSubmission.COMPLIED, EvidenceSubmission.CLOSED}).count()
         pending = submissions.filter(status__in={EvidenceSubmission.NEEDS_REVISION, EvidenceSubmission.UNDER_DEAN_REVIEW, EvidenceSubmission.UNDER_AREA_CHAIR_REVIEW, EvidenceSubmission.UNDER_QA_REVIEW}).count()
@@ -43,6 +54,8 @@ class DocumentRepositoryView(ApprovedUserRequiredMixin, TemplateView):
             {
                 'page_title': 'Document Repository',
                 'documents': documents,
+                'departments': departments,
+                'is_repository_admin': repository_admin,
                 'repo_stats': [
                     {'label': 'Total Documents', 'value': total, 'tone': 'rose'},
                     {'label': 'Approved / Closed', 'value': completed, 'tone': 'green'},
