@@ -5,21 +5,6 @@
   flex-direction: column;
 }
 
-.companion-header {
-  margin-bottom: 20px;
-}
-
-.companion-header h1 {
-  font-size: 26px;
-  line-height: 1;
-  letter-spacing: -0.045em;
-}
-
-.companion-header p {
-  margin-top: 8px;
-  color: var(--color-text-muted);
-}
-
 .companion-card {
   width: 100%;
   min-height: 0;
@@ -34,11 +19,11 @@
 }
 
 .companion-card-head {
-  min-height: 82px;
+  min-height: 64px;
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 16px 24px;
+  padding: 6px 24px;
   background: linear-gradient(120deg, var(--maroon-900), var(--maroon-700));
   color: #fff;
 }
@@ -90,7 +75,7 @@
 
 .companion-card-head .companion-aira-avatar {
   width: 52px;
-  height: 64px;
+  height: 56px;
   border: 0;
   background: transparent;
 }
