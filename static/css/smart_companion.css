@@ -19,38 +19,14 @@
 }
 
 .companion-card-head {
-  min-height: 82px;
+  min-height: 76px;
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 14px clamp(18px, 3vw, 32px);
-  background: linear-gradient(120deg, var(--maroon-900), var(--maroon-700));
-  color: #fff;
-}
-
-.companion-title-mark {
-  width: 42px;
-  height: 42px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 13px;
-  background: rgba(255, 255, 255, 0.14);
-  color: #fff;
-  font-size: 20px;
-  font-weight: 800;
-}
-
-.companion-eyebrow {
-  display: block;
-  margin-bottom: 2px;
-  color: rgba(255, 255, 255, 0.66);
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
 }
 
 .companion-bot-icon {
@@ -108,7 +84,7 @@
 
 .companion-card-head p {
   margin-top: 4px;
-  color: rgba(255, 255, 255, 0.72);
+  color: var(--color-text-muted);
   font-size: 12px;
 }
 
@@ -118,9 +94,9 @@
   gap: 7px;
   margin-left: auto;
   padding: 7px 11px;
-  border: 1px solid rgba(255, 255, 255, 0.22);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-pill);
-  color: rgba(255, 255, 255, 0.78);
+  color: var(--color-text-muted);
   font-size: 11px;
   white-space: nowrap;
 }
@@ -293,18 +269,12 @@
     padding: 16px;
   }
 
-  .companion-title-mark {
-    width: 38px;
-    height: 38px;
-    font-size: 18px;
-  }
-
   .companion-card-head h2 {
     font-size: 16px;
   }
 
   .companion-card-head p {
-    max-width: 250px;
+    max-width: 320px;
     line-height: 1.4;
   }
 
