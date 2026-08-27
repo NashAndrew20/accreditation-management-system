@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
+from rest_framework.test import APIClient
 
 from core.models import Department, Role, RoleAssignment, UserProfile
 
@@ -117,3 +118,46 @@ class LoginPageTests(TestCase):
         self.user.refresh_from_db()
         self.assertEqual(self.user.get_full_name(), 'Updated User')
         self.assertEqual(self.user.email, 'updated@jmcfi.edu.ph')
+
+    def test_jwt_token_and_refresh_endpoints_work_for_approved_users(self):
+        api_client = APIClient()
+        token_response = api_client.post(reverse('api_auth:token'), {
+            'username': self.user.username,
+            'password': 'safe-test-password',
+        }, format='json')
+
+        self.assertEqual(token_response.status_code, 200)
+        self.assertIn('access', token_response.data)
+        self.assertIn('refresh', token_response.data)
+        self.assertEqual(token_response.data['user']['username'], self.user.username)
+
+        refresh_response = api_client.post(reverse('api_auth:token_refresh'), {
+            'refresh': token_response.data['refresh'],
+        }, format='json')
+        self.assertEqual(refresh_response.status_code, 200)
+        self.assertIn('access', refresh_response.data)
+
+    def test_jwt_protected_api_requires_bearer_token_and_keeps_session_separate(self):
+        api_client = APIClient()
+        me_url = reverse('api_auth:me')
+
+        missing_token_response = api_client.get(me_url)
+        self.assertEqual(missing_token_response.status_code, 401)
+        self.assertIn('Bearer', missing_token_response.headers.get('WWW-Authenticate', ''))
+
+        self.assertTrue(api_client.login(username=self.user.username, password='safe-test-password'))
+        session_only_response = api_client.get(me_url)
+        self.assertEqual(session_only_response.status_code, 401)
+
+        token_response = api_client.post(reverse('api_auth:token'), {
+            'username': self.user.email,
+            'password': 'safe-test-password',
+        }, format='json')
+        self.assertEqual(token_response.status_code, 200)
+        api_client.logout()
+        api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token_response.data['access']}")
+        authenticated_response = api_client.get(me_url)
+
+        self.assertEqual(authenticated_response.status_code, 200)
+        self.assertEqual(authenticated_response.data['username'], self.user.username)
+        self.assertEqual(authenticated_response.data['active_role'], 'Program Head')

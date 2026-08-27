@@ -19,6 +19,8 @@ urlpatterns = [
     path('login/', account_views.PortalLoginView.as_view(), name='login'),
     path('logout/', auth_views.LogoutView.as_view(next_page='/login/'), name='logout'),
     path('register/', account_views.RegisterView.as_view(), name='register'),
+    path('api/auth/', include('accounts.api_urls')),
+    path('api/evidence/', include('accreditation.api_urls')),
 
     path('', include('dashboard.urls')),
     path('', include('core.urls')),

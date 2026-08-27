@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import PermissionDenied
 from django.test import TestCase
 from django.urls import reverse
+from rest_framework.test import APIClient
 from django.utils import timezone
 
 from core.models import AuditLog, Department, Notification, Role, RoleAssignment, UserProfile
@@ -164,6 +165,24 @@ class AccreditationWorkflowTests(TestCase):
         self.assertEqual(response.status_code, 200)
         submission = EvidenceSubmission.objects.get(requirement=self.requirement, department=self.program)
         self.assertEqual(self.client.get(reverse('accreditation:evidence_detail', args=[submission.id])).status_code, 200)
+
+    def test_jwt_evidence_api_uses_existing_role_scope(self):
+        submission = self.make_submission()
+        api_client = APIClient()
+
+        token_response = api_client.post(reverse('api_auth:token'), {
+            'username': self.program_head.username,
+            'password': 'secure-password',
+        }, format='json')
+        self.assertEqual(token_response.status_code, 200)
+
+        api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token_response.data['access']}")
+        response = api_client.get(reverse('api_evidence:list'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['id'], submission.id)
+        self.assertEqual(response.data[0]['evidence_code'], self.requirement.code)
 
     def test_qa_does_not_see_feedback_in_pacucoa_workspace_until_reviewing_submission(self):
         submission = self.make_submission()

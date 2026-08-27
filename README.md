@@ -30,6 +30,38 @@ Evidence is stored as Cycle → Level → Area → Sub-area → Requirement → 
 
 All important workflow data is stored in the database. Browser local storage is not used for evidence, submissions, approvals, or review decisions.
 
+## JWT API
+
+The website continues to use Django session authentication. API clients use
+JSON Web Tokens (JWT) through Django REST Framework and SimpleJWT.
+
+Endpoints:
+
+- `POST /api/auth/token/` — exchange an approved user's username or email and password for an access token and refresh token.
+- `POST /api/auth/token/refresh/` — exchange a refresh token for a new access token.
+- `GET /api/auth/me/` — protected current-user and active-role information.
+- `GET /api/evidence/` — protected evidence submissions limited by the user's existing role and department access.
+
+Access tokens last 15 minutes by default and refresh tokens last 1 day. Set
+`JWT_ACCESS_TOKEN_MINUTES` or `JWT_REFRESH_TOKEN_DAYS` in the environment to
+change those lifetimes. JWT signing uses Django's `SECRET_KEY`; production
+deployments must provide it through `DJANGO_SECRET_KEY`.
+
+Example local request:
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/auth/token/ \
+  -H 'Content-Type: application/json' \
+  -d '{"username":"qa","password":"123"}'
+```
+
+Use the returned access token with a protected endpoint:
+
+```bash
+curl http://127.0.0.1:8000/api/auth/me/ \
+  -H 'Authorization: Bearer <access-token>'
+```
+
 ## SonarQube Cloud
 
 The `sonarqube cloud` workflow runs the Django tests with Python coverage and then sends the results to SonarQube Cloud on pushes to `main` and pull requests.
