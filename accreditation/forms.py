@@ -98,7 +98,7 @@ class AreaAssignmentForm(forms.Form):
         queryset=Department.objects.none(),
         required=False,
         help_text='Choose one or more departments when using the specific option.',
-        widget=forms.SelectMultiple(attrs={'class': 'assignment-select', 'size': 5}),
+        widget=forms.CheckboxSelectMultiple(attrs={'class': 'assignment-checkbox-list'}),
     )
     deadline = forms.DateField(
         label='Deadline',

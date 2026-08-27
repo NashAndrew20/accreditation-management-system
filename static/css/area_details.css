@@ -219,11 +219,29 @@ body.modal-open {
 }
 
 .assignment-field label,
-.assignment-scope-field > label {
+.assignment-field-label,
+.assignment-scope-field > legend {
   color: var(--color-text);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: .01em;
+}
+
+.assignment-scope-field {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+}
+
+.assignment-scope-field > legend {
+  padding: 0;
+}
+
+.assignment-field-help {
+  margin: -1px 0 2px;
+  color: var(--color-text-muted);
+  font-size: 11px;
+  line-height: 1.4;
 }
 
 .assignment-scope-field,
@@ -275,6 +293,84 @@ body.modal-open {
   flex: 0 0 auto;
 }
 
+.assignment-option-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.assignment-option-copy strong {
+  color: inherit;
+  font-size: 12px;
+}
+
+.assignment-option-copy small {
+  color: var(--color-text-muted);
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.35;
+}
+
+.assignment-department-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 2px;
+}
+
+.assignment-department-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: #fffdf9;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.35;
+  transition: border-color 160ms ease, background-color 160ms ease, box-shadow 160ms ease, color 160ms ease;
+}
+
+.assignment-department-option:hover {
+  border-color: #cda1b0;
+  background: #fff8fa;
+}
+
+.assignment-department-option:has(input:checked) {
+  border-color: var(--maroon-600);
+  background: #fff4f7;
+  box-shadow: inset 0 0 0 1px var(--maroon-600);
+  color: var(--maroon-700);
+}
+
+.assignment-department-option input {
+  width: 16px;
+  height: 16px;
+  min-height: 0;
+  margin: 0;
+  accent-color: var(--maroon-700);
+  flex: 0 0 auto;
+}
+
+.assignment-department-option input:disabled {
+  cursor: default;
+}
+
+.assignment-empty-options {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 14px;
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
 .assignment-field input,
 .assignment-field select,
 .assignment-field textarea {
@@ -301,7 +397,13 @@ body.modal-open {
 
 .assignment-deadline-field {
   grid-column: 1 / -1;
-  max-width: 280px;
+  max-width: 360px;
+}
+
+.assignment-optional {
+  color: var(--color-text-faint);
+  font-size: 11px;
+  font-weight: 400;
 }
 
 .assignment-field input:focus,
@@ -614,6 +716,10 @@ body.modal-open {
 
   .assignment-scope-option {
     flex-basis: 100%;
+  }
+
+  .assignment-department-options {
+    grid-template-columns: 1fr;
   }
 
   .assignment-deadline-field {

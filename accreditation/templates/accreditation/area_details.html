@@ -63,34 +63,54 @@
 
             <form method="post" class="area-assignment-form" data-assignment-form>
               {% csrf_token %}
-              <div class="assignment-field assignment-scope-field">
-                <label>{{ assignment_form.department_scope.label }}</label>
+              <fieldset class="assignment-field assignment-scope-field">
+                <legend>{{ assignment_form.department_scope.label }}</legend>
+                <p class="assignment-field-help">Choose who should prepare the evidence for this area.</p>
                 <div class="assignment-scope-options">
                   {% for radio in assignment_form.department_scope %}
                     <label class="assignment-scope-option">
                       {{ radio.tag }}
-                      <span>{{ radio.choice_label }}</span>
+                      <span class="assignment-option-copy">
+                        {% if forloop.first %}
+                          <strong>All departments and programs</strong>
+                          <small>Send this area to every eligible team.</small>
+                        {% else %}
+                          <strong>Selected departments or programs</strong>
+                          <small>Choose exactly which teams should prepare it.</small>
+                        {% endif %}
+                      </span>
                     </label>
                   {% endfor %}
                 </div>
                 {% for error in assignment_form.department_scope.errors %}<small class="assignment-error">{{ error }}</small>{% endfor %}
-              </div>
+              </fieldset>
 
               <div class="assignment-field assignment-departments-field" data-assignment-departments>
-                <label for="{{ assignment_form.departments.id_for_label }}">{{ assignment_form.departments.label }}</label>
-                {{ assignment_form.departments }}
-                {% if assignment_form.departments.help_text %}<small>{{ assignment_form.departments.help_text }}</small>{% endif %}
+                <span class="assignment-field-label" id="assignment-departments-label">{{ assignment_form.departments.label }}</span>
+                <p class="assignment-field-help">Select one or more teams from the options below.</p>
+                <div class="assignment-department-options" role="group" aria-labelledby="assignment-departments-label">
+                  {% for checkbox in assignment_form.departments %}
+                    <label class="assignment-department-option">
+                      {{ checkbox.tag }}
+                      <span>{{ checkbox.choice_label }}</span>
+                    </label>
+                  {% empty %}
+                    <p class="assignment-empty-options">No departments or programs are available.</p>
+                  {% endfor %}
+                </div>
                 {% for error in assignment_form.departments.errors %}<small class="assignment-error">{{ error }}</small>{% endfor %}
               </div>
 
               <div class="assignment-field assignment-deadline-field">
                 <label for="{{ assignment_form.deadline.id_for_label }}">{{ assignment_form.deadline.label }}</label>
+                <p class="assignment-field-help">Choose the final date the evidence should be ready.</p>
                 {{ assignment_form.deadline }}
                 {% for error in assignment_form.deadline.errors %}<small class="assignment-error">{{ error }}</small>{% endfor %}
               </div>
 
               <div class="assignment-field assignment-instructions-field">
-                <label for="{{ assignment_form.instructions.id_for_label }}">{{ assignment_form.instructions.label }}</label>
+                <label for="{{ assignment_form.instructions.id_for_label }}">Instructions for the preparer <span class="assignment-optional">(optional)</span></label>
+                <p class="assignment-field-help">Add a short note about what the selected team should submit.</p>
                 {{ assignment_form.instructions }}
                 {% for error in assignment_form.instructions.errors %}<small class="assignment-error">{{ error }}</small>{% endfor %}
               </div>
