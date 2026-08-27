@@ -13,12 +13,20 @@
     </p>
   </div>
 
-  <section class="alert-banner">
-    <div class="alert-icon">{% icon 'bolt' %}</div>
+  <section class="alert-banner" aria-labelledby="decision-support-title">
+    <div class="alert-greeting">
+      <span class="alert-date">{% now "l, F d" %}</span>
+      <strong>Good day, {{ current_user_summary.name }}!</strong>
+    </div>
+
+    <div class="alert-avatar" aria-hidden="true">
+      <img src="{% static 'images/aira-wave-1.png' %}" alt="">
+    </div>
+
     <div class="alert-body">
       <div class="alert-tags">
-        <span class="alert-tag">AI Decision Support</span>
-        <span class="alert-tag-pill">Proactive Alert</span>
+        <span class="alert-tag" id="decision-support-title">AIRA</span>
+        <span class="alert-tag-pill">AI Decision Support</span>
       </div>
       <p class="alert-text">
         <strong>{{ alert.area_code }} ({{ alert.area_name }})</strong> {{ alert.message }}
