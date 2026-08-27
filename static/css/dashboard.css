@@ -17,7 +17,7 @@
   z-index: 0;
   inset: 46px 0 0;
   border-radius: var(--radius-lg);
-  background: linear-gradient(120deg, var(--maroon-900), var(--maroon-700));
+  background: linear-gradient(120deg, #e2adbe, #f0cbd6);
   box-shadow: var(--shadow-card);
 }
 
@@ -98,9 +98,11 @@
 
 .alert-tag {
   color: var(--maroon-700);
-  font-size: 13px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
+  font-family: 'Trebuchet MS', var(--font-sans);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
   text-transform: uppercase;
 }
 
