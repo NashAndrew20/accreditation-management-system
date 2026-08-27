@@ -45,12 +45,6 @@
   height: 15px;
 }
 
-.companion-card-head .companion-bot-icon {
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  background: rgba(255, 255, 255, 0.12);
-  color: #f3d15a;
-}
-
 .companion-aira-avatar {
   position: relative;
   width: 48px;
@@ -71,13 +65,6 @@
   max-width: none;
   height: auto;
   transform: translateX(-50%);
-}
-
-.companion-card-head .companion-aira-avatar {
-  width: 52px;
-  height: 56px;
-  border: 0;
-  background: transparent;
 }
 
 .companion-message > .companion-bot-icon {
