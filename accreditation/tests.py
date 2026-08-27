@@ -279,6 +279,8 @@ class AccreditationWorkflowTests(TestCase):
         detail_response = self.client.get(reverse('accreditation:area_details', args=[self.area.slug]))
         self.assertContains(detail_response, 'Assign Area')
         self.assertContains(detail_response, 'data-assignment-toggle')
+        self.assertContains(detail_response, 'role="dialog"')
+        self.assertContains(detail_response, 'data-assignment-close')
         self.assertNotContains(detail_response, '<details')
         self.assertContains(detail_response, 'Current assignments')
         self.assertContains(detail_response, deadline.strftime('%b %d, %Y'))

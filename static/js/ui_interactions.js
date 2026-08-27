@@ -632,16 +632,84 @@
       const panelId = toggle.getAttribute('aria-controls');
       const panel = panelId && document.getElementById(panelId);
       if (!panel) return;
+      const dialog = panel.querySelector('[data-assignment-dialog]') || panel;
+      const closeButton = panel.querySelector('[data-assignment-close]');
+      let lastFocusedElement = null;
 
-      function setPanelOpen(isOpen) {
+      function getFocusableElements() {
+        return Array.from(dialog.querySelectorAll(
+          'button, [href], input:not([type="hidden"]), select, textarea, [tabindex]:not([tabindex="-1"])'
+        )).filter(function (element) {
+          return !element.disabled && !element.closest('[hidden]');
+        });
+      }
+
+      function syncBodyScroll() {
+        document.body.classList.toggle(
+          'modal-open',
+          Boolean(document.querySelector('[data-assignment-panel]:not([hidden])'))
+        );
+      }
+
+      function setPanelOpen(isOpen, restoreFocus) {
         panel.hidden = !isOpen;
         toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        panel.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+        syncBodyScroll();
+
+        if (isOpen) {
+          if (document.activeElement && document.activeElement !== document.body) {
+            lastFocusedElement = document.activeElement;
+          }
+          window.setTimeout(function () {
+            const firstFocusable = closeButton || getFocusableElements()[0] || dialog;
+            firstFocusable.focus();
+          }, 0);
+        } else if (restoreFocus !== false) {
+          const focusTarget = lastFocusedElement || toggle;
+          if (focusTarget && typeof focusTarget.focus === 'function') focusTarget.focus();
+          lastFocusedElement = null;
+        }
       }
 
       toggle.addEventListener('click', function () {
-        setPanelOpen(panel.hidden);
+        setPanelOpen(panel.hidden, true);
       });
-      setPanelOpen(toggle.getAttribute('aria-expanded') === 'true');
+
+      if (closeButton) {
+        closeButton.addEventListener('click', function () {
+          setPanelOpen(false, true);
+        });
+      }
+
+      panel.addEventListener('click', function (event) {
+        if (event.target === panel) setPanelOpen(false, true);
+      });
+
+      panel.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          setPanelOpen(false, true);
+          return;
+        }
+
+        if (event.key !== 'Tab') return;
+
+        const focusableElements = getFocusableElements();
+        if (!focusableElements.length) return;
+
+        const firstFocusable = focusableElements[0];
+        const lastFocusable = focusableElements[focusableElements.length - 1];
+        if (event.shiftKey && document.activeElement === firstFocusable) {
+          event.preventDefault();
+          lastFocusable.focus();
+        } else if (!event.shiftKey && document.activeElement === lastFocusable) {
+          event.preventDefault();
+          firstFocusable.focus();
+        }
+      });
+
+      setPanelOpen(toggle.getAttribute('aria-expanded') === 'true', false);
     });
 
     document.querySelectorAll('[data-assignment-form]').forEach(function (form) {
