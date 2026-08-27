@@ -16,13 +16,15 @@
       <img src="{% static 'images/aira-wave-1.png' %}" alt="">
     </div>
 
-    <div class="alert-body">
-      <div class="alert-tags">
-        <span class="alert-tag" id="aira-alert-title">AIRA</span>
+    <div class="alert-surface">
+      <div class="alert-body">
+        <div class="alert-tags">
+          <span class="alert-tag" id="aira-alert-title">AIRA</span>
+        </div>
+        <p class="alert-text">
+          {{ alert.area_code }} ({{ alert.area_name }}) {{ alert.message }}
+        </p>
       </div>
-      <p class="alert-text">
-        {{ alert.area_code }} ({{ alert.area_name }}) {{ alert.message }}
-      </p>
     </div>
   </section>
 
