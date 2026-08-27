@@ -1,0 +1,44 @@
+name: sonarqube cloud
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  quality:
+    name: tests and sonarqube
+    runs-on: ubuntu-latest
+    steps:
+      - name: check out repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: set up python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: install dependencies
+        run: python -m pip install -r requirements-dev.txt
+
+      - name: run tests with coverage
+        run: |
+          coverage run manage.py test
+          coverage xml -o coverage.xml
+
+      - name: run sonarqube cloud scan
+        uses: SonarSource/sonarqube-scan-action@v8
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >-
+            -Dsonar.organization=${{ vars.SONAR_ORGANIZATION || 'cdponto' }}
+            -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY || 'cdponto_accreditation-management-system' }}

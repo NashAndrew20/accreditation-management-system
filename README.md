@@ -29,3 +29,15 @@ DJANGO_ENV=production DEBUG=False DJANGO_SECRET_KEY='replace-with-a-long-random-
 Evidence is stored as Cycle → Level → Area → Sub-area → Requirement → Submission. Program Heads create versions and supporting files, then submissions move through Dean, Area Chair, and QA/Accreditation Head review. Revision requests retain the reviewer, remarks, files, versions, comments, notifications, and audit records.
 
 All important workflow data is stored in the database. Browser local storage is not used for evidence, submissions, approvals, or review decisions.
+
+## SonarQube Cloud
+
+The `sonarqube cloud` workflow runs the Django tests with Python coverage and then sends the results to SonarQube Cloud on pushes to `main` and pull requests.
+
+In the GitHub repository, open **Settings → Secrets and variables → Actions** and add:
+
+- Repository secret `SONAR_TOKEN`: a token created in SonarQube Cloud.
+- Repository variable `SONAR_ORGANIZATION`: the exact SonarQube Cloud organization key.
+- Repository variable `SONAR_PROJECT_KEY`: the exact SonarQube Cloud project key.
+
+The workflow has defaults based on this repository, but the values from the SonarQube Cloud project should be used when they differ. If automatic analysis is enabled for the project, disable it before using this GitHub Actions workflow so the project has one analysis method.
