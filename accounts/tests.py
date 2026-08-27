@@ -48,6 +48,18 @@ class LoginPageTests(TestCase):
 
         self.assertRedirects(response, reverse('dashboard:index'))
 
+    def test_profile_menu_contains_sign_out_without_topbar_account_actions(self):
+        self.client.force_login(self.user)
+
+        response = self.client.get(reverse('dashboard:index'))
+
+        self.assertContains(response, 'data-profile-menu')
+        self.assertContains(response, 'data-profile-popover')
+        self.assertContains(response, 'profile-menu-action')
+        self.assertContains(response, 'Sign out')
+        self.assertNotContains(response, 'Switch Role')
+        self.assertNotContains(response, 'Switch Account')
+
     def test_email_credentials_redirect_to_dashboard(self):
         response = self.client.post(
             reverse('login'),

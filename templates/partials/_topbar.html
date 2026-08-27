@@ -50,25 +50,33 @@
       </div>
     </div>
 
-    <a href="{% url 'accounts:select_role' %}" class="btn btn-outline">
-      Switch Role
-      {% icon 'chevron-down' 'icon' %}
-    </a>
+    <div class="topbar-profile-menu" data-profile-menu>
+      <button
+        type="button"
+        class="topbar-user"
+        data-profile-trigger
+        aria-label="Open profile menu"
+        aria-expanded="false"
+        aria-controls="profile-popover"
+      >
+        <div class="avatar-chip" data-profile-avatar data-profile-initials="{{ current_user_summary.initials }}" data-profile-photo="{{ current_user_summary.photo_url }}">{{ current_user_summary.initials }}</div>
+        <span class="topbar-user-copy">
+          <span class="user-name">{{ current_user_summary.name }}</span>
+          <span class="user-role">{{ current_user_summary.role_context }}</span>
+        </span>
+        {% icon 'chevron-down' 'icon' %}
+      </button>
 
-    <a href="{% url 'login' %}" class="btn btn-outline">Switch Account</a>
-
-    <form method="post" action="{% url 'logout' %}" class="topbar-logout-form">
-      {% csrf_token %}
-      <button type="submit" class="btn btn-outline">Sign out</button>
-    </form>
-
-    <div class="topbar-user">
-      <div class="avatar-chip" data-profile-avatar data-profile-initials="{{ current_user_summary.initials }}" data-profile-photo="{{ current_user_summary.photo_url }}">{{ current_user_summary.initials }}</div>
-      <div>
-        <div class="user-name">{{ current_user_summary.name }}</div>
-        <div class="user-role">{{ current_user_summary.role_context }}</div>
+      <div class="profile-popover" id="profile-popover" data-profile-popover hidden>
+        <div class="profile-popover-summary">
+          <strong>{{ current_user_summary.name }}</strong>
+          <span>{{ current_user_summary.role }}</span>
+        </div>
+        <form method="post" action="{% url 'logout' %}" class="profile-menu-logout-form">
+          {% csrf_token %}
+          <button type="submit" class="profile-menu-action">Sign out</button>
+        </form>
       </div>
-      {% icon 'chevron-down' 'icon' %}
     </div>
   </div>
 </header>

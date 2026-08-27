@@ -429,15 +429,6 @@
   color: var(--maroon-700);
 }
 
-.topbar-logout-form {
-  margin: 0;
-}
-
-.topbar-logout-form .btn {
-  font: inherit;
-  cursor: pointer;
-}
-
 .btn-primary {
   background: var(--maroon-800);
   color: #fff;
@@ -455,6 +446,82 @@
   gap: 10px;
   padding-left: 10px;
   border-left: 1px solid var(--color-border);
+  border-top: 0;
+  border-right: 0;
+  border-bottom: 0;
+  background: transparent;
+  color: var(--color-text);
+  text-align: left;
+}
+
+.topbar-profile-menu {
+  position: relative;
+}
+
+.topbar-user-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.topbar-user:hover {
+  background: var(--color-bg);
+}
+
+.profile-popover {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  z-index: 30;
+  width: 210px;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: 0 18px 42px rgba(67, 13, 34, 0.16);
+}
+
+.profile-popover[hidden] {
+  display: none;
+}
+
+.profile-popover-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.profile-popover-summary strong {
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-popover-summary span {
+  color: var(--color-text-faint);
+  font-size: 11px;
+}
+
+.profile-menu-logout-form {
+  margin: 0;
+}
+
+.profile-menu-action {
+  width: 100%;
+  padding: 12px 16px;
+  border: 0;
+  background: transparent;
+  color: var(--maroon-700);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.profile-menu-action:hover {
+  background: var(--maroon-100);
 }
 
 .topbar-user .user-name {
