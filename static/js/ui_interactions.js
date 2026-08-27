@@ -179,11 +179,28 @@
       ['.conversation-search input', '.conversation-item'],
     ];
 
+    const globalSearchSelector = [
+      '.review-table-card tbody tr',
+      '.users-table-card tbody tr',
+      '.repo-document-row',
+      '.area-card',
+      '.task-row',
+      '.requirements-list li',
+      '.conversation-item',
+      '.notification-row',
+    ].join(', ');
+
     searchMap.forEach(function (entry) {
       document.querySelectorAll(entry[0]).forEach(function (input) {
         input.addEventListener('input', function () {
           applyTextFilter(input, entry[1]);
         });
+      });
+    });
+
+    document.querySelectorAll('[data-global-search]').forEach(function (input) {
+      input.addEventListener('input', function () {
+        applyTextFilter(input, globalSearchSelector);
       });
     });
   }

@@ -143,6 +143,14 @@ class DocumentRepositoryAccessTests(TestCase):
         self.assertNotContains(response, 'repo-breadcrumb')
         self.assertNotContains(response, 'class="topbar-title">Document Repository</div>')
 
+    def test_topbar_search_control_is_available_on_authenticated_pages(self):
+        self.client.force_login(self.uploader)
+
+        response = self.client.get(reverse('resources:document_repository'))
+
+        self.assertContains(response, 'data-global-search')
+        self.assertContains(response, 'aria-label="Search submissions"')
+
     def test_program_head_repository_hides_department_panel(self):
         self.client.force_login(self.uploader)
 
