@@ -26,16 +26,12 @@
     class="approval-line"
     points="{{ trend_approval_points }}"
     data-tooltip="Approvals · weekly submission totals"
-  >
-    <title>Approvals · weekly submission totals</title>
-  </polyline>
+  ></polyline>
   <polyline
     class="revision-line"
     points="{{ trend_revision_points }}"
     data-tooltip="Revisions · weekly revision totals"
-  >
-    <title>Revisions · weekly revision totals</title>
-  </polyline>
+  ></polyline>
   <g class="approval-points">
     {% for point in trend_approval_data %}
       <circle
@@ -44,9 +40,7 @@
         r="2"
         tabindex="0"
         data-tooltip="Approvals · week of {{ point.label }}: {{ point.value }} submissions"
-      >
-        <title>Approvals · week of {{ point.label }}: {{ point.value }} submissions</title>
-      </circle>
+      ></circle>
     {% endfor %}
   </g>
   <g class="revision-points">
@@ -57,9 +51,7 @@
         r="2"
         tabindex="0"
         data-tooltip="Revisions · week of {{ point.label }}: {{ point.value }} revisions"
-      >
-        <title>Revisions · week of {{ point.label }}: {{ point.value }} revisions</title>
-      </circle>
+      ></circle>
     {% endfor %}
   </g>
 </svg>
