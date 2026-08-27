@@ -140,3 +140,5 @@ class DocumentRepositoryAccessTests(TestCase):
         response = self.client.get(reverse('resources:document_repository'))
 
         self.assertNotContains(response, 'Departments')
+        self.assertContains(response, 'Accreditor')
+        self.assertContains(response, 'PACUCOA')

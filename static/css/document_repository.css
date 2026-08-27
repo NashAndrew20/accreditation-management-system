@@ -47,7 +47,7 @@
   display: block;
 }
 
-.repo-layout.has-department-panel {
+.repo-layout.has-repository-panel {
   display: grid;
   grid-template-columns: 192px minmax(0, 1fr);
   gap: 20px;
@@ -340,11 +340,11 @@
 }
 
 @media (max-width: 1180px) {
-  .repo-layout.has-department-panel {
+  .repo-layout.has-repository-panel {
     grid-template-columns: 1fr;
   }
 
-  .repo-layout.has-department-panel .department-list {
+  .repo-layout.has-repository-panel .department-list {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -365,7 +365,7 @@
     grid-template-columns: 1fr;
   }
 
-  .repo-layout.has-department-panel .department-list {
+  .repo-layout.has-repository-panel .department-list {
     grid-template-columns: 1fr;
   }
 }
