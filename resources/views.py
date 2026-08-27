@@ -1,7 +1,8 @@
 from django.views.generic import TemplateView
 
+from accreditation.constants import COMPLETED_STATUSES, PENDING_STATUSES
 from accreditation.db_views import status_label, status_tone
-from accreditation.models import EvidenceFile, EvidenceSubmission
+from accreditation.models import EvidenceFile
 from core.access import accessible_repository_submissions, is_admin_user
 from core.mixins import ApprovedUserRequiredMixin
 from core.models import Department
@@ -48,8 +49,8 @@ class DocumentRepositoryView(ApprovedUserRequiredMixin, TemplateView):
                 .values_list('name', flat=True)
             )
         total = len(documents)
-        completed = submissions.filter(status__in={EvidenceSubmission.COMPLIED, EvidenceSubmission.CLOSED}).count()
-        pending = submissions.filter(status__in={EvidenceSubmission.NEEDS_REVISION, EvidenceSubmission.UNDER_DEAN_REVIEW, EvidenceSubmission.UNDER_AREA_CHAIR_REVIEW, EvidenceSubmission.UNDER_QA_REVIEW}).count()
+        completed = submissions.filter(status__in=COMPLETED_STATUSES).count()
+        pending = submissions.filter(status__in=PENDING_STATUSES).count()
         context.update(
             {
                 'page_title': 'Document Repository',

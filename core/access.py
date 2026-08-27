@@ -1,18 +1,10 @@
 from django.db.models import Case, IntegerField, Q, Value, When
 
-from .models import Department, RoleAssignment
+from .models import Department, ROLE_CODES, RoleAssignment
 
 
-INTERNAL_ROLE_CODES = {
-    'SUPERADMIN',
-    'ADMIN',
-    'QA',
-    'ACCREDITATION_HEAD',
-    'PROGRAM_HEAD',
-    'DEAN',
-    'AREA_CHAIR',
-    'STUDENT',
-}
+# Keep access checks aligned with the role catalog used by seed data and forms.
+INTERNAL_ROLE_CODES = frozenset(ROLE_CODES)
 
 
 def approved_assignments(user):

@@ -1,24 +1,16 @@
 from datetime import timedelta
 
-from django.db.models import Count
 from django.utils import timezone
 from django.utils.timesince import timesince
 from django.views.generic import TemplateView
 
+from accreditation.constants import ACTIVE_REVIEW_STATUSES, COMPLETED_STATUSES
 from accreditation.models import AccreditationCycle, AccreditationLevel, EvidenceRequirement, EvidenceSubmission
 from core.access import accessible_submissions, active_assignment
 from core.models import AuditLog
 from core.mixins import ApprovedUserRequiredMixin
 
 from .charting import build_line_chart
-
-
-COMPLETED_STATUSES = {EvidenceSubmission.COMPLIED, EvidenceSubmission.CLOSED}
-ACTIVE_REVIEW_STATUSES = {
-    EvidenceSubmission.UNDER_DEAN_REVIEW,
-    EvidenceSubmission.UNDER_AREA_CHAIR_REVIEW,
-    EvidenceSubmission.UNDER_QA_REVIEW,
-}
 
 
 class DashboardView(ApprovedUserRequiredMixin, TemplateView):

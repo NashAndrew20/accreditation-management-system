@@ -12,7 +12,17 @@ DEMO_MODE=True ./.venv/bin/python manage.py runserver 127.0.0.1:8000
 
 Open <http://127.0.0.1:8000/login/>.
 
-`seed_demo` is available only when `DEMO_MODE` is enabled (enabled by default while `DEBUG=True`). It creates internal demo accounts for Superadmin, Admin, QA, Accreditation Head, Program Head, Dean, and Area Chair. Their development password is `123`, and first-login password changes are currently disabled. Set `DEBUG=False` or `DEMO_MODE=False` in production so demo seeding and demo authentication are disabled.
+`seed_demo` is available only when `DEMO_MODE` is enabled (enabled by default while `DEBUG=True`). It creates internal demo accounts for Superadmin, Admin, QA, Accreditation Head, Program Head, Dean, and Area Chair. Their development password is `123`, and first-login password changes are currently disabled. Set `DJANGO_ENV=production` in production; demo seeding and demo authentication are disabled automatically.
+
+## Production configuration
+
+Set a real secret, explicit hosts, and `DEBUG=False` before deployment:
+
+```bash
+DJANGO_ENV=production DEBUG=False DJANGO_SECRET_KEY='replace-with-a-long-random-secret' DJANGO_ALLOWED_HOSTS='your-domain.example' ./.venv/bin/python manage.py check --deploy
+```
+
+`DJANGO_ENV=production` requires the secret key, disables demo mode, and enables HTTPS redirects, secure session/CSRF cookies, and HSTS by default. Override those settings only when the deployment architecture requires it.
 
 ## Workflow
 

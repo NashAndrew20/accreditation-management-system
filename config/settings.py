@@ -10,8 +10,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
-from pathlib import Path
 import os
+from pathlib import Path
+
+from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,19 +22,54 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-%20ig3=nm%)7nf8(i(&gs6!=!01$_64e@2q8zi7-$&c046-@$j')
+def env_bool(name, default=False):
+    """Read a boolean environment variable with one consistent policy."""
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {'1', 'true', 'yes', 'on'}
+
+
+def env_int(name, default):
+    """Read an integer environment variable and fail with a useful message."""
+    value = os.getenv(name)
+    if value is None:
+        return default
+    try:
+        return int(value)
+    except ValueError as exc:
+        raise ImproperlyConfigured(f'{name} must be an integer.') from exc
+
+
+APP_ENV = os.getenv('DJANGO_ENV', 'development').strip().lower()
+IS_PRODUCTION = APP_ENV in {'production', 'prod'}
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', 'True').lower() in {'1', 'true', 'yes', 'on'}
+DEBUG = env_bool('DEBUG', not IS_PRODUCTION)
+
+# Keep the development fallback for the existing local workflow. Production
+# deployments must override it with DJANGO_SECRET_KEY.
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
+if not SECRET_KEY:
+    if IS_PRODUCTION:
+        raise ImproperlyConfigured('DJANGO_SECRET_KEY must be set in production.')
+    SECRET_KEY = 'django-insecure-%20ig3=nm%)7nf8(i(&gs6!=!01$_64e@2q8zi7-$&c046-@$j'
 
 # Demo accounts and the default development password are accepted only when
 # the project is running in demo mode. Production deployments should set
 # DEMO_MODE=False; when it is omitted, it follows DEBUG.
-demo_mode_setting = os.getenv('DEMO_MODE')
-DEMO_MODE = (DEBUG if demo_mode_setting is None else demo_mode_setting.lower() in {'1', 'true', 'yes', 'on'})
+DEMO_MODE = env_bool('DEMO_MODE', DEBUG and not IS_PRODUCTION)
+if IS_PRODUCTION:
+    DEMO_MODE = False
 
 ALLOWED_HOSTS = [host.strip() for host in os.getenv('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost,testserver').split(',') if host.strip()]
+
+# Keep the development server on HTTP, while making production defaults safe.
+# Each setting remains overridable for deployments behind a TLS-terminating proxy.
+SECURE_SSL_REDIRECT = env_bool('SECURE_SSL_REDIRECT', IS_PRODUCTION)
+SESSION_COOKIE_SECURE = env_bool('SESSION_COOKIE_SECURE', IS_PRODUCTION)
+CSRF_COOKIE_SECURE = env_bool('CSRF_COOKIE_SECURE', IS_PRODUCTION)
+SECURE_HSTS_SECONDS = env_int('SECURE_HSTS_SECONDS', 31536000 if IS_PRODUCTION else 0)
 
 
 # Application definition

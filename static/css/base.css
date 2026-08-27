@@ -2,51 +2,7 @@
 
 html { -webkit-text-size-adjust: 100%; }
 
-@keyframes ui-page-enter {
-  from {
-    opacity: 0;
-    transform: translate3d(0, 12px, 0);
-  }
-  to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
-}
-
-@keyframes ui-sidebar-enter {
-  from {
-    opacity: 0;
-    transform: translate3d(-14px, 0, 0);
-  }
-  to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
-}
-
-@keyframes ui-topbar-enter {
-  from {
-    opacity: 0;
-    transform: translate3d(0, -8px, 0);
-  }
-  to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
-}
-
-@keyframes ui-surface-enter {
-  from {
-    opacity: 0;
-    transform: translate3d(0, 10px, 0) scale(0.985);
-  }
-  to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-}
-
-@keyframes ui-scale-enter {
+@keyframes ui-chart-scale-enter {
   from {
     opacity: 0;
     transform: scale(0.96);
@@ -137,28 +93,6 @@ ul { list-style: none; margin: 0; padding: 0; }
   width: 18px;
   height: 18px;
   display: block;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .sidebar {
-    animation: ui-sidebar-enter 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
-  }
-
-  .topbar {
-    animation: ui-topbar-enter 280ms cubic-bezier(0.22, 1, 0.36, 1) 40ms both;
-  }
-
-  .content {
-    animation: ui-page-enter 360ms cubic-bezier(0.22, 1, 0.36, 1) 60ms both;
-  }
-
-  .login-panel {
-    animation: ui-page-enter 380ms cubic-bezier(0.22, 1, 0.36, 1) both;
-  }
-
-  .login-visual {
-    animation: ui-scale-enter 420ms cubic-bezier(0.22, 1, 0.36, 1) 60ms both;
-  }
 }
 
 :focus-visible {

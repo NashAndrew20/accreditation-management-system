@@ -15,6 +15,7 @@ from core.access import (
 )
 from core.mixins import ApprovedUserRequiredMixin
 
+from .constants import ACTIVE_REVIEW_STATUSES, COMPLETED_STATUSES
 from .forms import EvidenceSubmissionForm, ReviewActionForm
 from .models import (
     AccreditationArea,
@@ -34,12 +35,6 @@ from .workflow import (
 
 
 STATUS_LABELS = dict(EvidenceSubmission.STATUS_CHOICES)
-COMPLETED_STATUSES = {EvidenceSubmission.COMPLIED, EvidenceSubmission.CLOSED}
-ACTIVE_REVIEW_STATUSES = {
-    EvidenceSubmission.UNDER_DEAN_REVIEW,
-    EvidenceSubmission.UNDER_AREA_CHAIR_REVIEW,
-    EvidenceSubmission.UNDER_QA_REVIEW,
-}
 
 
 def status_label(status):
