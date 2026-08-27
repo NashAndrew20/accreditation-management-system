@@ -69,24 +69,12 @@
   font: inherit;
   font-size: 12px;
   font-weight: 800;
+  flex-shrink: 0;
 }
 
 .area-assignment-toggle:focus-visible {
   outline: 3px solid rgba(134, 32, 72, .18);
   outline-offset: 2px;
-}
-
-.area-assignment-trigger {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 16px 20px;
-}
-
-.area-assignment-trigger p {
-  color: var(--color-text-muted);
-  font-size: 12px;
-  font-weight: 500;
 }
 
 .area-assignment-body {
@@ -441,18 +429,19 @@
     margin-bottom: 28px;
   }
 
-  .area-assignment-trigger,
+  .area-details-header {
+    flex-direction: column;
+  }
+
   .area-assignment-intro,
   .area-assignment-row {
     align-items: flex-start;
   }
 
-  .area-assignment-trigger,
   .area-assignment-intro {
     flex-direction: column;
   }
 
-  .area-assignment-trigger p,
   .area-assignment-intro p {
     margin-left: 0;
     text-align: left;

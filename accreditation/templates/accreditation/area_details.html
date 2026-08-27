@@ -20,21 +20,20 @@
         <div class="area-details-eyebrow">Level I · {{ area.code }}</div>
         <h1>{{ area.name }}</h1>
       </div>
+      {% if can_assign_area %}
+        <button
+          type="button"
+          class="area-assignment-toggle"
+          data-assignment-toggle
+          aria-controls="area-assignment-form-panel"
+          aria-expanded="{% if assignment_form.errors %}true{% else %}false{% endif %}"
+        >Assign Area</button>
+      {% endif %}
     </header>
 
     {% if can_assign_area %}
-      <section class="area-assignment-panel">
-        <div class="area-assignment-trigger">
-          <button
-            type="button"
-            class="area-assignment-toggle"
-            data-assignment-toggle
-            aria-controls="area-assignment-form-panel"
-            aria-expanded="{% if assignment_form.errors %}true{% else %}false{% endif %}"
-          >Assign Area</button>
-          <p>Set a deadline and choose who will prepare this area's evidence.</p>
-        </div>
-        <div id="area-assignment-form-panel" class="area-assignment-body" data-assignment-panel{% if not assignment_form.errors %} hidden{% endif %}>
+      <section id="area-assignment-form-panel" class="area-assignment-panel" data-assignment-panel{% if not assignment_form.errors %} hidden{% endif %}>
+        <div class="area-assignment-body">
           <div class="area-assignment-intro">
             <div>
               <span class="area-assignment-kicker">QA assignment</span>
