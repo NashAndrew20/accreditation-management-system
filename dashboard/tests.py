@@ -1,6 +1,7 @@
 from django.test import SimpleTestCase
 
 from .charting import build_line_chart
+from .views import greeting_for_hour
 
 
 class LineChartTests(SimpleTestCase):
@@ -21,3 +22,11 @@ class LineChartTests(SimpleTestCase):
 
         self.assertEqual(chart['series'], [])
         self.assertEqual(chart['x_labels'], [])
+
+
+class GreetingTests(SimpleTestCase):
+    def test_greeting_changes_with_local_time_period(self):
+        self.assertEqual(greeting_for_hour(8), 'Good morning')
+        self.assertEqual(greeting_for_hour(12), 'Good afternoon')
+        self.assertEqual(greeting_for_hour(17), 'Good afternoon')
+        self.assertEqual(greeting_for_hour(18), 'Good evening')

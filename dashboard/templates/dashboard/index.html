@@ -8,8 +8,8 @@
 {% block content %}
   <section class="alert-banner" aria-labelledby="aira-alert-title">
     <div class="alert-greeting">
-      <span class="alert-date">{% now "l, F d" %}</span>
-      <strong>Good day, {{ current_user_summary.name }}!</strong>
+      <span class="alert-date">{{ current_date }}</span>
+      <strong>{{ greeting }}, {{ current_user_summary.name }}!</strong>
     </div>
 
     <div class="alert-avatar" aria-hidden="true">
@@ -72,9 +72,7 @@
                 class="trend-line c-{{ s.color }}"
                 points="{{ s.points }}"
                 data-tooltip="{{ s.name }} series · monthly submission totals"
-              >
-                <title>{{ s.name }} monthly submission trend</title>
-              </polyline>
+              ></polyline>
               {% for point in s.point_data %}
                 <circle
                   class="trend-point c-{{ s.color }}"
@@ -83,9 +81,7 @@
                   r="2"
                   tabindex="0"
                   data-tooltip="{{ s.name }} · {{ point.category }}: {{ point.value }} submissions"
-                >
-                  <title>{{ s.name }} · {{ point.category }}: {{ point.value }} submissions</title>
-                </circle>
+                ></circle>
               {% endfor %}
             {% endfor %}
           </svg>

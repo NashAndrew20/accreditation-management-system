@@ -13,12 +13,22 @@ from core.mixins import ApprovedUserRequiredMixin
 from .charting import build_line_chart
 
 
+def greeting_for_hour(hour):
+    """Return the dashboard greeting for a 24-hour clock hour."""
+    if hour < 12:
+        return 'Good morning'
+    if hour < 18:
+        return 'Good afternoon'
+    return 'Good evening'
+
+
 class DashboardView(ApprovedUserRequiredMixin, TemplateView):
     template_name = 'dashboard/index.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
+        current_time = timezone.localtime()
         cycle = AccreditationCycle.objects.filter(is_active=True).first()
         assignment = active_assignment(user)
         submissions = accessible_submissions(user).select_related('requirement', 'requirement__area', 'department', 'program_head')
@@ -78,12 +88,14 @@ class DashboardView(ApprovedUserRequiredMixin, TemplateView):
             'academic_year': cycle.academic_year if cycle else 'No active cycle',
             'program': cycle.name if cycle else 'Accreditation Cycle',
         }
+        context['greeting'] = greeting_for_hour(current_time.hour)
+        context['current_date'] = current_time.strftime('%A, %B %d')
         context['alert'] = alert
         context['stats'] = [
             {
                 'label': 'Total Submissions',
                 'value': total,
-                'note': f'{submissions.filter(created_at__gte=timezone.now() - timedelta(days=7)).count()} this week',
+                'note': f'{submissions.filter(created_at__gte=current_time - timedelta(days=7)).count()} this week',
                 'icon': 'file',
                 'tone': 'rose',
             },
@@ -114,7 +126,7 @@ class DashboardView(ApprovedUserRequiredMixin, TemplateView):
         submitted_values = []
         complied_values = []
         revision_values = []
-        now = timezone.now()
+        now = current_time
         for offset in range(5, -1, -1):
             month_start = (now.replace(day=1) - timedelta(days=offset * 31)).replace(day=1)
             next_month = (month_start.replace(day=28) + timedelta(days=4)).replace(day=1)
