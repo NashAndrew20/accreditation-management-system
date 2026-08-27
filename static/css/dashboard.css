@@ -276,7 +276,7 @@
 }
 
 .trend-point {
-  stroke-width: 2;
+  stroke-width: 1;
   cursor: default;
   pointer-events: all;
   transition: filter 160ms ease, transform 160ms ease;
@@ -300,9 +300,6 @@
 .trend-point:hover,
 .trend-point:focus-visible {
   filter: brightness(1.12);
-  transform: scale(1.35);
-  transform-box: fill-box;
-  transform-origin: center;
 }
 
 .trend-area { opacity: 0.12; }

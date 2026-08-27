@@ -356,7 +356,7 @@
 
 .approval-points circle,
 .revision-points circle {
-  stroke-width: 2;
+  stroke-width: 1;
 }
 
 .approval-points circle {
@@ -378,13 +378,11 @@
 .approval-points circle:hover,
 .approval-points circle:focus-visible {
   filter: brightness(1.12);
-  stroke-width: 3;
 }
 
 .revision-points circle:hover,
 .revision-points circle:focus-visible {
   filter: brightness(1.12);
-  stroke-width: 3;
 }
 
 .department-bar-item:hover .bar,
