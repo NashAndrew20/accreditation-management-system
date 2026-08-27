@@ -16,6 +16,7 @@ from django.views.generic import TemplateView
 from core.access import approved_assignments, can_approve_accounts, is_admin_user
 from core.mixins import AccountApprovalMixin, ApprovedUserRequiredMixin
 from core.models import AuditLog, Notification, RoleAssignment, UserProfile
+from core.rate_limit import LOGIN_ATTEMPT_WINDOW, allow_login_attempt
 
 from .forms import (
     PortalAuthenticationForm,
@@ -66,6 +67,18 @@ class PortalLoginView(LoginView):
 
     def get_success_url(self):
         return self.get_redirect_url() or reverse('dashboard:index')
+
+    def post(self, request, *args, **kwargs):
+        if not allow_login_attempt(request):
+            context = self.get_context_data(
+                form=self.authentication_form(request=request),
+                rate_limited=True,
+            )
+            response = self.render_to_response(context)
+            response.status_code = 429
+            response['Retry-After'] = str(LOGIN_ATTEMPT_WINDOW)
+            return response
+        return super().post(request, *args, **kwargs)
 
     def form_valid(self, form):
         response = super().form_valid(form)

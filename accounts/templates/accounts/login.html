@@ -39,6 +39,12 @@
             </div>
           {% endif %}
 
+          {% if rate_limited %}
+            <div class="login-alert" role="alert">
+              Too many sign-in attempts from this network. Please try again in about one minute.
+            </div>
+          {% endif %}
+
           <form method="post" action="{% url 'login' %}" class="login-form">
             {% csrf_token %}
             <input type="hidden" name="next" value="{{ next }}">

@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
@@ -8,6 +9,7 @@ from core.models import Department, Role, RoleAssignment, UserProfile
 
 class LoginPageTests(TestCase):
     def setUp(self):
+        cache.clear()
         self.role = Role.objects.create(code='PROGRAM_HEAD', name='Program Head')
         self.department = Department.objects.create(code='TEST', name='Test Program', kind=Department.PROGRAM)
         self.user = get_user_model().objects.create_user(
@@ -161,3 +163,32 @@ class LoginPageTests(TestCase):
         self.assertEqual(authenticated_response.status_code, 200)
         self.assertEqual(authenticated_response.data['username'], self.user.username)
         self.assertEqual(authenticated_response.data['active_role'], 'Program Head')
+
+    def test_website_login_is_rate_limited_by_ip(self):
+        login_url = reverse('login')
+        credentials = {'username': 'not-a-user', 'password': 'wrong-password'}
+
+        for _ in range(5):
+            response = self.client.post(login_url, credentials)
+            self.assertNotEqual(response.status_code, 429)
+
+        response = self.client.post(login_url, credentials)
+
+        self.assertEqual(response.status_code, 429)
+        self.assertEqual(response.headers['Retry-After'], '60')
+
+    def test_api_token_login_is_rate_limited_by_ip(self):
+        token_url = reverse('api_auth:token')
+        credentials = {'username': 'not-a-user', 'password': 'wrong-password'}
+        api_client = APIClient()
+
+        for _ in range(5):
+            response = api_client.post(token_url, credentials, format='json')
+            self.assertNotEqual(response.status_code, 429)
+
+        response = api_client.post(token_url, credentials, format='json')
+
+        self.assertEqual(response.status_code, 429)
+        retry_after = int(response.headers['Retry-After'])
+        self.assertGreaterEqual(retry_after, 1)
+        self.assertLessEqual(retry_after, 60)

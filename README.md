@@ -62,6 +62,16 @@ curl http://127.0.0.1:8000/api/auth/me/ \
   -H 'Authorization: Bearer <access-token>'
 ```
 
+## Login rate limiting
+
+The normal website login (`POST /login/`) and the API token endpoint
+(`POST /api/auth/token/`) allow 5 attempts per client IP in a one-minute
+window. The website returns the login page with HTTP 429 after the limit; the
+API returns HTTP 429 JSON with a `Retry-After` header. The counter expires
+automatically, so legitimate users are not permanently blocked. The project
+uses Django's cache for the website limiter and DRF's `AnonRateThrottle` for
+the API limiter.
+
 ## SonarQube Cloud
 
 The `sonarqube cloud` workflow runs the Django tests with Python coverage and then sends the results to SonarQube Cloud on pushes to `main` and pull requests.

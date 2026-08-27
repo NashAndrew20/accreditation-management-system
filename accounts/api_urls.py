@@ -2,11 +2,13 @@ from django.urls import path
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from .api import PortalTokenObtainPairSerializer
+from .api_throttles import LoginRateThrottle
 from .api_views import CurrentUserAPIView
 
 
 class PortalTokenObtainPairView(TokenObtainPairView):
     serializer_class = PortalTokenObtainPairSerializer
+    throttle_classes = (LoginRateThrottle,)
 
 
 app_name = 'api_auth'
