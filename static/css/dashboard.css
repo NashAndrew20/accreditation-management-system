@@ -276,20 +276,30 @@
 }
 
 .trend-point {
-  fill: var(--color-surface);
   stroke-width: 2;
   cursor: default;
   pointer-events: all;
-  transition: fill 160ms ease, transform 160ms ease;
+  transition: filter 160ms ease, transform 160ms ease;
 }
 
-.trend-point.c-maroon { stroke: var(--maroon-700); }
-.trend-point.c-green { stroke: var(--green-600); }
-.trend-point.c-gold { stroke: var(--gold-500); }
+.trend-point.c-maroon {
+  fill: var(--maroon-700);
+  stroke: var(--maroon-700);
+}
+
+.trend-point.c-green {
+  fill: var(--green-600);
+  stroke: var(--green-600);
+}
+
+.trend-point.c-gold {
+  fill: var(--gold-500);
+  stroke: var(--gold-500);
+}
 
 .trend-point:hover,
 .trend-point:focus-visible {
-  fill: var(--maroon-100);
+  filter: brightness(1.12);
   transform: scale(1.35);
   transform-box: fill-box;
   transform-origin: center;

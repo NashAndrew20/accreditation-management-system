@@ -356,33 +356,34 @@
 
 .approval-points circle,
 .revision-points circle {
-  fill: #fff;
   stroke-width: 2;
 }
 
 .approval-points circle {
+  fill: #007d5b;
   stroke: #007d5b;
 }
 
 .revision-points circle {
+  fill: #c5003d;
   stroke: #c5003d;
 }
 
 .approval-points circle,
 .revision-points circle {
   cursor: default;
-  transition: fill 160ms ease, stroke-width 160ms ease;
+  transition: filter 160ms ease, stroke-width 160ms ease;
 }
 
 .approval-points circle:hover,
 .approval-points circle:focus-visible {
-  fill: #e0f4e9;
+  filter: brightness(1.12);
   stroke-width: 3;
 }
 
 .revision-points circle:hover,
 .revision-points circle:focus-visible {
-  fill: #ffe8ef;
+  filter: brightness(1.12);
   stroke-width: 3;
 }
 
