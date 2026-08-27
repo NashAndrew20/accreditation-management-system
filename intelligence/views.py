@@ -119,39 +119,7 @@ class SmartCompanionView(ApprovedUserRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        submissions = accessible_submissions(self.request.user)
-        revision_count = submissions.filter(status=EvidenceSubmission.NEEDS_REVISION).count()
-        pending_count = submissions.filter(status__in=ACTIVE_REVIEW_STATUSES).count()
         context.update({
             'page_title': 'Smart Companion',
-            'companion_insights': [
-                {
-                    'title': 'Revision Queue',
-                    'description': f'{revision_count} visible evidence items need correction.',
-                    'tone': 'rose' if revision_count else 'green',
-                },
-                {
-                    'title': 'Pending Review',
-                    'description': f'{pending_count} items are moving through internal review.',
-                    'tone': 'gold',
-                },
-                {
-                    'title': 'Database Scope',
-                    'description': 'Responses use the evidence and review records available to your role.',
-                    'tone': 'green',
-                },
-            ],
-            'sample_prompts': [
-                {
-                    'title': 'Evidence Help',
-                    'description': 'Find missing files and weak submissions.',
-                    'prompts': ['Which evidence needs revision?', 'Which documents are missing?', 'Check the next review stage.'],
-                },
-                {
-                    'title': 'Readiness Review',
-                    'description': 'Summarize current gaps.',
-                    'prompts': ['Summarize visible readiness.', 'Show pending reviewer work.', 'Show complied evidence.'],
-                },
-            ],
         })
         return context

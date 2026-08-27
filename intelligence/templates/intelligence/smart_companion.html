@@ -26,39 +26,10 @@
           <div class="companion-bot-icon">{% icon 'sparkle' %}</div>
           <div class="message-stack">
             <div class="assistant-bubble">
-              Hello! I'm your JMCFI Accreditation Smart Companion. I can help you understand requirements, identify gaps, track submissions, and provide guidance throughout the accreditation process. How can I assist you today?
+              Hello! I'm your JMCFI Accreditation Smart Companion. Ask me about requirements, evidence, deadlines, or review status.
             </div>
-
-            <div class="insight-stack">
-              {% for insight in companion_insights %}
-                <div class="companion-insight">
-                  <span class="insight-dot tone-{{ insight.tone }}"></span>
-                  <div>
-                    <strong>{{ insight.title }}</strong>
-                    <p>{{ insight.description }}</p>
-                  </div>
-                </div>
-              {% endfor %}
-            </div>
-
-            <time>Companion · 10:00 AM</time>
           </div>
         </article>
-
-        <section class="sample-prompt-section" aria-label="Sample prompts">
-          <div class="sample-prompt-head">
-            <h2>Try a sample prompt</h2>
-            <p>Start with one question, or write your own below.</p>
-          </div>
-
-          <div class="sample-prompt-list sample-prompt-list-compact">
-            {% for group in sample_prompts %}
-              {% for prompt in group.prompts|slice:":1" %}
-                <button type="button">{{ prompt }}</button>
-              {% endfor %}
-            {% endfor %}
-          </div>
-        </section>
       </div>
 
       <footer class="companion-composer">
