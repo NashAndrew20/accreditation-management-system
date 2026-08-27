@@ -133,6 +133,7 @@ class DocumentRepositoryAccessTests(TestCase):
         self.assertContains(response, 'All Documents')
         self.assertContains(response, 'College of Engineering')
         self.assertContains(response, 'College of Business')
+        self.assertNotContains(response, 'Open Evidence Workspace')
 
     def test_program_head_repository_hides_department_panel(self):
         self.client.force_login(self.uploader)
