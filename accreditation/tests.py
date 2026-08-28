@@ -197,6 +197,15 @@ class AccreditationWorkflowTests(TestCase):
         submission = EvidenceSubmission.objects.get(requirement=self.requirement, department=self.program)
         self.assertEqual(self.client.get(reverse('accreditation:evidence_detail', args=[submission.id])).status_code, 200)
 
+    def test_review_workflow_does_not_render_duplicate_breadcrumb(self):
+        self.client.force_login(self.qa)
+
+        response = self.client.get(reverse('accreditation:review_workflow'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, '<h1>Review Workflow</h1>', html=True)
+        self.assertNotContains(response, 'class="review-breadcrumb"')
+
     def test_levels_and_areas_cache_public_accreditation_structure(self):
         self.client.force_login(self.program_head)
 
