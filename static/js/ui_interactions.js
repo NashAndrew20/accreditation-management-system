@@ -151,6 +151,59 @@
     });
   }
 
+  function applyRepositoryFilters(query) {
+    const rows = document.querySelectorAll('.repo-document-row');
+    if (!rows.length) return;
+
+    const levelFilter = document.querySelector('[data-repo-filter="level"]');
+    const departmentFilter = document.querySelector('[data-repo-filter="department"]');
+    const normalizedQuery = normalize(query || '');
+    const level = normalize(levelFilter ? levelFilter.value : '');
+    const department = normalize(departmentFilter ? departmentFilter.value : '');
+    let visibleCount = 0;
+
+    rows.forEach(function (row) {
+      const matchesLevel = !level || normalize(row.dataset.repoLevel) === level;
+      const matchesDepartment = !department || normalize(row.dataset.repoDepartment) === department;
+      const matchesSearch = !normalizedQuery || normalize(row.textContent).includes(normalizedQuery);
+      const isVisible = matchesLevel && matchesDepartment && matchesSearch;
+      row.classList.toggle('is-filter-hidden', !isVisible);
+      if (isVisible) visibleCount += 1;
+    });
+
+    const emptyState = document.querySelector('[data-repo-empty]');
+    if (emptyState) emptyState.hidden = visibleCount > 0;
+  }
+
+  function bindRepositoryFilters() {
+    const filters = document.querySelectorAll('[data-repo-filter]');
+    const searchInput = document.querySelector('.repo-search input');
+    const departmentButtons = document.querySelectorAll('.department-list [data-repo-department]');
+    if (!filters.length && !searchInput && !departmentButtons.length) return;
+
+    filters.forEach(function (filter) {
+      filter.addEventListener('change', function () {
+        applyRepositoryFilters(searchInput ? searchInput.value : '');
+      });
+    });
+
+    departmentButtons.forEach(function (button) {
+      button.addEventListener('click', function () {
+        const departmentFilter = document.querySelector('[data-repo-filter="department"]');
+        if (departmentFilter) departmentFilter.value = button.dataset.repoDepartment || '';
+        applyRepositoryFilters(searchInput ? searchInput.value : '');
+      });
+    });
+
+    if (searchInput) {
+      searchInput.addEventListener('input', function () {
+        applyRepositoryFilters(searchInput.value);
+      });
+    }
+
+    applyRepositoryFilters(searchInput ? searchInput.value : '');
+  }
+
   function applyButtonFilter(button, rowsSelector) {
     const label = normalize(button.textContent).replace(/\(\d+\)/g, '').trim();
     const scope = button.closest('main') || document;
@@ -174,7 +227,6 @@
     const searchMap = [
       ['.review-search input', '.review-table-card tbody tr'],
       ['.users-search input', '.users-table-card tbody tr'],
-      ['.repo-search input', '.repo-document-row'],
       ['.area-search input', '.area-card'],
       ['.conversation-search input', '.conversation-item'],
     ];
@@ -201,6 +253,9 @@
     document.querySelectorAll('[data-global-search]').forEach(function (input) {
       input.addEventListener('input', function () {
         applyTextFilter(input, globalSearchSelector);
+        if (document.querySelector('[data-repo-filter]')) {
+          applyRepositoryFilters(input.value);
+        }
       });
     });
   }
@@ -798,5 +853,6 @@
     bindProgressValues();
     bindDataTooltips();
     bindAreaAssignmentForms();
+    bindRepositoryFilters();
   });
 })();

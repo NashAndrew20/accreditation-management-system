@@ -212,6 +212,7 @@ class DocumentRepositoryView(ApprovedUserRequiredMixin, TemplateView):
                 'requirement_label': f'{requirement.code} - {requirement.title}',
                 'detail_url': reverse('accreditation:evidence_detail', args=[submission.id]),
                 'department': submission.department.name,
+                'level': requirement.area.level.name,
                 'details': f'{requirement.area.code} · {requirement.area.level.name} · {submission.program_head.get_full_name() or submission.program_head.username}',
                 'tags': [requirement.area.name, requirement.subarea.code if requirement.subarea else 'Evidence'],
                 'version': f'v{evidence_file.version.version_number}',
@@ -222,13 +223,25 @@ class DocumentRepositoryView(ApprovedUserRequiredMixin, TemplateView):
             })
         departments = []
         if repository_admin:
-            departments = [{'label': 'All Documents', 'active': True}]
+            departments = [{'label': 'All Documents', 'value': '', 'active': True}]
             departments.extend(
-                {'label': name, 'active': False}
+                {'label': name, 'value': name, 'active': False}
                 for name in Department.objects.filter(is_active=True)
                 .order_by('name')
                 .values_list('name', flat=True)
             )
+        repository_levels = list(
+            submissions.values_list(
+                'requirement__area__level__name',
+                flat=True,
+            ).distinct().order_by('requirement__area__level__name')
+        )
+        repository_departments = list(
+            submissions.values_list(
+                'department__name',
+                flat=True,
+            ).distinct().order_by('department__name')
+        )
         total = len(documents)
         completed = submissions.filter(status__in=COMPLETED_STATUSES).count()
         pending = submissions.filter(status__in=PENDING_STATUSES).count()
@@ -238,6 +251,8 @@ class DocumentRepositoryView(ApprovedUserRequiredMixin, TemplateView):
                 'hide_topbar_title': True,
                 'documents': documents,
                 'departments': departments,
+                'repository_levels': repository_levels,
+                'repository_departments': repository_departments,
                 'is_repository_admin': repository_admin,
                 'repo_stats': [
                     {'label': 'Total Documents', 'value': total, 'tone': 'rose'},

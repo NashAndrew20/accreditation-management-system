@@ -169,6 +169,10 @@ class DocumentRepositoryAccessTests(TestCase):
             reverse('accreditation:evidence_detail', args=[self.civil_submission.id]),
         )
         self.assertContains(response, 'class="repo-view-btn">View</a>')
+        self.assertContains(response, 'data-repo-filter="level"')
+        self.assertContains(response, 'data-repo-filter="department"')
+        self.assertContains(response, 'option value="Bachelor of Science in Civil Engineering"')
+        self.assertContains(response, 'option value="College of Business"')
         self.assertContains(response, 'Departments')
         self.assertContains(response, 'All Documents')
         self.assertContains(response, 'College of Engineering')
@@ -201,9 +205,10 @@ class DocumentRepositoryAccessTests(TestCase):
 
         response = self.client.get(reverse('resources:document_repository'))
 
-        self.assertNotContains(response, 'Departments')
+        self.assertNotContains(response, '<div class="department-title">Departments</div>')
         self.assertContains(response, 'Accreditor')
         self.assertContains(response, 'PACUCOA')
+        self.assertContains(response, 'aria-label="Filter by department"')
 
     def test_communication_title_is_not_repeated_in_topbar(self):
         self.client.force_login(self.uploader)

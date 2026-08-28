@@ -17,10 +17,10 @@
     <section class="repo-layout has-repository-panel">
       {% if is_repository_admin %}
         <aside class="department-panel">
-          <div class="department-title">Departments</div>
-          <div class="department-list">
-            {% for department in departments %}
-              <button type="button" class="department-item{% if department.active %} is-active{% endif %}">
+            <div class="department-title">Departments</div>
+            <div class="department-list">
+              {% for department in departments %}
+              <button type="button" class="department-item{% if department.active %} is-active{% endif %}" data-repo-department="{{ department.value }}">
                 {% icon 'folder' %}
                 <span>{{ department.label }}</span>
               </button>
@@ -46,8 +46,18 @@
             <input type="search" placeholder="Search documents...">
           </label>
 
-          <select aria-label="Filter by level">
-            <option>All Levels</option>
+          <select class="repo-filter" data-repo-filter="level" aria-label="Filter by level">
+            <option value="">All Levels</option>
+            {% for level in repository_levels %}
+              <option value="{{ level }}">{{ level }}</option>
+            {% endfor %}
+          </select>
+
+          <select class="repo-filter" data-repo-filter="department" aria-label="Filter by department">
+            <option value="">All Departments</option>
+            {% for department in repository_departments %}
+              <option value="{{ department }}">{{ department }}</option>
+            {% endfor %}
           </select>
         </section>
 
@@ -62,7 +72,7 @@
 
         <section class="document-list-card">
           {% for document in documents %}
-            <article class="repo-document-row">
+            <article class="repo-document-row" data-repo-level="{{ document.level }}" data-repo-department="{{ document.department }}">
               <div class="repo-file-icon tone-{{ document.icon_tone }}">
                 {% icon 'file' %}
               </div>
@@ -89,7 +99,10 @@
                 <a href="{{ document.detail_url }}" class="repo-view-btn">View</a>
               </div>
             </article>
+          {% empty %}
+            <p class="repo-empty-state">No documents are available for your current access scope.</p>
           {% endfor %}
+          <p class="repo-empty-state" data-repo-empty hidden>No documents match the selected filters.</p>
         </section>
       </main>
     </section>
