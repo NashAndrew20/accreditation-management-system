@@ -168,6 +168,7 @@ class DocumentRepositoryAccessTests(TestCase):
             response,
             reverse('accreditation:evidence_detail', args=[self.civil_submission.id]),
         )
+        self.assertContains(response, 'class="repo-view-btn">View</a>')
         self.assertContains(response, 'Departments')
         self.assertContains(response, 'All Documents')
         self.assertContains(response, 'College of Engineering')
@@ -175,6 +176,16 @@ class DocumentRepositoryAccessTests(TestCase):
         self.assertNotContains(response, 'Open Evidence Workspace')
         self.assertNotContains(response, 'repo-breadcrumb')
         self.assertNotContains(response, 'class="topbar-title">Document Repository</div>')
+
+    def test_finished_repository_status_is_displayed_as_complied(self):
+        self.business_submission.status = EvidenceSubmission.CLOSED
+        self.business_submission.save(update_fields=['status'])
+        self.client.force_login(self.admin)
+
+        response = self.client.get(reverse('resources:document_repository'))
+
+        self.assertContains(response, 'Complied')
+        self.assertNotContains(response, '>Closed<')
 
     def test_topbar_search_control_is_available_on_authenticated_pages(self):
         self.client.force_login(self.uploader)

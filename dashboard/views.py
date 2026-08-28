@@ -163,7 +163,7 @@ class DashboardView(ApprovedUserRequiredMixin, TemplateView):
                 'APPROVED': 'approved',
                 'REQUEST_REVISION': 'requested revision on',
                 'COMPLIED': 'marked complied',
-                'CLOSED': 'closed',
+                'CLOSED': 'marked complied',
                 'NON_COMPLIED': 'marked non-complied',
             }
             recent_activity.append({

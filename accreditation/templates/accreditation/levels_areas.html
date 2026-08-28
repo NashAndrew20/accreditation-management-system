@@ -18,7 +18,7 @@
           <h2>{{ level.name }}</h2>
           <p>{{ level.status }}</p>
           <div class="level-tags">
-            <span class="status-pill tone-green">{{ level.compiled }} Compiled</span>
+            <span class="status-pill tone-green">{{ level.compiled }} Complied</span>
             {% if level.pending %}
               <span class="status-pill tone-gold">{{ level.pending }} Pending</span>
             {% endif %}
@@ -39,7 +39,7 @@
       <div class="level-summary-stats">
         <div>
           <strong class="tone-green">{{ overview.compiled }}</strong>
-          <span>Compiled</span>
+          <span>Complied</span>
         </div>
         <div>
           <strong class="tone-gold">{{ overview.pending }}</strong>
@@ -92,7 +92,7 @@
           </div>
 
           <div class="area-tags">
-            <span class="status-pill tone-green">{{ area.compiled }} Compiled</span>
+            <span class="status-pill tone-green">{{ area.compiled }} Complied</span>
             {% if area.pending %}
               <span class="status-pill tone-gold">{{ area.pending }} Pending</span>
             {% endif %}

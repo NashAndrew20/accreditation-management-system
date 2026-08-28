@@ -241,7 +241,7 @@ class DocumentRepositoryView(ApprovedUserRequiredMixin, TemplateView):
                 'is_repository_admin': repository_admin,
                 'repo_stats': [
                     {'label': 'Total Documents', 'value': total, 'tone': 'rose'},
-                    {'label': 'Approved / Closed', 'value': completed, 'tone': 'green'},
+                    {'label': 'Complied', 'value': completed, 'tone': 'green'},
                     {'label': 'Pending / Revision', 'value': pending, 'tone': 'gold'},
                 ],
             }

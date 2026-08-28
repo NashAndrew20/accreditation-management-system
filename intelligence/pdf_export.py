@@ -250,7 +250,7 @@ def _draw_area_readiness(page, areas, y):
     card_height = 378
     page.rect(MARGIN, y, PAGE_WIDTH - MARGIN * 2, card_height, fill=SURFACE, stroke=BORDER)
     page.text(MARGIN + 16, y + 16, 'Area readiness', size=13, color=TEXT, bold=True)
-    page.text(MARGIN + 16, y + 36, 'Actual completed or closed evidence from the current access scope', size=8.5, color=MUTED)
+    page.text(MARGIN + 16, y + 36, 'Actual complied evidence from the current access scope', size=8.5, color=MUTED)
 
     columns = 2
     column_gap = 24
@@ -274,7 +274,7 @@ def _draw_department_chart(page, departments, y):
     chart_height = 260
     page.rect(MARGIN, y, PAGE_WIDTH - MARGIN * 2, chart_height, fill=SURFACE, stroke=BORDER)
     page.text(MARGIN + 16, y + 16, 'Compliance by department', size=13, color=TEXT, bold=True)
-    page.text(MARGIN + 16, y + 36, 'Submitted evidence compared with complied or closed evidence', size=8.5, color=MUTED)
+    page.text(MARGIN + 16, y + 36, 'Submitted evidence compared with complied evidence', size=8.5, color=MUTED)
     rows = departments[:10]
     if not rows:
         page.text(MARGIN + 16, y + 82, 'No department records are visible for this account.', size=9, color=MUTED)

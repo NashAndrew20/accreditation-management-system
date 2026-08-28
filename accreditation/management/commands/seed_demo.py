@@ -558,7 +558,7 @@ class Command(BaseCommand):
                         from_status=EvidenceSubmission.COMPLIED,
                         to_status=EvidenceSubmission.CLOSED,
                         decision=EvidenceReview.CLOSED_DECISION,
-                        remarks='Demo evidence closed after final internal review.',
+                        remarks='Demo evidence marked complied after final internal review.',
                         created_at=close_time,
                     )
                     self._create_audit(

@@ -116,7 +116,7 @@ def build_reports_context(user):
         },
         'insights': [
             {
-                'message': f'{readiness}% of visible evidence is complied or closed across the current access scope.',
+                'message': f'{readiness}% of visible evidence is complied across the current access scope.',
                 'tone': 'green' if readiness >= 80 else 'gold',
                 'icon': 'trend-up',
             },
@@ -134,7 +134,7 @@ def build_reports_context(user):
         'kpis': [
             {'value': f'{readiness}%', 'label': 'Overall Readiness', 'delta': f'{total} visible submissions', 'tone': 'green' if readiness >= 80 else 'gold'},
             {'value': total, 'label': 'Total Submissions', 'delta': f'{pending} pending review', 'tone': 'green'},
-            {'value': f'{compliance}%', 'label': 'Compliance Rate', 'delta': f'{completed} complied or closed', 'tone': 'green' if compliance >= 80 else 'gold'},
+            {'value': f'{compliance}%', 'label': 'Compliance Rate', 'delta': f'{completed} complied', 'tone': 'green' if compliance >= 80 else 'gold'},
             {'value': revisions, 'label': 'Needs Revision', 'delta': 'Returned for correction', 'tone': 'rose' if revisions else 'green'},
         ],
         'departments': departments,

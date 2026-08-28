@@ -826,7 +826,7 @@ class ReviewWorkflowView(ApprovedUserRequiredMixin, TemplateView):
             'review_stats': [
                 {'label': 'Pending Review', 'value': submissions.filter(status__in=ACTIVE_REVIEW_STATUSES).count(), 'tone': 'gold'},
                 {'label': 'Needs Revision', 'value': _scoped_submissions(self.request.user).filter(status=EvidenceSubmission.NEEDS_REVISION).count(), 'tone': 'rose'},
-                {'label': 'Closed', 'value': _scoped_submissions(self.request.user).filter(status=EvidenceSubmission.CLOSED).count(), 'tone': 'green'},
+                {'label': 'Complied', 'value': _scoped_submissions(self.request.user).filter(status__in=COMPLETED_STATUSES).count(), 'tone': 'green'},
             ],
             'submissions': rows,
             'submission_count': len(rows),

@@ -223,7 +223,7 @@ def approve_submission(submission, actor, remarks=''):
             from_status=EvidenceSubmission.COMPLIED,
             to_status=EvidenceSubmission.CLOSED,
             decision=EvidenceReview.CLOSED_DECISION,
-            remarks='Automatically closed after final internal compliance approval.',
+            remarks='Automatically marked complied after final internal compliance approval.',
         )
         submission.status = EvidenceSubmission.CLOSED
         submission.current_reviewer = None
@@ -242,7 +242,7 @@ def approve_submission(submission, actor, remarks=''):
         _notify(
             [submission.program_head],
             submission,
-            'Evidence complied and closed',
+            'Evidence complied',
             f'{submission.requirement.code} completed the internal review workflow.',
         )
     return submission

@@ -152,7 +152,7 @@ class EvidenceSubmission(models.Model):
         (NEEDS_REVISION, 'Needs Revision'),
         (COMPLIED, 'Complied'),
         (NON_COMPLIED, 'Non-Complied'),
-        (CLOSED, 'Closed'),
+        (CLOSED, 'Complied'),
     )
 
     requirement = models.ForeignKey(EvidenceRequirement, on_delete=models.PROTECT, related_name='submissions')
@@ -273,7 +273,7 @@ class EvidenceReview(models.Model):
         (REQUEST_REVISION, 'Request Revision'),
         (COMPLIED_DECISION, 'Complied'),
         (NON_COMPLIED_DECISION, 'Non-Complied'),
-        (CLOSED_DECISION, 'Closed'),
+        (CLOSED_DECISION, 'Complied'),
     )
 
     submission = models.ForeignKey(EvidenceSubmission, on_delete=models.CASCADE, related_name='reviews')

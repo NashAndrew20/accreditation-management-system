@@ -161,7 +161,7 @@
         status.includes(label) ||
         (label === 'revision' && status.includes('revision')) ||
         (label === 'pending' && status.includes('pending')) ||
-        (label === 'compiled' && status.includes('compiled')) ||
+        (label === 'complied' && status.includes('complied')) ||
         (label === 'active' && status === 'active') ||
         (label === 'inactive' && status === 'inactive') ||
         (label === 'unread' && row.classList.contains('is-unread'));

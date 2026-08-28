@@ -86,8 +86,7 @@
               <span class="repo-status tone-{{ document.tone }}">{{ document.status }}</span>
 
               <div class="repo-actions">
-                <a href="{{ document.detail_url }}" aria-label="View {{ document.requirement_label }}">{% icon 'search' %}</a>
-                {% icon 'cloud' %}
+                <a href="{{ document.detail_url }}" class="repo-view-btn">View</a>
               </div>
             </article>
           {% endfor %}

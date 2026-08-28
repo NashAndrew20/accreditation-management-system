@@ -202,7 +202,7 @@
 
 .repo-document-row {
   display: grid;
-  grid-template-columns: 40px minmax(0, 1fr) 134px 126px 60px;
+  grid-template-columns: 40px minmax(0, 1fr) 134px 126px 88px;
   gap: 16px;
   align-items: center;
   min-height: 110px;
@@ -332,22 +332,27 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 13px;
-  color: var(--maroon-700);
 }
 
-.repo-actions .icon {
-  width: 15px;
-  height: 15px;
-}
-
-.repo-actions a {
+.repo-view-btn {
   display: inline-flex;
-  color: inherit;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: 0 13px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--maroon-700);
+  font-size: 12px;
+  font-weight: 700;
   text-decoration: none;
 }
 
-.repo-actions a:hover {
+.repo-view-btn:hover,
+.repo-view-btn:focus-visible {
+  border-color: var(--maroon-700);
+  background: var(--maroon-100);
   color: var(--maroon-900);
 }
 
