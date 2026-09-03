@@ -13,7 +13,7 @@ from accreditation.models import (
     EvidenceVersion,
 )
 from core.access import accessible_repository_submissions
-from core.models import Department, Role, RoleAssignment, UserProfile
+from core.models import Department, Notification, Role, RoleAssignment, UserProfile
 from resources.models import CommunicationMessage, Conversation, ConversationParticipant
 
 
@@ -286,6 +286,42 @@ class DocumentRepositoryAccessTests(TestCase):
             refreshed,
             'Please confirm when the department evidence is ready.',
         )
+
+        notification = Notification.objects.get(
+            user=self.dean,
+            kind='message',
+        )
+        self.assertEqual(
+            notification.target_url,
+            f'{reverse("resources:communication")}?user_id={self.uploader.pk}',
+        )
+
+        self.client.force_login(self.dean)
+        notifications = self.client.get(reverse('core:notifications'))
+        self.assertContains(notifications, 'New message from')
+        self.assertContains(notifications, 'Open chat')
+
+        self.client.get(
+            reverse('resources:communication'),
+            {'user_id': self.uploader.pk},
+        )
+        notification.refresh_from_db()
+        self.assertTrue(notification.is_read)
+
+    def test_authenticated_modules_share_aira_guidance(self):
+        self.client.force_login(self.uploader)
+
+        for url in (
+            reverse('accreditation:levels_areas'),
+            reverse('resources:document_repository'),
+            reverse('resources:communication'),
+            reverse('intelligence:reports_monitoring'),
+        ):
+            with self.subTest(url=url):
+                response = self.client.get(url)
+                self.assertContains(response, 'aria-label="AIRA Smart Companion"')
+                self.assertContains(response, 'Smart Companion')
+                self.assertContains(response, 'Open Smart Companion')
 
     def test_communication_rejects_recipients_outside_allowed_roles(self):
         self.client.force_login(self.uploader)

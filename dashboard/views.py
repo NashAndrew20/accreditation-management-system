@@ -178,4 +178,5 @@ class DashboardView(ApprovedUserRequiredMixin, TemplateView):
         context['upcoming_deadlines'] = []
         context['quick_actions'] = ['Submit Evidence', 'Review Queue', 'Upload Document', 'View Reports']
         context['hide_topbar_title'] = True
+        context['hide_aira_global'] = True
         return context

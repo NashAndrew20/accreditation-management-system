@@ -45,7 +45,7 @@
               <p class="notification-message">{{ item.message }}</p>
               <div class="notification-meta">
                 <span>{{ item.time_label }}</span>
-                {% if item.submission_url %}<a href="{{ item.submission_url }}">Open evidence</a>{% endif %}
+                {% if item.target_url %}<a href="{{ item.target_url }}">{{ item.target_label }}</a>{% endif %}
               </div>
             </div>
 

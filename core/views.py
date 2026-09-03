@@ -15,6 +15,7 @@ NOTIFICATION_PRESENTATION = {
     'review': ('Review Update', 'check', 'green'),
     'account': ('Account Update', 'users', 'green'),
     'deadline': ('Deadline Reminder', 'clock', 'gold'),
+    'message': ('New Message', 'message', 'blue'),
     'system': ('System Notice', 'bolt', 'maroon'),
 }
 
@@ -47,7 +48,11 @@ class NotificationsView(ApprovedUserRequiredMixin, TemplateView):
                 'icon': icon,
                 'tone': tone,
                 'unread': not notification.is_read,
-                'submission_url': reverse('accreditation:evidence_detail', args=[notification.submission_id]) if notification.submission_id else '',
+                'target_url': notification.target_url or (
+                    reverse('accreditation:evidence_detail', args=[notification.submission_id])
+                    if notification.submission_id else ''
+                ),
+                'target_label': 'Open chat' if notification.kind == 'message' else 'Open evidence',
             })
         unread_total = sum(1 for item in rows if item['unread'])
         context.update({

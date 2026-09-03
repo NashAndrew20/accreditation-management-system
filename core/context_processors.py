@@ -12,6 +12,81 @@ from .access import active_assignment, can_approve_accounts, is_admin_user
 from .models import Notification
 
 
+_AIRA_DEFAULT_GUIDANCE = {
+    'title': 'Your accreditation companion',
+    'message': 'I can help you keep evidence work organized, find the next step, and stay on top of review activity.',
+}
+
+_AIRA_GUIDANCE = {
+    'dashboard:index': {
+        'title': 'Your accreditation overview',
+        'message': 'I can help you interpret readiness, activity, and deadlines across your current access scope.',
+    },
+    'accreditation:levels_areas': {
+        'title': 'Navigate the accreditation structure',
+        'message': 'I can guide you through levels, areas, sub-areas, and the evidence requirements connected to them.',
+    },
+    'accreditation:area_details': {
+        'title': 'Explore this accreditation area',
+        'message': 'I can help you understand this area and identify the evidence work that should happen next.',
+    },
+    'accreditation:submission_workspace': {
+        'title': 'Prioritize your evidence tasks',
+        'message': 'I can help you focus on missing evidence, deadlines, and items returned for revision.',
+    },
+    'accreditation:submission_workspace_subarea': {
+        'title': 'Prepare this evidence set',
+        'message': 'I can help you check the requirement, supporting files, self-evaluation, and actual situation before submitting.',
+    },
+    'accreditation:evidence_detail': {
+        'title': 'Understand this evidence requirement',
+        'message': 'I can help you review the current evidence, versions, remarks, and next action.',
+    },
+    'accreditation:evidence_review': {
+        'title': 'Keep the review focused',
+        'message': 'I can help you check the evidence against its requirement and prepare clear reviewer remarks.',
+    },
+    'accreditation:review_workflow': {
+        'title': 'Track internal review',
+        'message': 'I can help you prioritize assigned reviews, revisions, and evidence moving through the approval stages.',
+    },
+    'resources:document_repository': {
+        'title': 'Find the right evidence file',
+        'message': 'I can help you locate documents and keep the latest evidence version easy to verify.',
+    },
+    'resources:communication': {
+        'title': 'Keep accreditation conversations clear',
+        'message': 'I can help you keep messages focused on evidence, reviewer remarks, owners, and deadlines.',
+    },
+    'intelligence:reports_monitoring': {
+        'title': 'Read your compliance picture',
+        'message': 'I can help you interpret readiness, compliance, department performance, and submission trends.',
+    },
+    'core:notifications': {
+        'title': 'Stay informed on the next action',
+        'message': 'I can help you sort new messages, evidence updates, assignments, and review decisions.',
+    },
+    'core:audit_history': {
+        'title': 'Follow the evidence trail',
+        'message': 'I can help you understand the recorded actions and decisions behind an evidence submission.',
+    },
+    'accounts:user_management': {
+        'title': 'Keep access assignments accurate',
+        'message': 'I can help you check account approvals, internal roles, and department assignments.',
+    },
+    'accounts:settings_profile': {
+        'title': 'Keep your profile ready',
+        'message': 'I can help you review your account details and assistant preferences for accreditation work.',
+    },
+}
+
+
+def _aira_guidance(request):
+    resolver_match = getattr(request, 'resolver_match', None)
+    view_name = getattr(resolver_match, 'view_name', '')
+    return _AIRA_GUIDANCE.get(view_name, _AIRA_DEFAULT_GUIDANCE)
+
+
 def site_nav(request):
     nav_sections = [
         {
@@ -132,6 +207,7 @@ def site_nav(request):
         'initials': 'GU',
         'photo_url': '',
     }
+    aira_guidance = _aira_guidance(request)
     notification_count = 0
     notification_preview = []
     if request.user.is_authenticated:
@@ -154,13 +230,16 @@ def site_nav(request):
                 'message': notification.message,
                 'time_label': f'{timesince(notification.created_at)} ago',
                 'unread': not notification.is_read,
-                'url': reverse('accreditation:evidence_detail', args=[notification.submission_id])
-                if notification.submission_id else reverse('core:notifications'),
+                'url': notification.target_url or (
+                    reverse('accreditation:evidence_detail', args=[notification.submission_id])
+                    if notification.submission_id else reverse('core:notifications')
+                ),
             })
 
     return {
         'nav_sections': nav_sections,
         'current_user_summary': current_user_summary,
+        'aira_guidance': aira_guidance,
         'notification_count': notification_count,
         'notification_preview': notification_preview,
     }

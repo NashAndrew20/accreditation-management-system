@@ -149,6 +149,7 @@ class Notification(models.Model):
     kind = models.CharField(max_length=40, default='workflow')
     title = models.CharField(max_length=180)
     message = models.TextField()
+    target_url = models.CharField(max_length=300, blank=True)
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 

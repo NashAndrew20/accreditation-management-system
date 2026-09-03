@@ -177,5 +177,6 @@ class SmartCompanionView(ApprovedUserRequiredMixin, TemplateView):
         context.update({
             'page_title': 'Smart Companion',
             'hide_topbar_title': True,
+            'hide_aira_global': True,
         })
         return context

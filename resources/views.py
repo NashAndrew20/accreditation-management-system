@@ -12,7 +12,7 @@ from accreditation.db_views import status_label, status_tone
 from accreditation.models import EvidenceFile
 from core.access import accessible_repository_submissions, is_admin_user
 from core.mixins import ApprovedUserRequiredMixin
-from core.models import Department, RoleAssignment, UserProfile
+from core.models import Department, Notification, RoleAssignment, UserProfile
 
 from .forms import CommunicationMessageForm
 from .models import CommunicationMessage, Conversation, ConversationParticipant
@@ -40,6 +40,10 @@ def _message_time(created_at):
     if (today - local_time.date()).days == 1:
         return 'Yesterday'
     return local_time.strftime('%b %d')
+
+
+def _communication_target_url(user_id):
+    return f'{reverse("resources:communication")}?user_id={user_id}'
 
 
 def _communication_assignment_queryset():
@@ -297,6 +301,12 @@ class CommunicationView(ApprovedUserRequiredMixin, TemplateView):
             conversation.messages.filter(
                 is_read=False,
             ).exclude(sender_id=self.request.user.pk).update(is_read=True)
+            Notification.objects.filter(
+                user=self.request.user,
+                kind='message',
+                target_url=_communication_target_url(selected_contact.pk),
+                is_read=False,
+            ).update(is_read=True)
 
         conversations = [
             _conversation_contact(self.request.user, contact, selected_id)
@@ -354,6 +364,13 @@ class CommunicationView(ApprovedUserRequiredMixin, TemplateView):
                     conversation=conversation,
                     sender=request.user,
                     body=form.cleaned_data['body'],
+                )
+                Notification.objects.create(
+                    user=recipient,
+                    kind='message',
+                    title=f'New message from {_user_name(request.user)}',
+                    message=form.cleaned_data['body'],
+                    target_url=_communication_target_url(request.user.pk),
                 )
                 conversation.save(update_fields=('updated_at',))
             return redirect(

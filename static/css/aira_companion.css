@@ -1,0 +1,110 @@
+.aira-companion-strip {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-width: 0;
+  margin-bottom: 20px;
+  padding: 11px 14px 11px 10px;
+  border: 1px solid var(--color-border);
+  border-left: 3px solid var(--maroon-700);
+  border-radius: var(--radius-md);
+  background: linear-gradient(105deg, var(--surface-warm), var(--color-surface));
+  box-shadow: var(--shadow-card);
+}
+
+.aira-companion-avatar {
+  position: relative;
+  width: 54px;
+  height: 54px;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--maroon-100);
+}
+
+.aira-companion-avatar img {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 180%;
+  max-width: none;
+  height: auto;
+  transform: translateX(-50%);
+}
+
+.aira-companion-copy {
+  min-width: 0;
+}
+
+.aira-companion-heading {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.aira-companion-heading strong {
+  color: var(--maroon-700);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+}
+
+.aira-companion-heading span {
+  color: var(--color-text-faint);
+  font-size: 11px;
+}
+
+.aira-companion-title {
+  margin-top: 2px;
+  overflow-wrap: anywhere;
+  color: var(--color-text);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.aira-companion-message {
+  margin-top: 2px;
+  overflow-wrap: anywhere;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.aira-companion-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0 13px;
+  border: 1px solid var(--maroon-600);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--maroon-700);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.aira-companion-link:hover {
+  background: var(--maroon-100);
+}
+
+@media (max-width: 620px) {
+  .aira-companion-strip {
+    grid-template-columns: 46px minmax(0, 1fr);
+    gap: 11px;
+    padding: 10px;
+  }
+
+  .aira-companion-avatar {
+    width: 46px;
+    height: 46px;
+    border-radius: 10px;
+  }
+
+  .aira-companion-link {
+    grid-column: 2;
+    justify-self: start;
+  }
+}
