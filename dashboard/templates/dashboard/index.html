@@ -2,7 +2,7 @@
 {% load static nav_extras %}
 
 {% block extra_css %}
-  <link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=4">
+  <link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=5">
 {% endblock %}
 
 {% block content %}
@@ -18,7 +18,9 @@
     </div>
 
     <div class="alert-avatar" aria-hidden="true">
-      <img src="{% static 'images/aira-wave-1.png' %}" alt="">
+      <img class="aira-talk-frame aira-talk-frame--idle" src="{% static 'images/aira-wave-1.png' %}" alt="">
+      <img class="aira-talk-frame aira-talk-frame--open" src="{% static 'images/aira-talking-1.png' %}" alt="">
+      <img class="aira-talk-frame aira-talk-frame--smile" src="{% static 'images/aira-talking-2.png' %}" alt="">
     </div>
 
     <div class="alert-surface">

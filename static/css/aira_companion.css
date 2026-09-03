@@ -9,6 +9,15 @@
   }
 }
 
+@keyframes aira-talk-cycle {
+  0%, 32.99% {
+    opacity: 1;
+  }
+  33%, 100% {
+    opacity: 0;
+  }
+}
+
 .aira-companion-strip {
   position: fixed;
   right: 28px;
@@ -45,6 +54,24 @@
   max-width: none;
   height: auto;
   transform: translateX(-50%);
+}
+
+.aira-talk-frame {
+  opacity: 0;
+  animation: aira-talk-cycle 3.6s steps(1, end) infinite;
+  animation-fill-mode: both;
+}
+
+.aira-talk-frame--idle {
+  animation-delay: 0s;
+}
+
+.aira-talk-frame--open {
+  animation-delay: -1.2s;
+}
+
+.aira-talk-frame--smile {
+  animation-delay: -2.4s;
 }
 
 .aira-companion-bubble {
@@ -167,6 +194,16 @@
   color: var(--color-text-muted);
   font-size: 12px;
   line-height: 1.4;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aira-talk-frame {
+    animation: none;
+  }
+
+  .aira-talk-frame--idle {
+    opacity: 1;
+  }
 }
 
 @media (max-width: 880px) {
