@@ -470,6 +470,53 @@
     });
   }
 
+  function bindDashboardAlert() {
+    document.querySelectorAll('[data-alert-banner]').forEach(function (banner) {
+      const minimize = banner.querySelector('[data-alert-minimize]');
+      const restore = banner.querySelector('[data-alert-restore]');
+      if (!minimize || !restore) return;
+
+      function setMinimized(isMinimized, moveFocus) {
+        banner.classList.toggle('is-minimized', isMinimized);
+        restore.hidden = !isMinimized;
+        minimize.disabled = isMinimized;
+        minimize.tabIndex = isMinimized ? -1 : 0;
+        minimize.setAttribute('aria-hidden', String(isMinimized));
+        minimize.setAttribute('aria-expanded', String(!isMinimized));
+
+        if (isMinimized) {
+          banner.removeAttribute('aria-labelledby');
+          banner.setAttribute('aria-label', 'AIRA dashboard warning minimized');
+        } else {
+          banner.setAttribute('aria-labelledby', 'aira-alert-title');
+          banner.setAttribute('aria-label', 'AIRA dashboard warning');
+        }
+
+        if (moveFocus) {
+          window.setTimeout(function () {
+            (isMinimized ? restore : minimize).focus();
+          }, 0);
+        }
+      }
+
+      minimize.addEventListener('click', function () {
+        setMinimized(true, true);
+      });
+
+      restore.addEventListener('click', function () {
+        setMinimized(false, true);
+      });
+
+      banner.addEventListener('keydown', function (event) {
+        if (event.key !== 'Escape' || banner.classList.contains('is-minimized')) return;
+        event.preventDefault();
+        setMinimized(true, true);
+      });
+
+      setMinimized(false, false);
+    });
+  }
+
   function submitCompanionQuestion(input) {
     const question = input.value.trim();
     if (!question) {
@@ -888,6 +935,7 @@
     bindNotificationMenu();
     bindProfileMenu();
     bindAiraCompanion();
+    bindDashboardAlert();
     bindMessaging();
     bindProfilePhoto();
     bindActionButtons();
