@@ -824,9 +824,9 @@ class ReviewWorkflowView(ApprovedUserRequiredMixin, TemplateView):
         context.update({
             'page_title': 'Review Workflow',
             'review_stats': [
-                {'label': 'Pending Review', 'value': submissions.filter(status__in=ACTIVE_REVIEW_STATUSES).count(), 'tone': 'gold'},
-                {'label': 'Needs Revision', 'value': _scoped_submissions(self.request.user).filter(status=EvidenceSubmission.NEEDS_REVISION).count(), 'tone': 'rose'},
-                {'label': 'Complied', 'value': _scoped_submissions(self.request.user).filter(status__in=COMPLETED_STATUSES).count(), 'tone': 'green'},
+                {'label': 'Pending Review', 'value': submissions.filter(status__in=ACTIVE_REVIEW_STATUSES).count(), 'tone': 'gold', 'icon': 'clock'},
+                {'label': 'Needs Revision', 'value': _scoped_submissions(self.request.user).filter(status=EvidenceSubmission.NEEDS_REVISION).count(), 'tone': 'rose', 'icon': 'alert'},
+                {'label': 'Complied', 'value': _scoped_submissions(self.request.user).filter(status__in=COMPLETED_STATUSES).count(), 'tone': 'green', 'icon': 'check'},
             ],
             'submissions': rows,
             'submission_count': len(rows),

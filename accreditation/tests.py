@@ -204,6 +204,8 @@ class AccreditationWorkflowTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, '<h1>Review Workflow</h1>', html=True)
+        self.assertContains(response, 'Evidence Review Queue')
+        self.assertContains(response, 'class="review-stat-icon"')
         self.assertNotContains(response, 'class="review-breadcrumb"')
 
     def test_levels_and_areas_cache_public_accreditation_structure(self):

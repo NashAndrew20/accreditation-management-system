@@ -14,9 +14,12 @@
 
     <section class="review-stat-grid" aria-label="Review status summary">
       {% for stat in review_stats %}
-        <article class="review-stat-card">
-          <strong class="tone-{{ stat.tone }}">{{ stat.value }}</strong>
-          <span>{{ stat.label }}</span>
+        <article class="review-stat-card stat-tone-{{ stat.tone }}">
+          <div class="review-stat-icon">{% icon stat.icon %}</div>
+          <div class="review-stat-copy">
+            <strong>{{ stat.value }}</strong>
+            <span>{{ stat.label }}</span>
+          </div>
         </article>
       {% endfor %}
     </section>
@@ -36,6 +39,14 @@
     </section>
 
     <section class="review-table-card">
+      <header class="review-queue-heading">
+        <div>
+          <h2>Evidence Review Queue</h2>
+          <p>Review the submissions currently within your access scope.</p>
+        </div>
+        <span class="review-queue-count">{{ submission_count }} items</span>
+      </header>
+
       <div class="review-table-wrap">
         <table>
           <thead>
@@ -54,8 +65,13 @@
             {% for item in submissions %}
               <tr>
                 <td>
-                  <strong>{{ item.evidence }}</strong>
-                  <span>{{ item.code }}</span>
+                  <div class="review-evidence-cell">
+                    <span class="review-evidence-icon">{% icon 'file' %}</span>
+                    <div>
+                      <strong>{{ item.evidence }}</strong>
+                      <span>{{ item.code }}</span>
+                    </div>
+                  </div>
                 </td>
                 <td>{{ item.department }}</td>
                 <td>{{ item.area }}</td>

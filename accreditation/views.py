@@ -603,9 +603,9 @@ class ReviewWorkflowView(ApprovedUserRequiredMixin, TemplateView):
             {
                 'page_title': 'Review Workflow',
                 'review_stats': [
-                    {'label': 'Pending Review', 'value': 2, 'tone': 'gold'},
-                    {'label': 'Needs Revision', 'value': 2, 'tone': 'rose'},
-                    {'label': 'Complied', 'value': 2, 'tone': 'green'},
+                    {'label': 'Pending Review', 'value': 2, 'tone': 'gold', 'icon': 'clock'},
+                    {'label': 'Needs Revision', 'value': 2, 'tone': 'rose', 'icon': 'alert'},
+                    {'label': 'Complied', 'value': 2, 'tone': 'green', 'icon': 'check'},
                 ],
                 'submissions': submissions,
                 'submission_count': len(submissions),
