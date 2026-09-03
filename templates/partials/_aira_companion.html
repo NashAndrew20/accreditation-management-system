@@ -1,8 +1,16 @@
 {% load static %}
 
 {% if user.is_authenticated and aira_guidance %}
-  <aside class="aira-companion-strip" aria-label="AIRA Smart Companion">
+  <aside class="aira-companion-strip" data-aira-companion aria-label="AIRA Smart Companion">
     <div class="aira-companion-bubble">
+      <button
+        type="button"
+        class="aira-companion-dismiss"
+        data-aira-dismiss
+        aria-label="Minimize AIRA"
+        title="Minimize AIRA"
+      >×</button>
+
       <div class="aira-companion-copy">
         <div class="aira-companion-heading">
           <strong>AIRA</strong>
@@ -14,5 +22,16 @@
     <div class="aira-companion-avatar" aria-hidden="true">
       <img src="{% static 'images/aira-wave-1.png' %}" alt="">
     </div>
+
+    <button
+      type="button"
+      class="aira-companion-restore"
+      data-aira-restore
+      aria-label="Show AIRA Smart Companion"
+      title="Show AIRA Smart Companion"
+      hidden
+    >
+      <img src="{% static 'images/aira-wave-1.png' %}" alt="">
+    </button>
   </aside>
 {% endif %}

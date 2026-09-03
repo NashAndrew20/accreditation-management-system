@@ -427,6 +427,49 @@
     return avatar;
   }
 
+  function bindAiraCompanion() {
+    document.querySelectorAll('[data-aira-companion]').forEach(function (companion) {
+      const dismiss = companion.querySelector('[data-aira-dismiss]');
+      const restore = companion.querySelector('[data-aira-restore]');
+      if (!dismiss || !restore) return;
+
+      function setMinimized(isMinimized, moveFocus) {
+        companion.classList.toggle('is-minimized', isMinimized);
+        restore.hidden = !isMinimized;
+        dismiss.disabled = isMinimized;
+        dismiss.tabIndex = isMinimized ? -1 : 0;
+        dismiss.setAttribute('aria-hidden', String(isMinimized));
+        dismiss.setAttribute('aria-expanded', String(!isMinimized));
+        companion.setAttribute(
+          'aria-label',
+          isMinimized ? 'AIRA Smart Companion minimized' : 'AIRA Smart Companion',
+        );
+
+        if (moveFocus) {
+          window.setTimeout(function () {
+            (isMinimized ? restore : dismiss).focus();
+          }, 0);
+        }
+      }
+
+      dismiss.addEventListener('click', function () {
+        setMinimized(true, true);
+      });
+
+      restore.addEventListener('click', function () {
+        setMinimized(false, true);
+      });
+
+      companion.addEventListener('keydown', function (event) {
+        if (event.key !== 'Escape' || companion.classList.contains('is-minimized')) return;
+        event.preventDefault();
+        setMinimized(true, true);
+      });
+
+      setMinimized(false, false);
+    });
+  }
+
   function submitCompanionQuestion(input) {
     const question = input.value.trim();
     if (!question) {
@@ -844,6 +887,7 @@
     bindNotifications();
     bindNotificationMenu();
     bindProfileMenu();
+    bindAiraCompanion();
     bindMessaging();
     bindProfilePhoto();
     bindActionButtons();

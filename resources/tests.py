@@ -321,6 +321,8 @@ class DocumentRepositoryAccessTests(TestCase):
                 response = self.client.get(url)
                 self.assertContains(response, 'aria-label="AIRA Smart Companion"')
                 self.assertContains(response, 'class="aira-companion-bubble"')
+                self.assertContains(response, 'data-aira-dismiss')
+                self.assertContains(response, 'data-aira-restore')
                 self.assertContains(response, 'Smart Companion')
 
     def test_communication_rejects_recipients_outside_allowed_roles(self):

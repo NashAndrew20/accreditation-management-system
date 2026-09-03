@@ -58,6 +58,81 @@
   content: '';
 }
 
+.aira-companion-dismiss {
+  position: absolute;
+  top: -9px;
+  right: -9px;
+  z-index: 4;
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 3px 10px rgba(67, 13, 34, 0.14);
+  color: var(--maroon-700);
+  font-size: 17px;
+  line-height: 1;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.aira-companion-strip:hover .aira-companion-dismiss,
+.aira-companion-strip:focus-within .aira-companion-dismiss {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.aira-companion-dismiss:hover,
+.aira-companion-dismiss:focus-visible {
+  background: var(--maroon-700);
+  color: #fff;
+}
+
+.aira-companion-restore {
+  display: none;
+  width: 54px;
+  height: 54px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: var(--shadow-card);
+}
+
+.aira-companion-restore img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 20%;
+}
+
+.aira-companion-restore:focus-visible {
+  outline: 2px solid var(--maroon-600);
+  outline-offset: 3px;
+}
+
+.aira-companion-strip.is-minimized {
+  grid-template-columns: 54px;
+  width: 54px;
+}
+
+.aira-companion-strip.is-minimized .aira-companion-bubble,
+.aira-companion-strip.is-minimized .aira-companion-avatar {
+  display: none;
+}
+
+.aira-companion-strip.is-minimized .aira-companion-restore {
+  display: flex;
+}
+
 .aira-companion-copy {
   min-width: 0;
 }
@@ -115,6 +190,22 @@
     border-top-width: 8px;
     border-bottom-width: 8px;
     border-left-width: 12px;
+  }
+
+  .aira-companion-dismiss {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .aira-companion-restore {
+    width: 46px;
+    height: 46px;
+  }
+
+  .aira-companion-strip.is-minimized {
+    grid-template-columns: 46px;
+    width: 46px;
   }
 
   .aira-companion-heading strong {
