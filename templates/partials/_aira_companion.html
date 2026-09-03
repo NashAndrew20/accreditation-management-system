@@ -1,4 +1,4 @@
-{% load static %}
+{% load static nav_extras %}
 
 {% if user.is_authenticated and aira_guidance %}
   <aside class="aira-companion-strip" data-aira-companion aria-label="AIRA Smart Companion">
@@ -30,7 +30,7 @@
       title="Show AIRA Smart Companion"
       hidden
     >
-      <img src="{% static 'images/aira-wave-1.png' %}" alt="">
+      {% icon 'message' 'aira-companion-restore-icon' %}
     </button>
   </aside>
 {% endif %}
