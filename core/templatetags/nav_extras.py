@@ -1,5 +1,5 @@
 from django import template
-from django.urls import resolve
+from django.utils.html import format_html
 
 register = template.Library()
 
@@ -49,10 +49,13 @@ _ICONS = {
 
 @register.simple_tag
 def icon(name, css_class='icon'):
-    from django.utils.safestring import mark_safe
     paths = _ICONS.get(name, '')
-    return mark_safe(
-        f'<svg class="{css_class}" viewBox="0 0 24 24" fill="none" '
-        f'stroke="currentColor" stroke-width="1.8" stroke-linecap="round" '
+    svg_template = (
+        '<svg class="{}" viewBox="0 0 24 24" fill="none" '
+        'stroke="currentColor" stroke-width="1.8" stroke-linecap="round" '
         f'stroke-linejoin="round" aria-hidden="true">{paths}</svg>'
+    )
+    return format_html(
+        svg_template,
+        css_class,
     )

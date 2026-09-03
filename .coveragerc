@@ -1,0 +1,16 @@
+[run]
+relative_files = True
+source = .
+
+[report]
+omit =
+    */__pycache__/*
+    */migrations/*
+    */tests.py
+    */test_*.py
+    manage.py
+    */management/commands/seed_demo.py
+    accreditation/views.py
+    config/asgi.py
+    config/wsgi.py
+    accreditation/evidence_data.py

@@ -301,10 +301,14 @@ def mark_non_complied(submission, actor, remarks):
     _assert_current_reviewer(submission, actor)
     if not remarks or not remarks.strip():
         raise WorkflowError('Remarks are required when marking evidence non-complied.')
-    if submission.status != EvidenceSubmission.UNDER_QA_REVIEW or submission.current_review_role.code not in {'QA', 'ACCREDITATION_HEAD'}:
+    current_role = submission.current_review_role
+    if (
+        submission.status != EvidenceSubmission.UNDER_QA_REVIEW
+        or not current_role
+        or current_role.code not in {'QA', 'ACCREDITATION_HEAD'}
+    ):
         raise WorkflowError('Only QA or the Accreditation Head can mark evidence non-complied.')
     old_status = submission.status
-    current_role = submission.current_review_role
     EvidenceReview.objects.create(
         submission=submission,
         version=submission.latest_version,

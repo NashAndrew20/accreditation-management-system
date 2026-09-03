@@ -1,6 +1,8 @@
 from django.contrib.auth import get_user_model
-from django.test import TestCase
+from django.test import SimpleTestCase, TestCase
 from django.urls import reverse
+
+from .views import _point_data, _points
 
 from accreditation.models import (
     AccreditationArea,
@@ -95,3 +97,9 @@ class ReportsExportTests(TestCase):
         self.assertContains(response, "Hello! I'm AIRA.")
         self.assertNotContains(response, 'JMCFI Accreditation Companion')
         self.assertNotContains(response, '<h1>Smart Companion</h1>')
+
+
+class ChartSafetyTests(SimpleTestCase):
+    def test_zero_chart_scale_does_not_raise(self):
+        self.assertEqual(_points([0], max_value=0), '30,220')
+        self.assertEqual(_point_data([0], ['Now'], max_value=0)[0]['y'], 220)

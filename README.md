@@ -6,13 +6,13 @@ Internal accreditation evidence management system built with Django and SQLite f
 
 ```bash
 ./.venv/bin/python manage.py migrate
-DEMO_MODE=True ./.venv/bin/python manage.py seed_demo
-DEMO_MODE=True ./.venv/bin/python manage.py runserver 127.0.0.1:8000
+DEMO_MODE=True DEMO_PASSWORD=123 ./.venv/bin/python manage.py seed_demo
+DEMO_MODE=True DEMO_PASSWORD=123 ./.venv/bin/python manage.py runserver 127.0.0.1:8000
 ```
 
 Open <http://127.0.0.1:8000/login/>.
 
-`seed_demo` is available only when `DEMO_MODE` is enabled (enabled by default while `DEBUG=True`). It creates only three active development demo accounts: `qa` (QA), `dean` (Dean · CITE), and `phead` (Program Head · CITE). Their development password is `123`, and first-login password changes are currently disabled. Older demo accounts are disabled, rather than deleted, so their evidence history remains intact. Set `DJANGO_ENV=production` in production; demo seeding and demo authentication are disabled automatically.
+`seed_demo` is available only when `DEMO_MODE` is enabled (enabled by default while `DEBUG=True`) and `DEMO_PASSWORD` is set. It creates only three active development demo accounts: `qa` (QA), `dean` (Dean · CITE), and `phead` (Program Head · CITE). Their development password is supplied through the environment, and first-login password changes are currently disabled. Older demo accounts are disabled, rather than deleted, so their evidence history remains intact. Set `DJANGO_ENV=production` in production; demo seeding and demo authentication are disabled automatically.
 
 ## Production configuration
 

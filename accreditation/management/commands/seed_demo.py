@@ -75,6 +75,8 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         if not settings.DEMO_MODE:
             raise CommandError('Demo seeding is disabled when DEMO_MODE is false.')
+        if not DEMO_PASSWORD:
+            raise CommandError('Set DEMO_PASSWORD before seeding development accounts.')
 
         roles = {}
         for sort_order, (code, name) in enumerate(ROLE_DEFINITIONS):
@@ -206,7 +208,7 @@ class Command(BaseCommand):
             f'Seeded {len(roles)} internal roles, {len(departments)} departments/programs, '
             f'{len(areas)} areas, {len(DEMO_USERS)} demo accounts, and {sample_count} new sample submissions.'
         ))
-        self.stdout.write('Demo accounts use the development-only password 123 without forced first-login password changes.')
+        self.stdout.write('Demo accounts use the configured development-only password without forced first-login password changes.')
 
     @staticmethod
     def _take_over_legacy_demo_user(User, username):

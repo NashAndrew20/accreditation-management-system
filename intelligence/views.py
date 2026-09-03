@@ -15,11 +15,13 @@ from .pdf_export import build_report_pdf
 
 
 def _points(values, max_value=36):
+    max_value = max(float(max_value), 1)
     x_values = [30, 120, 210, 300, 390, 480]
     return ' '.join(f'{x},{220 - round(min(value, max_value) / max_value * 172)}' for x, value in zip(x_values, values))
 
 
 def _point_data(values, labels, max_value=36):
+    max_value = max(float(max_value), 1)
     x_values = [30, 120, 210, 300, 390, 480]
     return [
         {

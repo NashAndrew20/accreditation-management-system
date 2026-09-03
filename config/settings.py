@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 import os
+import secrets
 from datetime import timedelta
 from pathlib import Path
 
@@ -54,7 +55,8 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 if not SECRET_KEY:
     if IS_PRODUCTION:
         raise ImproperlyConfigured('DJANGO_SECRET_KEY must be set in production.')
-    SECRET_KEY = 'django-insecure-%20ig3=nm%)7nf8(i(&gs6!=!01$_64e@2q8zi7-$&c046-@$j'
+    # Keep local setup friction-free without committing a reusable secret.
+    SECRET_KEY = secrets.token_urlsafe(50)
 
 # Demo accounts and the default development password are accepted only when
 # the project is running in demo mode. Production deployments should set
@@ -62,6 +64,7 @@ if not SECRET_KEY:
 DEMO_MODE = env_bool('DEMO_MODE', DEBUG and not IS_PRODUCTION)
 if IS_PRODUCTION:
     DEMO_MODE = False
+DEMO_PASSWORD = os.getenv('DEMO_PASSWORD', '')
 
 ALLOWED_HOSTS = [host.strip() for host in os.getenv('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost,testserver').split(',') if host.strip()]
 

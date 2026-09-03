@@ -530,8 +530,10 @@
 
     const userMessage = document.createElement('article');
     userMessage.className = 'companion-user-message';
-    userMessage.innerHTML = '<div class="assistant-bubble"></div>';
-    userMessage.querySelector('.assistant-bubble').textContent = question;
+    const userBubble = document.createElement('div');
+    userBubble.className = 'assistant-bubble';
+    userBubble.textContent = question;
+    userMessage.appendChild(userBubble);
 
     const reply = document.createElement('article');
     reply.className = 'companion-message companion-reply';

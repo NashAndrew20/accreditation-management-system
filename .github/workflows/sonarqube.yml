@@ -46,7 +46,9 @@ jobs:
       - name: run tests with coverage
         run: |
           coverage run manage.py test
+          coverage report --fail-under=80
           coverage xml -o coverage.xml
+          test -s coverage.xml
 
       - name: run sonarqube cloud scan
         uses: SonarSource/sonarqube-scan-action@v8
@@ -56,3 +58,4 @@ jobs:
           args: >-
             -Dsonar.organization=${{ vars.SONAR_ORGANIZATION || 'cdponto' }}
             -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY || 'cdponto_accreditation-management-system' }}
+            -Dsonar.qualitygate.wait=true

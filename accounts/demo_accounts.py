@@ -1,6 +1,9 @@
 """Canonical development accounts used by the login shortcuts and demo seeder."""
 
-DEMO_PASSWORD = '123'
+from django.conf import settings
+
+
+DEMO_PASSWORD = settings.DEMO_PASSWORD
 
 DEMO_ACCOUNT_DEFINITIONS = (
     {
@@ -38,13 +41,17 @@ DEMO_ACCOUNT_DEFINITIONS = (
     },
 )
 
-DEMO_LOGIN_OPTIONS = tuple(
-    {
-        'label': account['label'],
-        'role': account['description'],
-        'username': account['username'],
-        'password': DEMO_PASSWORD,
-        'initials': account['initials'],
-    }
-    for account in DEMO_ACCOUNT_DEFINITIONS
+DEMO_LOGIN_OPTIONS = (
+    tuple(
+        {
+            'label': account['label'],
+            'role': account['description'],
+            'username': account['username'],
+            'password': DEMO_PASSWORD,
+            'initials': account['initials'],
+        }
+        for account in DEMO_ACCOUNT_DEFINITIONS
+    )
+    if DEMO_PASSWORD
+    else ()
 )
