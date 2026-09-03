@@ -4,10 +4,10 @@
   bottom: 20px;
   z-index: 9;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 88px;
+  grid-template-columns: minmax(0, 1fr) 136px;
   align-items: end;
   gap: 0;
-  width: min(455px, calc(100vw - 56px));
+  width: min(560px, calc(100vw - 56px));
   min-width: 0;
   padding: 0;
 }
@@ -15,11 +15,11 @@
 .aira-companion-avatar {
   position: relative;
   z-index: 2;
-  width: 88px;
-  height: 112px;
+  width: 136px;
+  height: 178px;
   align-self: end;
   overflow: hidden;
-  margin-left: -8px;
+  margin-left: -14px;
   border-radius: 0;
   background: transparent;
 }
@@ -28,7 +28,7 @@
   position: absolute;
   top: 0;
   left: 50%;
-  width: 165%;
+  width: 150%;
   max-width: none;
   height: auto;
   transform: translateX(-50%);
@@ -38,10 +38,10 @@
   position: relative;
   z-index: 1;
   min-width: 0;
-  padding: 14px 15px 13px;
-  border: 1px solid var(--color-border);
-  border-radius: 16px 5px 16px 16px;
-  background: var(--color-surface);
+  padding: 18px 20px 15px;
+  border: 2px solid var(--maroon-600);
+  border-radius: 14px 5px 14px 14px;
+  background: linear-gradient(180deg, var(--surface-soft), var(--color-surface));
   box-shadow: var(--shadow-card);
 }
 
@@ -56,15 +56,53 @@
 }
 
 .aira-companion-bubble::before {
-  right: -11px;
-  border-width: 8px 0 8px 11px;
-  border-color: transparent transparent transparent var(--color-border);
+  right: -14px;
+  border-width: 10px 0 10px 14px;
+  border-color: transparent transparent transparent var(--maroon-600);
 }
 
 .aira-companion-bubble::after {
-  right: -9px;
-  border-width: 7px 0 7px 10px;
-  border-color: transparent transparent transparent var(--color-surface);
+  right: -10px;
+  border-width: 8px 0 8px 11px;
+  border-color: transparent transparent transparent var(--surface-soft);
+}
+
+.aira-bubble-corner {
+  position: absolute;
+  z-index: 2;
+  width: 9px;
+  height: 9px;
+  border-color: var(--gold-500);
+  border-style: solid;
+  opacity: 0.9;
+}
+
+.corner-top-left {
+  top: 8px;
+  left: 9px;
+  border-width: 2px 0 0 2px;
+  border-radius: 4px 0 0 0;
+}
+
+.corner-top-right {
+  top: 8px;
+  right: 9px;
+  border-width: 2px 2px 0 0;
+  border-radius: 0 4px 0 0;
+}
+
+.corner-bottom-left {
+  bottom: 8px;
+  left: 9px;
+  border-width: 0 0 2px 2px;
+  border-radius: 0 0 0 4px;
+}
+
+.corner-bottom-right {
+  right: 9px;
+  bottom: 8px;
+  border-width: 0 2px 2px 0;
+  border-radius: 0 0 4px 0;
 }
 
 .aira-companion-copy {
@@ -114,27 +152,27 @@
 @media (max-width: 880px) {
   .aira-companion-strip {
     right: 20px;
-    width: min(455px, calc(100vw - 40px));
+    width: min(560px, calc(100vw - 40px));
   }
 }
 
 @media (max-width: 620px) {
   .aira-companion-strip {
-    grid-template-columns: minmax(0, 1fr) 64px;
+    grid-template-columns: minmax(0, 1fr) 92px;
     width: calc(100vw - 28px);
     right: 14px;
     bottom: 14px;
   }
 
   .aira-companion-avatar {
-    width: 64px;
-    height: 86px;
-    margin-left: -6px;
+    width: 92px;
+    height: 122px;
+    margin-left: -10px;
   }
 
   .aira-companion-bubble {
-    padding: 12px 12px 11px;
-    border-radius: 4px 13px 13px 13px;
+    padding: 14px 14px 12px;
+    border-radius: 12px 4px 12px 12px;
   }
 
   .aira-companion-heading strong {
@@ -144,5 +182,10 @@
   .aira-companion-message,
   .aira-companion-link {
     font-size: 10.5px;
+  }
+
+  .aira-bubble-corner {
+    width: 7px;
+    height: 7px;
   }
 }
