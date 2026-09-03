@@ -52,7 +52,7 @@
   z-index: 3;
   min-width: 0;
   padding: 18px 20px 15px;
-  border: 0;
+  border: 1px solid var(--color-border-strong);
   border-radius: 14px 5px 14px 14px;
   background: #fff;
   box-shadow: var(--shadow-card);
