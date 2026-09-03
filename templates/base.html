@@ -23,6 +23,7 @@
 <body>
   <div class="app-shell">
     {% include 'partials/_sidebar.html' %}
+    <div class="mobile-nav-backdrop" data-mobile-menu-backdrop hidden></div>
 
     <div class="main-column">
       {% include 'partials/_topbar.html' %}
@@ -42,7 +43,7 @@
     </div>
   </div>
 
-  <script src="{% static 'js/ui_interactions.js' %}?v=4" defer></script>
+  <script src="{% static 'js/ui_interactions.js' %}?v=5" defer></script>
   {% block extra_js %}{% endblock %}
 </body>
 </html>

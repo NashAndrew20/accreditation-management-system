@@ -396,6 +396,68 @@
     });
   }
 
+  function bindMobileNavigation() {
+    const sidebar = document.querySelector('[data-mobile-sidebar]');
+    const backdrop = document.querySelector('[data-mobile-menu-backdrop]');
+    const triggers = document.querySelectorAll('[data-mobile-menu-trigger]');
+    const closeButton = sidebar && sidebar.querySelector('[data-mobile-menu-close]');
+    if (!sidebar || !triggers.length) return;
+
+    function setMenuOpen(isOpen, moveFocus) {
+      sidebar.classList.toggle('is-mobile-open', isOpen);
+      if (backdrop) backdrop.hidden = !isOpen;
+      document.body.classList.toggle('mobile-nav-open', isOpen);
+      triggers.forEach(function (trigger) {
+        trigger.setAttribute('aria-expanded', String(isOpen));
+        trigger.setAttribute('aria-label', isOpen ? 'Close navigation menu' : 'Open navigation menu');
+        trigger.setAttribute('title', isOpen ? 'Close menu' : 'Open menu');
+      });
+
+      if (moveFocus) {
+        const focusTarget = isOpen ? closeButton : triggers[0];
+        if (focusTarget) focusTarget.focus();
+      }
+    }
+
+    triggers.forEach(function (trigger) {
+      trigger.addEventListener('click', function () {
+        setMenuOpen(!sidebar.classList.contains('is-mobile-open'), true);
+      });
+    });
+
+    if (closeButton) {
+      closeButton.addEventListener('click', function () {
+        setMenuOpen(false, true);
+      });
+    }
+
+    if (backdrop) {
+      backdrop.addEventListener('click', function () {
+        setMenuOpen(false, false);
+      });
+    }
+
+    sidebar.querySelectorAll('.sidebar-nav a').forEach(function (link) {
+      link.addEventListener('click', function () {
+        setMenuOpen(false, false);
+      });
+    });
+
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape' && sidebar.classList.contains('is-mobile-open')) {
+        setMenuOpen(false, true);
+      }
+    });
+
+    window.addEventListener('resize', function () {
+      if (window.innerWidth > 880 && sidebar.classList.contains('is-mobile-open')) {
+        setMenuOpen(false, false);
+      }
+    });
+
+    setMenuOpen(false, false);
+  }
+
   function companionAnswer(question) {
     const lower = normalize(question);
     if (lower.includes('missing') || lower.includes('documents')) {
@@ -873,6 +935,7 @@
     bindNotifications();
     bindNotificationMenu();
     bindProfileMenu();
+    bindMobileNavigation();
     bindAiraCompanion();
     bindMessaging();
     bindProfilePhoto();

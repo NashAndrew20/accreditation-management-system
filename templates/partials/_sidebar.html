@@ -1,5 +1,5 @@
 {% load static nav_extras %}
-<aside class="sidebar">
+<aside class="sidebar" id="site-sidebar" data-mobile-sidebar>
   <div class="sidebar-brand">
     <img
       class="brand-logo"
@@ -10,6 +10,15 @@
       <div class="brand-name">JMCFI AMS</div>
       <div class="brand-sub">Accreditation Portal</div>
     </div>
+    <button
+      type="button"
+      class="mobile-sidebar-close"
+      data-mobile-menu-close
+      aria-label="Close navigation menu"
+      title="Close menu"
+    >
+      {% icon 'close' %}
+    </button>
   </div>
 
   <nav class="sidebar-nav">
