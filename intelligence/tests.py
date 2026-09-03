@@ -79,6 +79,17 @@ class ReportsExportTests(TestCase):
         self.assertIn(b'100%', response.content)
         self.assertIn(b'Civil Engineering', response.content)
 
+    def test_reports_page_uses_a_server_generated_export_link(self):
+        self.client.force_login(self.user)
+
+        response = self.client.get(reverse('intelligence:reports_monitoring'))
+
+        self.assertContains(
+            response,
+            f'href="{reverse("intelligence:reports_export")}"',
+        )
+        self.assertNotContains(response, 'data-export-url')
+
     def test_smart_companion_uses_aira_image(self):
         self.client.force_login(self.user)
 

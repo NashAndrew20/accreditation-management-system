@@ -565,7 +565,9 @@
 
     document.querySelectorAll('.composer-row button').forEach(function (button) {
       button.addEventListener('click', function () {
-        const input = button.closest('.composer-row').querySelector('input');
+        const composer = button.closest('.composer-row');
+        const input = composer && composer.querySelector('input');
+        if (!input) return;
         submitCompanionQuestion(input);
       });
     });
@@ -578,17 +580,6 @@
         }
       });
     });
-  }
-
-  function downloadReport() {
-    const button = document.querySelector('.export-btn');
-    const exportUrl = button && button.dataset.exportUrl;
-    if (!exportUrl) {
-      showToast('Report export is unavailable');
-      return;
-    }
-
-    window.location.assign(exportUrl);
   }
 
   function applyProfilePhoto(photoUrl) {
@@ -657,13 +648,6 @@
     document.querySelectorAll('.print-btn').forEach(function (button) {
       button.addEventListener('click', function () {
         window.print();
-      });
-    });
-
-    document.querySelectorAll('.export-btn').forEach(function (button) {
-      button.addEventListener('click', function () {
-        downloadReport();
-        showToast('Report exported');
       });
     });
 

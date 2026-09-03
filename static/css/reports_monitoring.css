@@ -74,11 +74,16 @@
   gap: 10px;
 }
 
-.report-actions button {
+.report-actions button,
+.report-actions a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-height: 38px;
   padding: 0 16px;
   border-radius: var(--radius-sm);
   font-weight: 700;
+  text-decoration: none;
 }
 
 .print-btn {
