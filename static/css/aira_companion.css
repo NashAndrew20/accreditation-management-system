@@ -60,8 +60,8 @@
 
 .aira-companion-dismiss {
   position: absolute;
-  top: -9px;
-  right: -9px;
+  top: 5px;
+  right: 5px;
   z-index: 4;
   display: grid;
   width: 24px;
@@ -72,7 +72,7 @@
   border-radius: 50%;
   background: #fff;
   box-shadow: 0 3px 10px rgba(67, 13, 34, 0.14);
-  color: var(--maroon-700);
+  color: #000;
   font-size: 17px;
   line-height: 1;
   opacity: 0;
@@ -89,8 +89,8 @@
 
 .aira-companion-dismiss:hover,
 .aira-companion-dismiss:focus-visible {
-  background: var(--maroon-700);
-  color: #fff;
+  background: #fff;
+  color: #000;
 }
 
 .aira-companion-restore {
@@ -193,6 +193,8 @@
   }
 
   .aira-companion-dismiss {
+    top: 4px;
+    right: 4px;
     opacity: 1;
     visibility: visible;
     pointer-events: auto;

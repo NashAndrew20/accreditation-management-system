@@ -3,14 +3,6 @@
 {% if user.is_authenticated and aira_guidance %}
   <aside class="aira-companion-strip" data-aira-companion aria-label="AIRA Smart Companion">
     <div class="aira-companion-bubble">
-      <button
-        type="button"
-        class="aira-companion-dismiss"
-        data-aira-dismiss
-        aria-label="Minimize AIRA"
-        title="Minimize AIRA"
-      >×</button>
-
       <div class="aira-companion-copy">
         <div class="aira-companion-heading">
           <strong>AIRA</strong>
@@ -19,8 +11,15 @@
       </div>
     </div>
 
-    <div class="aira-companion-avatar" aria-hidden="true">
+    <div class="aira-companion-avatar">
       <img src="{% static 'images/aira-wave-1.png' %}" alt="">
+      <button
+        type="button"
+        class="aira-companion-dismiss"
+        data-aira-dismiss
+        aria-label="Minimize AIRA"
+        title="Minimize AIRA"
+      >×</button>
     </div>
 
     <button
