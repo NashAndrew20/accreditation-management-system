@@ -121,6 +121,16 @@ def _area_context(area, scoped_submissions):
     completed = submissions.filter(status__in=COMPLETED_STATUSES).count()
     revision = submissions.filter(status=EvidenceSubmission.NEEDS_REVISION).count()
     pending = submissions.exclude(status__in=COMPLETED_STATUSES | {EvidenceSubmission.DRAFT}).count()
+    missing = max(requirements.count() - submissions.count(), 0)
+    filter_statuses = []
+    if completed:
+        filter_statuses.append('complied')
+    if pending:
+        filter_statuses.append('pending')
+    if revision:
+        filter_statuses.append('revision')
+    if missing:
+        filter_statuses.append('missing')
     return {
         'code': area_code,
         'name': area_name,
@@ -130,7 +140,11 @@ def _area_context(area, scoped_submissions):
         'compiled': completed,
         'pending': pending,
         'revision': revision,
-        'missing': max(requirements.count() - submissions.count(), 0),
+        'missing': missing,
+        'departments': list(
+            submissions.values_list('department__name', flat=True).distinct().order_by('department__name')
+        ),
+        'filter_statuses': filter_statuses,
         'model': area,
     }
 
@@ -142,7 +156,13 @@ class LevelsAreasView(ApprovedUserRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         structure = get_active_structure()
         if not structure['cycle']:
-            context.update({'page_title': 'Levels & Areas', 'levels': [], 'areas': [], 'overview': {}})
+            context.update({
+                'page_title': 'Levels & Areas',
+                'levels': [],
+                'areas': [],
+                'overview': {},
+                'area_departments': [],
+            })
             return context
         scoped = _scoped_submissions(self.request.user)
         requested_level_code = self.request.GET.get('level', '').strip().upper()
@@ -174,10 +194,14 @@ class LevelsAreasView(ApprovedUserRequiredMixin, TemplateView):
             levels.append(level_data)
         areas = [_area_context(area, scoped) for area in active_level['areas']] if active_level else []
         active_submissions = scoped.filter(requirement__area__level_id=active_level['id']) if active_level else scoped.none()
+        area_departments = list(
+            active_submissions.values_list('department__name', flat=True).distinct().order_by('department__name')
+        )
         context.update({
             'page_title': 'Levels & Areas',
             'levels': levels,
             'areas': areas,
+            'area_departments': area_departments,
             'active_level': next((item for item in levels if item['id'] == active_level['id']), None) if active_level else None,
             'overview': {
                 'compiled': active_submissions.filter(status__in=COMPLETED_STATUSES).count(),

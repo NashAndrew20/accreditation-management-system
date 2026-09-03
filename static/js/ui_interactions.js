@@ -204,6 +204,61 @@
     applyRepositoryFilters(searchInput ? searchInput.value : '');
   }
 
+  function applyAreaFilters(query) {
+    const cards = document.querySelectorAll('.area-card');
+    if (!cards.length) return;
+
+    const searchInput = document.querySelector('.area-search input');
+    const departmentFilter = document.querySelector('[data-area-filter="department"]');
+    const statusFilter = document.querySelector('[data-area-filter="status"]');
+    const normalizedQuery = normalize(
+      query !== undefined ? query : searchInput ? searchInput.value : '',
+    );
+    const department = normalize(departmentFilter ? departmentFilter.value : '');
+    const status = normalize(statusFilter ? statusFilter.value : '');
+    let visibleCount = 0;
+
+    cards.forEach(function (card) {
+      const departments = (card.dataset.areaDepartments || '')
+        .split('||')
+        .map(normalize)
+        .filter(Boolean);
+      const statuses = (card.dataset.areaStatuses || '')
+        .split(',')
+        .map(normalize)
+        .filter(Boolean);
+      const matchesDepartment = !department || departments.includes(department);
+      const matchesStatus = !status || statuses.includes(status);
+      const matchesSearch = !normalizedQuery || normalize(card.textContent).includes(normalizedQuery);
+      const isVisible = matchesDepartment && matchesStatus && matchesSearch;
+      card.classList.toggle('is-filter-hidden', !isVisible);
+      if (isVisible) visibleCount += 1;
+    });
+
+    const emptyState = document.querySelector('[data-area-filter-empty]');
+    if (emptyState) emptyState.hidden = visibleCount > 0;
+  }
+
+  function bindAreaFilters() {
+    const filters = document.querySelectorAll('[data-area-filter]');
+    const searchInput = document.querySelector('.area-search input');
+    if (!filters.length && !searchInput) return;
+
+    filters.forEach(function (filter) {
+      filter.addEventListener('change', function () {
+        applyAreaFilters();
+      });
+    });
+
+    if (searchInput) {
+      searchInput.addEventListener('input', function () {
+        applyAreaFilters(searchInput.value);
+      });
+    }
+
+    applyAreaFilters(searchInput ? searchInput.value : '');
+  }
+
   function applyButtonFilter(button, rowsSelector) {
     const label = normalize(button.textContent).replace(/\(\d+\)/g, '').trim();
     const scope = button.closest('main') || document;
@@ -227,7 +282,6 @@
     const searchMap = [
       ['.review-search input', '.review-table-card tbody tr'],
       ['.users-search input', '.users-table-card tbody tr'],
-      ['.area-search input', '.area-card'],
       ['.conversation-search input', '.conversation-item'],
     ];
 
@@ -255,6 +309,9 @@
         applyTextFilter(input, globalSearchSelector);
         if (document.querySelector('[data-repo-filter]')) {
           applyRepositoryFilters(input.value);
+        }
+        if (document.querySelector('[data-area-filter]')) {
+          applyAreaFilters(input.value);
         }
       });
     });
@@ -946,6 +1003,7 @@
     bindProgressValues();
     bindDataTooltips();
     bindAreaAssignmentForms();
+    bindAreaFilters();
     bindRepositoryFilters();
   });
 })();

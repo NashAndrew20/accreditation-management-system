@@ -65,12 +65,19 @@
 
       <div class="area-filter-icon">{% icon 'settings' %}</div>
 
-      <select aria-label="Filter by department">
-        <option>All Departments</option>
+      <select data-area-filter="department" aria-label="Filter by department">
+        <option value="">All Departments</option>
+        {% for department in area_departments %}
+          <option value="{{ department }}">{{ department }}</option>
+        {% endfor %}
       </select>
 
-      <select aria-label="Filter by status">
-        <option>All Status</option>
+      <select data-area-filter="status" aria-label="Filter by status">
+        <option value="">All Status</option>
+        <option value="complied">Complied</option>
+        <option value="pending">Pending Review</option>
+        <option value="revision">Revision</option>
+        <option value="missing">Missing</option>
       </select>
     </section>
 
@@ -78,9 +85,19 @@
       {% if areas %}
         {% for area in areas %}
           {% if area.workspace_key %}
-            <a class="area-card" href="{% url 'accreditation:area_details' area.workspace_key %}" aria-label="Open {{ area.code }} sub-areas">
+            <a
+              class="area-card"
+              href="{% url 'accreditation:area_details' area.workspace_key %}"
+              aria-label="Open {{ area.code }} sub-areas"
+              data-area-departments="{% for department in area.departments %}{{ department }}{% if not forloop.last %}||{% endif %}{% endfor %}"
+              data-area-statuses="{{ area.filter_statuses|join:',' }}"
+            >
           {% else %}
-            <article class="area-card">
+            <article
+              class="area-card"
+              data-area-departments="{% for department in area.departments %}{{ department }}{% if not forloop.last %}||{% endif %}{% endfor %}"
+              data-area-statuses="{{ area.filter_statuses|join:',' }}"
+            >
           {% endif %}
             <div class="area-card-head">
               <div>
@@ -115,6 +132,11 @@
             </article>
           {% endif %}
         {% endfor %}
+        <article class="area-empty-state" data-area-filter-empty hidden>
+          <div class="area-empty-mark">—</div>
+          <h2>No areas match these filters</h2>
+          <p>Try another department, status, or search term.</p>
+        </article>
       {% else %}
         <article class="area-empty-state">
           <div class="area-empty-mark">{{ active_level.code }}</div>

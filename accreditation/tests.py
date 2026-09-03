@@ -259,6 +259,19 @@ class AccreditationWorkflowTests(TestCase):
         self.assertEqual(level_two_response.context['areas'], [])
         self.assertContains(level_two_response, 'No areas configured for Level II yet')
 
+    def test_area_filter_controls_use_scoped_area_data(self):
+        self.make_submission()
+        self.client.force_login(self.program_head)
+
+        response = self.client.get(reverse('accreditation:levels_areas'))
+
+        self.assertContains(response, 'data-area-filter="department"')
+        self.assertContains(response, 'data-area-filter="status"')
+        self.assertContains(response, 'option value="Bachelor of Science in Civil Engineering"')
+        self.assertContains(response, 'data-area-departments="Bachelor of Science in Civil Engineering"')
+        self.assertContains(response, 'data-area-statuses="missing"')
+        self.assertContains(response, 'data-area-filter-empty')
+
     def test_jwt_evidence_api_uses_existing_role_scope(self):
         submission = self.make_submission()
         api_client = APIClient()
