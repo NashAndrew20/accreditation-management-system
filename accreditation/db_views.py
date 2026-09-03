@@ -145,8 +145,17 @@ class LevelsAreasView(ApprovedUserRequiredMixin, TemplateView):
             context.update({'page_title': 'Levels & Areas', 'levels': [], 'areas': [], 'overview': {}})
             return context
         scoped = _scoped_submissions(self.request.user)
+        requested_level_code = self.request.GET.get('level', '').strip().upper()
+        active_level = next(
+            (
+                level
+                for level in structure['levels']
+                if level['code'].upper() == requested_level_code
+            ),
+            None,
+        )
+        active_level = active_level or (structure['levels'][0] if structure['levels'] else None)
         levels = []
-        active_level = None
         for level in structure['levels']:
             level_submissions = scoped.filter(requirement__area__level_id=level['id'])
             compiled = level_submissions.filter(status__in=COMPLETED_STATUSES).count()
@@ -160,12 +169,9 @@ class LevelsAreasView(ApprovedUserRequiredMixin, TemplateView):
                 'compiled': compiled,
                 'pending': pending,
                 'revision': revision,
-                'active': level['code'] == 'I',
+                'active': active_level is not None and level['id'] == active_level['id'],
             }
             levels.append(level_data)
-            if level_data['active']:
-                active_level = level
-        active_level = active_level or (structure['levels'][0] if structure['levels'] else None)
         areas = [_area_context(area, scoped) for area in active_level['areas']] if active_level else []
         active_submissions = scoped.filter(requirement__area__level_id=active_level['id']) if active_level else scoped.none()
         context.update({

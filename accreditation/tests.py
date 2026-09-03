@@ -231,6 +231,34 @@ class AccreditationWorkflowTests(TestCase):
         self.assertEqual(cached_structure['cycle']['name'], 'Test Cycle')
         self.assertEqual(cached_structure['levels'][0]['areas'][0]['code'], 'Area I')
 
+    def test_all_pacucoa_levels_are_selectable_and_use_their_own_areas(self):
+        for code, status_label in (
+            ('II', 'Accredited Status'),
+            ('III', 'Accredited Status II'),
+            ('IV', 'Accredited Status III'),
+        ):
+            AccreditationLevel.objects.create(
+                cycle=self.cycle,
+                code=code,
+                name=f'Level {code}',
+                status_label=status_label,
+                sort_order=len(code),
+            )
+
+        self.client.force_login(self.program_head)
+
+        response = self.client.get(reverse('accreditation:levels_areas'))
+        self.assertContains(response, 'Level I')
+        self.assertContains(response, 'Level II')
+        self.assertContains(response, 'Level III')
+        self.assertContains(response, 'Level IV')
+        self.assertContains(response, 'href="?level=II"')
+
+        level_two_response = self.client.get(reverse('accreditation:levels_areas'), {'level': 'II'})
+        self.assertEqual(level_two_response.context['active_level']['code'], 'II')
+        self.assertEqual(level_two_response.context['areas'], [])
+        self.assertContains(level_two_response, 'No areas configured for Level II yet')
+
     def test_jwt_evidence_api_uses_existing_role_scope(self):
         submission = self.make_submission()
         api_client = APIClient()

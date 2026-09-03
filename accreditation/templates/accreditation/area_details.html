@@ -17,7 +17,7 @@
 
     <header class="area-details-header">
       <div>
-        <div class="area-details-eyebrow">Level I · {{ area.code }}</div>
+        <div class="area-details-eyebrow">{{ area.level.name }} · {{ area.code }}</div>
         <h1>{{ area.name }}</h1>
       </div>
       {% if can_assign_area %}

@@ -14,7 +14,12 @@
 
     <section class="level-grid" aria-label="Accreditation levels">
       {% for level in levels %}
-        <article class="level-card{% if level.active %} is-active{% endif %}">
+        <a
+          class="level-card{% if level.active %} is-active{% endif %}"
+          href="?level={{ level.code }}"
+          {% if level.active %}aria-current="page"{% endif %}
+          aria-label="View {{ level.name }} areas"
+        >
           <h2>{{ level.name }}</h2>
           <p>{{ level.status }}</p>
           <div class="level-tags">
@@ -26,7 +31,7 @@
               <span class="status-pill tone-rose">{{ level.revision }} Revision</span>
             {% endif %}
           </div>
-        </article>
+        </a>
       {% endfor %}
     </section>
 
@@ -70,45 +75,53 @@
     </section>
 
     <section class="area-grid" aria-label="Accreditation areas">
-      {% for area in areas %}
-        {% if area.workspace_key %}
-          <a class="area-card" href="{% url 'accreditation:area_details' area.workspace_key %}" aria-label="Open {{ area.code }} sub-areas">
-        {% else %}
-          <article class="area-card">
-        {% endif %}
-          <div class="area-card-head">
-            <div>
-              <div class="area-code">{{ area.code }}</div>
-              <h2>{{ area.name }}</h2>
+      {% if areas %}
+        {% for area in areas %}
+          {% if area.workspace_key %}
+            <a class="area-card" href="{% url 'accreditation:area_details' area.workspace_key %}" aria-label="Open {{ area.code }} sub-areas">
+          {% else %}
+            <article class="area-card">
+          {% endif %}
+            <div class="area-card-head">
+              <div>
+                <div class="area-code">{{ area.code }}</div>
+                <h2>{{ area.name }}</h2>
+              </div>
+              {% icon 'chevron-right' 'area-chevron' %}
             </div>
-            {% icon 'chevron-right' 'area-chevron' %}
-          </div>
 
-          <div class="area-progress-row">
-            <div class="area-progress">
-              <span class="tone-{{ area.tone }}" data-progress-width="{{ area.progress }}"></span>
+            <div class="area-progress-row">
+              <div class="area-progress">
+                <span class="tone-{{ area.tone }}" data-progress-width="{{ area.progress }}"></span>
+              </div>
+              <strong class="area-percent tone-{{ area.tone }}">{{ area.progress }}%</strong>
             </div>
-            <strong class="area-percent tone-{{ area.tone }}">{{ area.progress }}%</strong>
-          </div>
 
-          <div class="area-tags">
-            <span class="status-pill tone-green">{{ area.compiled }} Complied</span>
-            {% if area.pending %}
-              <span class="status-pill tone-gold">{{ area.pending }} Pending</span>
-            {% endif %}
-            {% if area.revision %}
-              <span class="status-pill tone-rose">{{ area.revision }} Revision</span>
-            {% endif %}
-            {% if area.missing %}
-              <span class="status-pill tone-slate">{{ area.missing }} Missing</span>
-            {% endif %}
-          </div>
-        {% if area.workspace_key %}
-          </a>
-        {% else %}
-          </article>
-        {% endif %}
-      {% endfor %}
+            <div class="area-tags">
+              <span class="status-pill tone-green">{{ area.compiled }} Complied</span>
+              {% if area.pending %}
+                <span class="status-pill tone-gold">{{ area.pending }} Pending</span>
+              {% endif %}
+              {% if area.revision %}
+                <span class="status-pill tone-rose">{{ area.revision }} Revision</span>
+              {% endif %}
+              {% if area.missing %}
+                <span class="status-pill tone-slate">{{ area.missing }} Missing</span>
+              {% endif %}
+            </div>
+          {% if area.workspace_key %}
+            </a>
+          {% else %}
+            </article>
+          {% endif %}
+        {% endfor %}
+      {% else %}
+        <article class="area-empty-state">
+          <div class="area-empty-mark">{{ active_level.code }}</div>
+          <h2>No areas configured for {{ active_level.name }} yet</h2>
+          <p>This level is available in the active PACUCOA cycle, but its area definitions have not been configured yet.</p>
+        </article>
+      {% endif %}
     </section>
   </div>
 {% endblock %}
