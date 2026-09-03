@@ -2,7 +2,7 @@
 {% load static nav_extras %}
 
 {% block extra_css %}
-  <link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=2">
+  <link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=3">
 {% endblock %}
 
 {% block content %}
@@ -26,29 +26,10 @@
         <div class="alert-tags">
           <span class="alert-tag" id="aira-alert-title">AIRA</span>
         </div>
-        <button
-          type="button"
-          class="alert-minimize"
-          data-alert-minimize
-          aria-controls="aira-alert-content"
-          aria-expanded="true"
-          aria-label="Minimize AIRA warning"
-          title="Minimize warning"
-        >−</button>
         <p class="alert-text">
           {{ alert.area_code }} ({{ alert.area_name }}) {{ alert.message }}
         </p>
       </div>
-      <button
-        type="button"
-        class="alert-restore"
-        data-alert-restore
-        aria-label="Show AIRA warning"
-        title="Show AIRA warning"
-        hidden
-      >
-        {% icon 'message' 'alert-restore-icon' %}
-      </button>
     </div>
   </section>
 
