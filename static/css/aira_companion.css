@@ -10,14 +10,11 @@
 }
 
 @keyframes aira-talk-cycle {
-  0%, 39.99% {
-    opacity: 1;
+  0%, 39.99%, 100% {
+    clip-path: inset(0 0 0 0);
   }
   50%, 89.99% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
+    clip-path: inset(0 0 0 100%);
   }
 }
 
@@ -60,7 +57,6 @@
 }
 
 .aira-talk-frame {
-  opacity: 0;
   animation: aira-talk-cycle 3.2s ease-in-out infinite;
   animation-fill-mode: both;
 }
@@ -70,7 +66,7 @@
 }
 
 .aira-talk-frame--smile {
-  animation-delay: -1.2s;
+  animation-delay: -1.6s;
 }
 
 .aira-companion-bubble {
@@ -201,7 +197,11 @@
   }
 
   .aira-talk-frame--open {
-    opacity: 1;
+    clip-path: inset(0 0 0 0);
+  }
+
+  .aira-talk-frame--smile {
+    clip-path: inset(0 0 0 100%);
   }
 }
 
