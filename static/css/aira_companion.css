@@ -22,6 +22,7 @@
   margin-left: -14px;
   border-radius: 0;
   background: transparent;
+  transform: translateY(20px);
 }
 
 .aira-companion-avatar img {
@@ -88,6 +89,7 @@
     width: 92px;
     height: 122px;
     margin-left: -10px;
+    transform: translateY(14px);
   }
 
   .aira-companion-bubble {
