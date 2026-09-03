@@ -62,18 +62,6 @@
   content: '';
 }
 
-.review-stat-card::after {
-  position: absolute;
-  right: -28px;
-  bottom: -42px;
-  width: 116px;
-  height: 116px;
-  border-radius: 50%;
-  background: var(--stat-soft);
-  content: '';
-  opacity: 0.7;
-}
-
 .review-stat-card.stat-tone-gold {
   --stat-accent: var(--gold-600);
   --stat-soft: var(--gold-100);
