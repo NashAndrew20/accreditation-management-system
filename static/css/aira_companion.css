@@ -84,21 +84,7 @@
   letter-spacing: 0.04em;
 }
 
-.aira-companion-heading span {
-  color: var(--color-text-faint);
-  font-size: 11px;
-}
-
-.aira-companion-title {
-  margin-top: 2px;
-  overflow-wrap: anywhere;
-  color: var(--color-text);
-  font-size: 12px;
-  font-weight: 700;
-}
-
 .aira-companion-message {
-  margin-top: 2px;
   overflow-wrap: anywhere;
   color: var(--color-text-muted);
   font-size: 12px;
@@ -151,16 +137,10 @@
     border-radius: 4px 13px 13px 13px;
   }
 
-  .aira-companion-heading {
-    gap: 5px;
-  }
-
   .aira-companion-heading strong {
     font-size: 12px;
   }
 
-  .aira-companion-heading span,
-  .aira-companion-title,
   .aira-companion-message,
   .aira-companion-link {
     font-size: 10.5px;
