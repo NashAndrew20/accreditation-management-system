@@ -129,26 +129,6 @@
   line-height: 1.4;
 }
 
-.aira-companion-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 9px;
-  min-height: 34px;
-  padding: 0 13px;
-  border: 1px solid var(--maroon-600);
-  border-radius: var(--radius-pill);
-  background: var(--color-surface);
-  color: var(--maroon-700);
-  font-size: 11px;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.aira-companion-link:hover {
-  background: var(--maroon-100);
-}
-
 @media (max-width: 880px) {
   .aira-companion-strip {
     right: 20px;
@@ -179,8 +159,7 @@
     font-size: 12px;
   }
 
-  .aira-companion-message,
-  .aira-companion-link {
+  .aira-companion-message {
     font-size: 10.5px;
   }
 
