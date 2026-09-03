@@ -3,7 +3,9 @@ from django.core.cache import cache
 from .models import AccreditationCycle
 
 
-ACTIVE_STRUCTURE_CACHE_KEY = 'accreditation:active-structure:v1'
+# Bump the key when the cached structure shape or seed data changes so an old
+# one-level snapshot cannot hide levels restored in the database.
+ACTIVE_STRUCTURE_CACHE_KEY = 'accreditation:active-structure:v2'
 ACTIVE_STRUCTURE_CACHE_TIMEOUT = 300
 
 
