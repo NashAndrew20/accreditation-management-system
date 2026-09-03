@@ -33,11 +33,12 @@
             {% for message in messages %}<div class="flash-message flash-{{ message.tags|default:'info' }}">{{ message }}</div>{% endfor %}
           </div>
         {% endif %}
-        {% if not hide_aira_global %}
-          {% include 'partials/_aira_companion.html' %}
-        {% endif %}
         {% block content %}{% endblock %}
       </main>
+
+      {% if not hide_aira_global %}
+        {% include 'partials/_aira_companion.html' %}
+      {% endif %}
     </div>
   </div>
 
