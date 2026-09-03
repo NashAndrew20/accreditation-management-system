@@ -46,6 +46,18 @@
   box-shadow: var(--shadow-card);
 }
 
+.aira-companion-bubble::after {
+  position: absolute;
+  top: 28px;
+  right: -13px;
+  width: 0;
+  height: 0;
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+  border-left: 14px solid #fff;
+  content: '';
+}
+
 .aira-companion-copy {
   min-width: 0;
 }
@@ -95,6 +107,14 @@
   .aira-companion-bubble {
     padding: 14px 14px 12px;
     border-radius: 12px 4px 12px 12px;
+  }
+
+  .aira-companion-bubble::after {
+    top: 24px;
+    right: -10px;
+    border-top-width: 8px;
+    border-bottom-width: 8px;
+    border-left-width: 12px;
   }
 
   .aira-companion-heading strong {
