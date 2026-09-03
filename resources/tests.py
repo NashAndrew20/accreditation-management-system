@@ -320,6 +320,7 @@ class DocumentRepositoryAccessTests(TestCase):
             with self.subTest(url=url):
                 response = self.client.get(url)
                 self.assertContains(response, 'aria-label="AIRA Smart Companion"')
+                self.assertContains(response, 'class="aira-companion-bubble"')
                 self.assertContains(response, 'Smart Companion')
                 self.assertContains(response, 'Open Smart Companion')
 
