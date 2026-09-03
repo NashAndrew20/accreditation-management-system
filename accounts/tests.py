@@ -85,6 +85,30 @@ class LoginPageTests(TestCase):
 
         self.assertRedirects(response, reverse('dashboard:index'))
 
+    def test_role_selection_rejects_external_redirect_target(self):
+        self.client.force_login(self.user)
+
+        response = self.client.post(
+            reverse('accounts:select_role'),
+            {
+                'assignment': self.assignment.pk,
+                'next': 'https://evil.example/steal-session',
+            },
+        )
+
+        self.assertRedirects(response, reverse('dashboard:index'))
+
+    def test_role_selection_allows_same_host_redirect_target(self):
+        self.client.force_login(self.user)
+        next_url = reverse('dashboard:index')
+
+        response = self.client.post(
+            reverse('accounts:select_role'),
+            {'assignment': self.assignment.pk, 'next': next_url},
+        )
+
+        self.assertRedirects(response, next_url)
+
     def test_registration_creates_pending_account_and_assignment(self):
         response = self.client.post(reverse('register'), {
             'username': 'new-program-head',

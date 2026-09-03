@@ -1,3 +1,5 @@
+from urllib.parse import urlencode
+
 from django.contrib.auth.views import LoginView
 from django.conf import settings
 from django.contrib.auth import update_session_auth_hash
@@ -11,6 +13,7 @@ from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.generic import TemplateView
 
 from core.access import approved_assignments, can_approve_accounts, is_admin_user
@@ -27,6 +30,17 @@ from .forms import (
 )
 from .demo_accounts import DEMO_LOGIN_OPTIONS
 from .querysets import visible_user_accounts
+
+
+def _safe_next_url(request, candidate):
+    """Return a same-host redirect target, or the dashboard by default."""
+    if candidate and url_has_allowed_host_and_scheme(
+        candidate,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure(),
+    ):
+        return candidate
+    return reverse('dashboard:index')
 
 
 class PortalLoginView(LoginView):
@@ -65,7 +79,8 @@ class PortalLoginView(LoginView):
             self.request.session.set_expiry(0)
         profile = getattr(self.request.user, 'profile', None)
         if profile and not profile.active_assignment_id and approved_assignments(self.request.user).count() > 1:
-            return redirect(f'{reverse("accounts:select_role")}?next={self.get_success_url()}')
+            query = urlencode({'next': self.get_success_url()})
+            return redirect(f'{reverse("accounts:select_role")}?{query}')
         return response
 
 
@@ -92,7 +107,7 @@ class SelectRoleView(LoginRequiredMixin, TemplateView):
         return render(request, self.template_name, {
             'form': form,
             'assignments': form.fields['assignment'].queryset,
-            'next_url': request.GET.get('next', ''),
+            'next_url': _safe_next_url(request, request.GET.get('next')),
         })
 
     def post(self, request, *args, **kwargs):
@@ -101,11 +116,11 @@ class SelectRoleView(LoginRequiredMixin, TemplateView):
             profile = request.user.profile
             profile.active_assignment = form.cleaned_data['assignment']
             profile.save(update_fields=['active_assignment', 'updated_at'])
-            return redirect(request.POST.get('next') or 'dashboard:index')
+            return redirect(_safe_next_url(request, request.POST.get('next')))
         return render(request, self.template_name, {
             'form': form,
             'assignments': form.fields['assignment'].queryset,
-            'next_url': request.POST.get('next', ''),
+            'next_url': _safe_next_url(request, request.POST.get('next')),
         })
 
 
