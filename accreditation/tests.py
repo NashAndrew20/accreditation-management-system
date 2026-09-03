@@ -197,6 +197,19 @@ class AccreditationWorkflowTests(TestCase):
         submission = EvidenceSubmission.objects.get(requirement=self.requirement, department=self.program)
         self.assertEqual(self.client.get(reverse('accreditation:evidence_detail', args=[submission.id])).status_code, 200)
 
+    def test_pacucoa_navigation_remains_available(self):
+        self.client.force_login(self.program_head)
+
+        response = self.client.get(reverse('accreditation:levels_areas'))
+
+        navigation_labels = [
+            item['label']
+            for section in response.context['nav_sections']
+            for item in section['items']
+        ]
+        self.assertIn('PACUCOA', navigation_labels)
+        self.assertContains(response, 'PACUCOA Levels I-IV')
+
     def test_review_workflow_does_not_render_duplicate_breadcrumb(self):
         self.client.force_login(self.qa)
 

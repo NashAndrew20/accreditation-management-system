@@ -1,6 +1,6 @@
 .aira-companion-strip {
   position: fixed;
-  left: calc(var(--sidebar-width) + 28px);
+  right: 28px;
   bottom: 20px;
   z-index: 9;
   display: grid;
@@ -95,7 +95,7 @@
 
 @media (max-width: 880px) {
   .aira-companion-strip {
-    left: 20px;
+    right: 20px;
     width: min(410px, calc(100vw - 40px));
   }
 }
