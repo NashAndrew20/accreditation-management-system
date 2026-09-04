@@ -18,7 +18,7 @@ class PortalAuthenticationForm(AuthenticationForm):
             attrs={
                 'class': 'login-input',
                 'autocomplete': 'username',
-                'placeholder': 'Enter your email or username',
+                'placeholder': 'name@jmc.edu.ph',
                 'autofocus': True,
             }
         ),

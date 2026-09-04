@@ -648,6 +648,29 @@ html[data-theme='dark'] .demo-login-button:hover {
   background: var(--maroon-100);
 }
 
+html[data-theme='dark'] .login-screen .login-card {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(33, 26, 32, 0.96);
+}
+
+html[data-theme='dark'] .login-screen .login-auth-tabs {
+  background: rgba(50, 40, 46, 0.86);
+}
+
+html[data-theme='dark'] .login-screen .login-auth-tab.is-active {
+  background: var(--surface-warm);
+  color: var(--color-text);
+}
+
+html[data-theme='dark'] .login-screen .login-field label,
+html[data-theme='dark'] .login-screen .login-field-label-row label {
+  color: var(--color-text-muted);
+}
+
+html[data-theme='dark'] .login-screen .remember-option {
+  color: var(--color-text-muted);
+}
+
 html[data-theme='dark'] .login-visual-overlay {
   background:
     linear-gradient(180deg, rgba(39, 9, 21, 0.82) 0%, rgba(39, 9, 21, 0.42) 44%, rgba(15, 8, 12, 0.9) 100%),
