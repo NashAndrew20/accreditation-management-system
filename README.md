@@ -123,6 +123,14 @@ automatically, so legitimate users are not permanently blocked. The project
 uses Django's cache for the website limiter and DRF's `AnonRateThrottle` for
 the API limiter.
 
+## Server request rate limiting
+
+The application also limits dynamic requests to 120 per client IP per minute.
+Static and media files are excluded so normal page assets continue to load.
+The limit can be adjusted with `REQUEST_RATE_LIMIT` and
+`REQUEST_RATE_WINDOW_SECONDS`. Exceeded requests receive HTTP 429 with a
+`Retry-After` header, and the counter expires automatically.
+
 ## SonarQube Cloud
 
 The `sonarqube cloud` workflow runs the Django tests with Python coverage and then sends the results to SonarQube Cloud on pushes to `main` and pull requests.

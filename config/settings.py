@@ -75,6 +75,11 @@ SESSION_COOKIE_SECURE = env_bool('SESSION_COOKIE_SECURE', IS_PRODUCTION)
 CSRF_COOKIE_SECURE = env_bool('CSRF_COOKIE_SECURE', IS_PRODUCTION)
 SECURE_HSTS_SECONDS = env_int('SECURE_HSTS_SECONDS', 31536000 if IS_PRODUCTION else 0)
 
+# Limit dynamic requests per client IP without slowing down static assets.
+# The value can be adjusted for a deployment through environment variables.
+REQUEST_RATE_LIMIT = env_int('REQUEST_RATE_LIMIT', 120)
+REQUEST_RATE_WINDOW_SECONDS = env_int('REQUEST_RATE_WINDOW_SECONDS', 60)
+
 
 # Application definition
 
@@ -98,6 +103,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'core.middleware.RequestRateLimitMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
