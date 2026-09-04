@@ -17,6 +17,8 @@ from accounts import views as account_views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('login/', account_views.PortalLoginView.as_view(), name='login'),
+    path('login/google/', account_views.GoogleLoginStartView.as_view(), name='google_login'),
+    path('login/google/callback/', account_views.GoogleLoginCallbackView.as_view(), name='google_login_callback'),
     path('logout/', auth_views.LogoutView.as_view(next_page='/login/'), name='logout'),
     path('register/', account_views.RegisterView.as_view(), name='register'),
     path('api/auth/', include('accounts.api_urls')),

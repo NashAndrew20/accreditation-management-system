@@ -62,6 +62,37 @@ curl http://127.0.0.1:8000/api/auth/me/ \
   -H 'Authorization: Bearer <access-token>'
 ```
 
+## Google sign-in (OAuth 2.0 / OpenID Connect)
+
+Google sign-in uses the server-side authorization-code flow. It is separate
+from Django session login and JWT API authentication. The button appears only
+when both Google credentials are configured. The callback verifies the signed
+ID token, audience, expiry, nonce, verified email, and optional organization
+domain before linking the Google subject to an existing approved account.
+
+Create a Google OAuth **Web application** client and add this authorized
+redirect URI for local development:
+
+```text
+http://127.0.0.1:8000/login/google/callback/
+```
+
+Configure the values in the shell or deployment secret store; do not put them
+in source control:
+
+```bash
+export GOOGLE_OAUTH_CLIENT_ID='your-client-id.apps.googleusercontent.com'
+export GOOGLE_OAUTH_CLIENT_SECRET='your-client-secret'
+export GOOGLE_OAUTH_REDIRECT_URI='http://127.0.0.1:8000/login/google/callback/'
+# Optional for Google Workspace-only access:
+# export GOOGLE_OAUTH_ALLOWED_DOMAIN='jmc.edu.ph'
+```
+
+The Google account email must already belong to an approved account with an
+active internal role assignment. Google sign-in does not bypass the account
+approval workflow. Restart Django after setting the variables, then use the
+**Continue with Google** button on `/login/`.
+
 ## Redis caching
 
 Redis runs in Docker; it does not need to be installed directly on the host.

@@ -66,6 +66,14 @@ if IS_PRODUCTION:
     DEMO_MODE = False
 DEMO_PASSWORD = os.getenv('DEMO_PASSWORD', '')
 
+# Google OAuth/OpenID Connect is opt-in. Keep credentials outside the source
+# tree and leave the provider disabled until both values are configured.
+GOOGLE_OAUTH_CLIENT_ID = os.getenv('GOOGLE_OAUTH_CLIENT_ID', '')
+GOOGLE_OAUTH_CLIENT_SECRET = os.getenv('GOOGLE_OAUTH_CLIENT_SECRET', '')
+GOOGLE_OAUTH_REDIRECT_URI = os.getenv('GOOGLE_OAUTH_REDIRECT_URI', '')
+GOOGLE_OAUTH_ALLOWED_DOMAIN = os.getenv('GOOGLE_OAUTH_ALLOWED_DOMAIN', '')
+GOOGLE_OAUTH_ENABLED = bool(GOOGLE_OAUTH_CLIENT_ID and GOOGLE_OAUTH_CLIENT_SECRET)
+
 ALLOWED_HOSTS = [host.strip() for host in os.getenv('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost,testserver').split(',') if host.strip()]
 
 # Keep the development server on HTTP, while making production defaults safe.

@@ -44,6 +44,12 @@
             <p>Access your accreditation workspace and keep every submission moving.</p>
           </div>
 
+          {% if messages %}
+            {% for message in messages %}
+              <div class="login-alert" role="alert">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+
           {% if form.non_field_errors %}
             <div class="login-alert" role="alert">
               {% for error in form.non_field_errors %}{{ error }}{% endfor %}
@@ -95,6 +101,14 @@
               <span class="login-submit-arrow" aria-hidden="true">→</span>
             </button>
           </form>
+
+          {% if google_oauth_enabled %}
+            <div class="login-divider" aria-hidden="true"><span>or</span></div>
+            <a class="login-google-button" href="{% url 'google_login' %}">
+              <span class="login-google-mark" aria-hidden="true">G</span>
+              <span>Continue with Google</span>
+            </a>
+          {% endif %}
 
           {% if demo_login_options %}
             <section class="demo-login" aria-labelledby="demo-login-title">

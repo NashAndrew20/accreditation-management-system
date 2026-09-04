@@ -1,8 +1,9 @@
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from rest_framework.test import APIClient
+from unittest.mock import patch
 
 from core.models import Department, Role, RoleAssignment, UserProfile
 
@@ -281,3 +282,73 @@ class LoginPageTests(TestCase):
         retry_after = int(response.headers['Retry-After'])
         self.assertGreaterEqual(retry_after, 1)
         self.assertLessEqual(retry_after, 60)
+
+
+class GoogleLoginTests(LoginPageTests):
+    google_settings = {
+        'GOOGLE_OAUTH_ENABLED': True,
+        'GOOGLE_OAUTH_CLIENT_ID': 'test-client-id.apps.googleusercontent.com',
+        'GOOGLE_OAUTH_CLIENT_SECRET': 'test-client-secret',
+        'GOOGLE_OAUTH_REDIRECT_URI': 'http://testserver/login/google/callback/',
+        'GOOGLE_OAUTH_ALLOWED_DOMAIN': '',
+    }
+
+    @override_settings(**google_settings)
+    def test_google_login_start_redirects_to_google_with_state_and_nonce(self):
+        response = self.client.get(reverse('google_login'))
+
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('accounts.google.com/o/oauth2/v2/auth', response['Location'])
+        session = self.client.session
+        self.assertTrue(session.get('google_oauth_state'))
+        self.assertTrue(session.get('google_oauth_nonce'))
+
+    @override_settings(**google_settings)
+    @patch('accounts.google_oauth.verify_id_token')
+    @patch('accounts.google_oauth.exchange_code')
+    def test_google_callback_links_approved_account_and_creates_session(
+        self,
+        exchange_code,
+        verify_id_token,
+    ):
+        session = self.client.session
+        session['google_oauth_state'] = 'state-value'
+        session['google_oauth_nonce'] = 'nonce-value'
+        session['google_oauth_next'] = reverse('dashboard:index')
+        session.save()
+        exchange_code.return_value = {'id_token': 'verified-id-token'}
+        verify_id_token.return_value = {
+            'sub': 'google-subject-123',
+            'email': self.user.email,
+            'email_verified': True,
+        }
+
+        response = self.client.get(
+            reverse('google_login_callback'),
+            {'state': 'state-value', 'code': 'one-time-code'},
+        )
+
+        self.assertRedirects(response, reverse('dashboard:index'))
+        self.assertEqual(self.client.session.get('_auth_user_id'), str(self.user.pk))
+        self.profile.refresh_from_db()
+        self.assertEqual(self.profile.google_subject, 'google-subject-123')
+        exchange_code.assert_called_once_with(
+            'one-time-code',
+            'http://testserver/login/google/callback/',
+        )
+        verify_id_token.assert_called_once_with('verified-id-token', 'nonce-value')
+
+    @override_settings(**google_settings)
+    def test_google_callback_rejects_invalid_state(self):
+        session = self.client.session
+        session['google_oauth_state'] = 'expected-state'
+        session['google_oauth_nonce'] = 'nonce-value'
+        session.save()
+
+        response = self.client.get(
+            reverse('google_login_callback'),
+            {'state': 'different-state', 'code': 'one-time-code'},
+        )
+
+        self.assertRedirects(response, reverse('login'))
+        self.assertNotIn('_auth_user_id', self.client.session)

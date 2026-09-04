@@ -1,5 +1,8 @@
+import secrets
+from hmac import compare_digest
 from urllib.parse import urlencode
 
+from django.contrib.auth import login as auth_login
 from django.contrib.auth.views import LoginView
 from django.conf import settings
 from django.contrib.auth import update_session_auth_hash
@@ -14,7 +17,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, View
 
 from core.access import approved_assignments, can_approve_accounts, is_admin_user
 from core.mixins import AccountApprovalMixin, ApprovedUserRequiredMixin
@@ -29,6 +32,7 @@ from .forms import (
     RoleSelectionForm,
 )
 from .demo_accounts import DEMO_LOGIN_OPTIONS
+from . import google_oauth
 from .querysets import visible_user_accounts
 
 
@@ -54,6 +58,7 @@ class PortalLoginView(LoginView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['demo_login_options'] = DEMO_LOGIN_OPTIONS if settings.DEMO_MODE else ()
+        context['google_oauth_enabled'] = settings.GOOGLE_OAUTH_ENABLED
         return context
 
     def get_success_url(self):
@@ -82,6 +87,100 @@ class PortalLoginView(LoginView):
             query = urlencode({'next': self.get_success_url()})
             return redirect(f'{reverse("accounts:select_role")}?{query}')
         return response
+
+
+def _google_redirect_uri(request):
+    configured_uri = settings.GOOGLE_OAUTH_REDIRECT_URI.strip()
+    return configured_uri or request.build_absolute_uri(reverse('google_login_callback'))
+
+
+class GoogleLoginStartView(View):
+    """Start Google's server-side OAuth/OpenID Connect sign-in flow."""
+
+    def get(self, request, *args, **kwargs):
+        if not settings.GOOGLE_OAUTH_ENABLED:
+            messages.error(request, 'Google sign-in is not configured for this environment.')
+            return redirect('login')
+
+        state = secrets.token_urlsafe(32)
+        nonce = secrets.token_urlsafe(32)
+        request.session['google_oauth_state'] = state
+        request.session['google_oauth_nonce'] = nonce
+        request.session['google_oauth_next'] = _safe_next_url(request, request.GET.get('next'))
+        return redirect(google_oauth.build_authorization_url(state, nonce, _google_redirect_uri(request)))
+
+
+class GoogleLoginCallbackView(View):
+    """Validate Google's callback and establish the normal Django session."""
+
+    def get(self, request, *args, **kwargs):
+        expected_state = request.session.pop('google_oauth_state', '')
+        expected_nonce = request.session.pop('google_oauth_nonce', '')
+        next_url = request.session.pop('google_oauth_next', reverse('dashboard:index'))
+        received_state = request.GET.get('state', '')
+
+        if not expected_state or not expected_nonce or not compare_digest(expected_state, received_state):
+            return self._fail(request, 'Google sign-in could not be verified. Please try again.')
+        if request.GET.get('error'):
+            return self._fail(request, 'Google sign-in was cancelled.')
+
+        code = request.GET.get('code', '').strip()
+        if not code:
+            return self._fail(request, 'Google did not return an authorization code.')
+
+        try:
+            token_data = google_oauth.exchange_code(code, _google_redirect_uri(request))
+            identity = google_oauth.verify_id_token(token_data['id_token'], expected_nonce)
+            user = self._approved_user(identity)
+        except google_oauth.GoogleOAuthError:
+            return self._fail(request, 'Google sign-in could not be completed. Please use an approved account.')
+
+        auth_login(request, user)
+        safe_next_url = _safe_next_url(request, next_url)
+        profile = getattr(user, 'profile', None)
+        if profile and not profile.active_assignment_id and approved_assignments(user).count() > 1:
+            query = urlencode({'next': safe_next_url})
+            return redirect(f'{reverse("accounts:select_role")}?{query}')
+        return redirect(safe_next_url)
+
+    @staticmethod
+    def _approved_user(identity):
+        user_model = get_user_model()
+        user = user_model.objects.select_related('profile').filter(
+            profile__google_subject=identity['sub'],
+        ).first()
+        if user is None:
+            user = user_model.objects.select_related('profile').filter(
+                email__iexact=identity['email'],
+            ).first()
+
+        profile = getattr(user, 'profile', None) if user else None
+        if (
+            user is None
+            or profile is None
+            or not user.is_active
+            or not profile.is_approved
+            or (
+                profile.google_subject
+                and profile.google_subject != identity['sub']
+            )
+            or not RoleAssignment.objects.filter(
+                user=user,
+                is_approved=True,
+                role__is_active=True,
+            ).exists()
+        ):
+            raise google_oauth.GoogleOAuthError('Google account is not approved.')
+
+        if not profile.google_subject:
+            profile.google_subject = identity['sub']
+            profile.save(update_fields=['google_subject', 'updated_at'])
+        return user
+
+    @staticmethod
+    def _fail(request, message):
+        messages.error(request, message)
+        return redirect('login')
 
 
 class RegisterView(TemplateView):

@@ -91,6 +91,7 @@ class UserProfile(models.Model):
     )
     approved_at = models.DateTimeField(null=True, blank=True)
     photo = models.FileField(upload_to='profiles/', blank=True)
+    google_subject = models.CharField(max_length=255, unique=True, null=True, blank=True)
     is_demo_account = models.BooleanField(default=False)
     must_change_password = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
