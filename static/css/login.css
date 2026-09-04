@@ -554,6 +554,11 @@
   background: transparent;
 }
 
+.login-screen .login-panel::before,
+.login-screen .login-panel::after {
+  display: none;
+}
+
 .login-screen .login-panel-inner {
   position: static;
   width: min(100%, 460px);

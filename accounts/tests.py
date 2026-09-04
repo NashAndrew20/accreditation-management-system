@@ -38,12 +38,14 @@ class LoginPageTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'accounts/login.html')
 
-    def test_theme_assets_and_toggle_are_available_on_login_and_dashboard(self):
+    def test_login_assets_and_theme_toggle_are_available_on_dashboard(self):
         login_response = self.client.get(reverse('login'))
 
         self.assertContains(login_response, "js/theme.js")
         self.assertContains(login_response, "css/theme.css")
-        self.assertContains(login_response, "data-theme-toggle")
+        self.assertContains(login_response, "login-auth-tabs")
+        self.assertContains(login_response, "Continue with Google")
+        self.assertNotContains(login_response, "data-theme-toggle")
 
         self.client.force_login(self.user)
         dashboard_response = self.client.get(reverse('dashboard:index'))

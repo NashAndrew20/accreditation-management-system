@@ -31,7 +31,6 @@ from .forms import (
     RoleAssignmentForm,
     RoleSelectionForm,
 )
-from .demo_accounts import DEMO_LOGIN_OPTIONS
 from . import google_oauth
 from .querysets import visible_user_accounts
 
@@ -57,8 +56,6 @@ class PortalLoginView(LoginView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['demo_login_options'] = DEMO_LOGIN_OPTIONS if settings.DEMO_MODE else ()
-        context['google_oauth_enabled'] = settings.GOOGLE_OAUTH_ENABLED
         return context
 
     def get_success_url(self):
