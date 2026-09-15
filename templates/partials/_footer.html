@@ -1,0 +1,11 @@
+{% load static %}
+<footer class="app-footer" aria-label="Legal and support links">
+  <span class="app-footer-brand">Jose Maria College Foundation, Inc. · Accreditation Management System</span>
+  <nav class="app-footer-links" aria-label="Footer">
+    <a href="{% url 'core:policy_detail' 'privacy-policy' %}">Privacy Policy</a>
+    <a href="{% url 'core:policy_detail' 'terms-of-use' %}">Terms of Use</a>
+    {% if user.is_authenticated %}
+      <a href="{% url 'intelligence:smart_companion' %}">Help</a>
+    {% endif %}
+  </nav>
+</footer>

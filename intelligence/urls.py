@@ -8,4 +8,5 @@ urlpatterns = [
     path('reports/', views.ReportsMonitoringView.as_view(), name='reports_monitoring'),
     path('reports/export/', views.ReportsMonitoringExportView.as_view(), name='reports_export'),
     path('smart-companion/', views.SmartCompanionView.as_view(), name='smart_companion'),
+    path('aira/ask/', views.AiraAskView.as_view(), name='aira_ask'),
 ]

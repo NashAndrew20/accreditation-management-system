@@ -71,6 +71,10 @@ if IS_PRODUCTION:
     DEMO_MODE = False
 DEMO_PASSWORD = os.getenv('DEMO_PASSWORD', '')
 
+# Policy-consent enforcement (Privacy Policy + Terms of Use). Keep at True in
+# production; tests can disable it with override_settings.
+POLICY_CONSENT_ENABLED = env_bool('POLICY_CONSENT_ENABLED', True)
+
 # Google OAuth/OpenID Connect is opt-in. Keep credentials outside the source
 # tree and leave the provider disabled until both values are configured.
 GOOGLE_OAUTH_CLIENT_ID = os.getenv('GOOGLE_OAUTH_CLIENT_ID', '')
@@ -87,6 +91,8 @@ SECURE_SSL_REDIRECT = env_bool('SECURE_SSL_REDIRECT', IS_PRODUCTION)
 SESSION_COOKIE_SECURE = env_bool('SESSION_COOKIE_SECURE', IS_PRODUCTION)
 CSRF_COOKIE_SECURE = env_bool('CSRF_COOKIE_SECURE', IS_PRODUCTION)
 SECURE_HSTS_SECONDS = env_int('SECURE_HSTS_SECONDS', 31536000 if IS_PRODUCTION else 0)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = env_bool('SECURE_HSTS_INCLUDE_SUBDOMAINS', IS_PRODUCTION)
+SECURE_HSTS_PRELOAD = env_bool('SECURE_HSTS_PRELOAD', IS_PRODUCTION)
 
 # Limit dynamic requests per client IP without slowing down static assets.
 # The value can be adjusted for a deployment through environment variables.
@@ -121,11 +127,14 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'core.middleware.ConsentGateMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
+
+LOGIN_URL = '/login/'
 
 TEMPLATES = [
     {

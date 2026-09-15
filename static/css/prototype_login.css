@@ -1,0 +1,600 @@
+/* ==========================================================================
+   Prototype: login page mobile-responsive + sign-in guide overlay
+   Proof-of-concept. Loaded AFTER login.css and theme.css so these overrides
+   win. Leaves .standalone-theme-toggle and .login-form rules untouched and
+   relies on the existing token system for light/dark parity.
+   ========================================================================== */
+
+/* --- 1. Overlay open state / scroll lock -------------------------------- */
+
+html.proto-no-scroll,
+body.proto-no-scroll {
+  overflow: hidden;
+}
+
+/* --- 2. Mobile-fit refinements ------------------------------------------- */
+
+@media (max-width: 760px) {
+  /* login.css marks .login-screen .login-page overflow:hidden at a higher
+     specificity than its own media query, which clips the card on short
+     viewports (landscape phones, small screens). Let the panel scroll. */
+  .login-screen .login-page {
+    overflow: visible;
+  }
+
+  .login-screen .login-panel {
+    align-items: flex-start;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    padding-top: 150px;
+    padding-right: max(18px, env(safe-area-inset-right, 0px));
+    padding-bottom: calc(42px + env(safe-area-inset-bottom, 0px));
+    padding-left: max(18px, env(safe-area-inset-left, 0px));
+  }
+
+  .login-screen .login-panel-inner {
+    margin: 0 auto;
+  }
+
+  .login-screen .login-brand {
+    top: 24px;
+    gap: 6px;
+  }
+
+  .login-screen .login-brand img {
+    width: 54px;
+    height: 54px;
+  }
+
+  .login-screen .login-brand strong {
+    max-width: 320px;
+    font-size: 15px;
+    letter-spacing: 0.09em;
+  }
+
+  .login-screen .login-brand small {
+    font-size: 9px;
+  }
+
+  .login-screen .login-card {
+    padding: 22px 16px 20px;
+    border-radius: 18px;
+  }
+
+  .login-auth-tabs {
+    margin-bottom: 20px;
+  }
+
+  .login-auth-tab {
+    min-height: 42px;
+    font-size: 11px;
+  }
+
+  .login-screen .login-field {
+    gap: 6px;
+  }
+
+  .login-screen .login-submit {
+    min-height: 50px;
+  }
+
+  .login-screen .login-google-button {
+    min-height: 46px;
+  }
+
+  .login-screen .login-divider {
+    margin-top: 17px;
+  }
+
+  .login-screen .login-support {
+    margin-top: 16px;
+  }
+
+  /* The footer joins the content flow instead of floating over the card. */
+  .login-screen .login-footer {
+    position: static;
+    margin-top: 22px;
+    padding: 0 4px;
+  }
+}
+
+/* Short landscape viewports: pull the brand inline to reclaim vertical space. */
+@media (max-width: 760px) and (max-height: 560px) {
+  .login-screen .login-panel {
+    padding-top: 18px;
+  }
+
+  .login-screen .login-brand {
+    position: static;
+    left: auto;
+    flex-direction: row;
+    width: auto;
+    margin: 0 auto 16px;
+    transform: none;
+  }
+
+  .login-screen .login-brand strong {
+    font-size: 14px;
+    letter-spacing: 0.06em;
+  }
+}
+
+/* --- 3. Trigger button --------------------------------------------------- */
+
+.proto-help-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: fit-content;
+  margin: 18px auto 0;
+  padding: 9px 15px;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  border-radius: var(--radius-pill);
+  background: rgba(255, 253, 251, 0.72);
+  color: var(--color-text-muted);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(36, 10, 22, 0.12);
+  transition: border-color 160ms ease, background 160ms ease, color 160ms ease;
+}
+
+.proto-help-trigger:hover {
+  border-color: var(--maroon-600);
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--maroon-700);
+}
+
+.proto-help-trigger-icon {
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--maroon-700);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+html[data-theme='dark'] .proto-help-trigger {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(33, 26, 32, 0.78);
+  color: var(--color-text-muted);
+}
+
+html[data-theme='dark'] .proto-help-trigger:hover {
+  border-color: var(--maroon-600);
+  background: var(--maroon-100);
+  color: var(--color-text);
+}
+
+/* --- 4. Overlay shell ---------------------------------------------------- */
+
+.proto-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.proto-overlay[hidden] {
+  display: none;
+}
+
+.proto-overlay-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(23, 18, 22, 0.6);
+  backdrop-filter: blur(2px);
+}
+
+.proto-sheet {
+  position: relative;
+  width: min(100%, 520px);
+  max-height: min(85vh, 640px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: 22px;
+  background: var(--color-surface);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.3), 0 3px 12px rgba(0, 0, 0, 0.1);
+}
+
+.proto-overlay:not([hidden]) .proto-sheet {
+  animation: proto-sheet-in 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes proto-sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+}
+
+html[data-theme='dark'] .proto-overlay-backdrop {
+  background: rgba(0, 0, 0, 0.68);
+}
+
+html[data-theme='dark'] .proto-sheet {
+  border-color: var(--color-border-strong);
+  background: linear-gradient(180deg, #2c2027 0%, var(--surface-warm) 100%);
+}
+
+/* --- 5. Overlay content --------------------------------------------------- */
+
+.proto-sheet-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 22px 16px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.proto-sheet-eyebrow {
+  margin-bottom: 4px;
+  color: var(--maroon-700);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.proto-sheet-head h2 {
+  color: var(--color-text);
+  font-size: 20px;
+  letter-spacing: -0.02em;
+}
+
+.proto-sheet-close {
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--surface-soft);
+  color: var(--color-text-muted);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease, color 160ms ease;
+}
+
+.proto-sheet-close:hover {
+  border-color: var(--maroon-600);
+  background: var(--maroon-100);
+  color: var(--maroon-700);
+}
+
+.proto-sheet-body {
+  padding: 20px 22px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.proto-steps {
+  display: grid;
+  gap: 14px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  counter-reset: proto-step;
+}
+
+.proto-steps li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  counter-increment: proto-step;
+}
+
+.proto-steps li::before {
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  border-radius: 9px;
+  background: var(--maroon-100);
+  color: var(--maroon-700);
+  content: counter(proto-step);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.proto-steps strong {
+  display: block;
+  color: var(--color-text);
+  font-size: 13px;
+}
+
+.proto-steps span {
+  display: block;
+  margin-top: 2px;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.proto-theme-note {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 18px;
+  padding: 12px 14px;
+  border: 1px dashed var(--color-border-strong);
+  border-radius: 12px;
+  background: var(--surface-soft);
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.proto-theme-note strong {
+  color: var(--maroon-700);
+  font-weight: 800;
+}
+
+html[data-theme='dark'] .proto-theme-note strong {
+  color: var(--color-text);
+}
+
+.proto-sheet-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 22px;
+  border-top: 1px solid var(--color-border);
+}
+
+.proto-sheet-cta {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 22px;
+  border: 0;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--maroon-700), var(--maroon-900));
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: filter 160ms ease, transform 160ms ease;
+}
+
+.proto-sheet-cta:hover {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+}
+
+/* Focus visibility for keyboard users */
+.proto-help-trigger:focus-visible,
+.proto-sheet-close:focus-visible,
+.proto-sheet-cta:focus-visible {
+  outline: 3px solid var(--maroon-600);
+  outline-offset: 2px;
+}
+
+/* --- 6. Mobile sheet (bottom-sheet style) --------------------------------- */
+
+@media (max-width: 600px) {
+  .proto-overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .proto-sheet {
+    width: 100%;
+    max-height: min(92svh, 640px);
+    border-bottom: 0;
+    border-radius: 20px 20px 0 0;
+  }
+
+  .proto-overlay:not([hidden]) .proto-sheet {
+    animation-name: proto-sheet-mobile-in;
+  }
+
+  @keyframes proto-sheet-mobile-in {
+    from {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+  }
+
+  .proto-sheet-head {
+    padding: 16px 18px 14px;
+  }
+
+  .proto-sheet-body {
+    padding: 18px 18px calc(18px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .proto-sheet-foot {
+    padding: 14px 18px calc(14px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .proto-overlay:not([hidden]) .proto-sheet {
+    animation-duration: 0.01ms;
+  }
+
+  .proto-help-trigger,
+  .proto-sheet-close,
+  .proto-sheet-cta {
+    transition: none;
+  }
+}
+
+/* --- 7. Policy overlays (privacy / terms over the login form) ------------- */
+
+.proto-sheet-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-top: 8px;
+  color: var(--color-text-faint);
+  font-size: 11.5px;
+}
+
+.proto-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: var(--radius-pill);
+  background: var(--maroon-100);
+  color: var(--maroon-700);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.proto-sheet-link {
+  display: inline-flex;
+  align-items: center;
+  margin-right: auto;
+  padding: 0 6px;
+  color: var(--maroon-700);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.proto-sheet-link:hover,
+.proto-sheet-link:focus-visible {
+  text-decoration: underline;
+}
+
+.login-policy-content .privacy-section {
+  padding: 22px 0 6px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.login-policy-content .privacy-section:last-child {
+  border-bottom: 0;
+}
+
+.login-policy-content .privacy-section h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0 0 10px;
+  color: var(--color-text);
+  font-size: 15.5px;
+  font-weight: 800;
+}
+
+.login-policy-content .privacy-section h2 span {
+  color: var(--maroon-600);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.login-policy-content .privacy-section p {
+  margin: 0 0 10px;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.login-policy-content .privacy-section ul {
+  display: grid;
+  gap: 7px;
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.login-policy-content .privacy-section ul li {
+  position: relative;
+  padding-left: 16px;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.login-policy-content .privacy-section ul li::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 8px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--maroon-600);
+}
+
+.login-policy-content .notice {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  margin: 0 0 12px;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-left-width: 4px;
+  border-radius: var(--radius-md);
+  background: var(--surface-soft);
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}
+
+.login-policy-content .notice .notice-icon {
+  flex: 0 0 auto;
+  width: 17px;
+  height: 17px;
+  margin-top: 2px;
+  color: var(--color-text-muted);
+}
+
+.login-policy-content .notice strong {
+  font-weight: 700;
+}
+
+.login-policy-content .notice-info {
+  border-left-color: var(--color-info);
+  background: var(--color-info-soft);
+}
+
+.login-policy-content .notice-info .notice-icon,
+.login-policy-content .notice-info strong {
+  color: var(--color-info);
+}
+
+.login-policy-content .notice-warning {
+  border-left-color: var(--color-warning);
+  background: var(--color-warning-soft);
+}
+
+.login-policy-content .notice-warning .notice-icon,
+.login-policy-content .notice-warning strong {
+  color: var(--color-warning);
+}
+
+.login-policy-content .notice-maroon {
+  border-left-color: var(--maroon-600);
+  background: linear-gradient(180deg, var(--maroon-100), var(--surface-soft));
+}
+
+.login-policy-content .notice-maroon .notice-icon,
+.login-policy-content .notice-maroon strong {
+  color: var(--maroon-700);
+}

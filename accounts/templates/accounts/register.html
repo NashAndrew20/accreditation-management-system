@@ -53,6 +53,10 @@
               <span class="login-submit-arrow" aria-hidden="true">→</span>
             </button>
           </form>
+          <p class="login-legal-note">
+            By requesting access, you agree to the <a href="{% url 'core:policy_detail' 'terms-of-use' %}">Terms of Use</a>
+            and acknowledge the <a href="{% url 'core:policy_detail' 'privacy-policy' %}">Privacy Policy</a>.
+          </p>
           <p class="login-support">Already approved? <a href="{% url 'login' %}">Sign in</a>.</p>
         </div>
       </div>

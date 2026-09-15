@@ -176,9 +176,9 @@
       </section>
     {% else %}
       <section class="subarea-empty-state">
-        <div class="subarea-empty-icon">XI</div>
+        <div class="subarea-empty-icon">{{ area.code }}</div>
         <h2>No sub-areas configured yet</h2>
-        <p>Area XI — Employability does not have sub-areas or evidence items configured yet.</p>
+        <p>{{ area.code }} — {{ area.name }} does not have sub-areas or evidence items configured yet.</p>
       </section>
     {% endif %}
   </div>

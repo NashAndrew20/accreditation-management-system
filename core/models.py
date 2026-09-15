@@ -181,3 +181,75 @@ class AuditLog(models.Model):
 
     class Meta:
         ordering = ('-created_at',)
+
+
+class Policy(models.Model):
+    PRIVACY = 'PRIVACY'
+    TERMS = 'TERMS'
+    POLICY_TYPE_CHOICES = (
+        (PRIVACY, 'Privacy Policy'),
+        (TERMS, 'Terms of Use'),
+    )
+
+    DRAFT = 'DRAFT'
+    ACTIVE = 'ACTIVE'
+    STATUS_CHOICES = (
+        (DRAFT, 'Draft'),
+        (ACTIVE, 'Active'),
+    )
+
+    policy_type = models.CharField(max_length=20, choices=POLICY_TYPE_CHOICES)
+    slug = models.SlugField(max_length=60, unique=True)
+    title = models.CharField(max_length=160)
+    version = models.CharField(max_length=20)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=DRAFT)
+    is_required = models.BooleanField(default=True)
+    effective_date = models.DateField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ('-status', 'policy_type', '-version')
+        constraints = [
+            models.UniqueConstraint(
+                fields=('policy_type', 'version'),
+                name='unique_policy_type_version',
+            ),
+        ]
+
+    def __str__(self):
+        return f'{self.get_policy_type_display()} v{self.version}'
+
+    @staticmethod
+    def active_required():
+        """Active policies that require explicit user acknowledgment."""
+        return Policy.objects.filter(status=Policy.ACTIVE, is_required=True).order_by(
+            'policy_type', '-version'
+        )
+
+
+class PolicyConsent(models.Model):
+    user = models.ForeignKey(
+        'auth.User',
+        on_delete=models.CASCADE,
+        related_name='policy_consents',
+    )
+    policy = models.ForeignKey(
+        Policy,
+        on_delete=models.CASCADE,
+        related_name='consents',
+    )
+    version = models.CharField(max_length=20)
+    accepted_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ('policy__policy_type',)
+        constraints = [
+            models.UniqueConstraint(
+                fields=('user', 'policy'),
+                name='unique_user_policy_consent',
+            ),
+        ]
+
+    def __str__(self):
+        return f'{self.user} · {self.policy} · {self.version}'

@@ -10,10 +10,18 @@ def is_active_nav(context, url_name):
     True if `url_name` (e.g. 'dashboard:index') matches the view that
     resolved the current request. Used to highlight the active
     sidebar item without hardcoding path comparisons in the template.
+
+    `site_nav` context processor computes `active_nav`, which already
+    maps detail pages to their parent section (so e.g. an area detail
+    page keeps "PACUCOA" highlighted). If that is missing, fall back to
+    an exact match on the resolved view name.
     """
     request = context.get('request')
     if not request:
         return False
+    active_nav = context.get('active_nav')
+    if active_nav:
+        return active_nav == url_name
     match = getattr(request, 'resolver_match', None)
     if not match:
         return False
@@ -40,12 +48,17 @@ _ICONS = {
     'close': '<path d="m6 6 12 12M18 6 6 18"/>',
     'chevron-down': '<path d="m6 9 6 6 6-6"/>',
     'chevron-right': '<path d="m9 6 6 6-6 6"/>',
+    'chevrons-left': '<path d="m11 7-5 5 5 5"/><path d="m18 7-5 5 5 5"/>',
+    'chevrons-right': '<path d="m6 7 5 5-5 5"/><path d="m13 7 5 5-5 5"/>',
     'file': '<path d="M6 3.5A1.5 1.5 0 0 1 7.5 2H14l5 5v13.5A1.5 1.5 0 0 1 17.5 22h-10A1.5 1.5 0 0 1 6 20.5Z"/><path d="M14 2v5h5"/>',
     'check': '<circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.5 2.5 5-5"/>',
     'clock': '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/>',
     'alert': '<path d="M12 3 2 20h20L12 3Z"/><path d="M12 10v4"/><path d="M12 17h.01"/>',
     'trend-up': '<path d="m3 17 6-6 4 4 8-8"/><path d="M15 7h6v6"/>',
+    'calendar': '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/>',
     'bolt': '<path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"/>',
+    'shield': '<path d="M12 3 4 6v5c0 5.2 3.4 8.4 8 10 4.6-1.6 8-4.8 8-10V6l-8-3Z"/><path d="m9 12 2 2 4-4"/>',
+    'help': '<circle cx="12" cy="12" r="9"/><path d="M9.6 9.3a2.5 2.5 0 1 1 3.6 2.3c-.8.4-1.2.9-1.2 1.9"/><path d="M12 16.8h.01"/>',
 }
 
 

@@ -205,6 +205,52 @@
             <span>Save Assistant Settings</span>
           </button>
         </form>
+
+        <div class="profile-card settings-panel" id="settings-panel-privacy" data-settings-panel="privacy" hidden>
+          <h2>Privacy &amp; Legal</h2>
+          <p class="settings-panel-copy">
+            Review the institutional policies that govern your access to the AMS and
+            view your recorded policy acknowledgments.
+          </p>
+
+          <div class="settings-option-list">
+            {% for policy in legal_policies %}
+              <div class="settings-option">
+                <span>
+                  <strong>{{ policy.title }}</strong>
+                  <em>Version {{ policy.version }} · Effective {{ policy.effective_date|date:'F j, Y' }} · Updated {{ policy.updated_at|date:'F j, Y' }}</em>
+                </span>
+                <a class="privacy-settings-link" href="{% url 'core:policy_detail' policy.slug %}" target="_blank" rel="noopener">View policy</a>
+              </div>
+            {% empty %}
+              <div class="settings-option">
+                <span>
+                  <strong>No active policies</strong>
+                  <em>Institutional policies are not currently configured.</em>
+                </span>
+              </div>
+            {% endfor %}
+          </div>
+
+          <section class="settings-note">
+            <strong>Acknowledgment History</strong>
+            <p>Each acknowledgment is recorded server-side with the policy version and timestamp.</p>
+          </section>
+
+          {% if legal_consents %}
+            <div class="settings-history-list">
+              {% for consent in legal_consents %}
+                <div class="settings-history-item">
+                  <span class="role-chip">{{ consent.policy.title }}</span>
+                  <span class="settings-history-version">v{{ consent.version }}</span>
+                  <span class="settings-history-date">{{ consent.accepted_at|date:'F j, Y · g:i A' }}</span>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="settings-empty-copy">You have not recorded any policy acknowledgments yet.</p>
+          {% endif %}
+        </div>
       </div>
     </section>
   </div>

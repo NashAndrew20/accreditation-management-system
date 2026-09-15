@@ -57,6 +57,12 @@
               </form>
             {% endif %}
           </article>
+        {% empty %}
+          <div class="empty-state">
+            <div class="empty-state-icon">{% icon 'bell' %}</div>
+            <div class="empty-state-title">No notifications yet</div>
+            <p class="empty-state-copy">Assignment notices, review updates, deadline reminders, and new messages will appear here.</p>
+          </div>
         {% endfor %}
       </div>
     </div>

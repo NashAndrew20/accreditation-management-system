@@ -1,3 +1,18 @@
+/* ---------- Dashboard page header ---------- */
+
+.dashboard-header {
+  margin-bottom: 16px;
+}
+
+.dashboard-header .breadcrumb {
+  margin-bottom: 6px;
+}
+
+.dashboard-header h1 {
+  font-size: 24px;
+  letter-spacing: -0.01em;
+}
+
 /* ---------- AI alert banner ---------- */
 
 .alert-banner {
@@ -204,6 +219,82 @@
 
 .stat-note {
   font-size: 12px;
+  color: var(--color-text-faint);
+}
+
+/* ---------- Quick action links ---------- */
+
+.quick-actions {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.quick-action {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 14px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+  color: var(--color-text);
+  text-decoration: none;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.quick-action:hover {
+  border-color: var(--maroon-600);
+  box-shadow: 0 6px 18px rgba(67, 13, 34, 0.08);
+  transform: translateY(-1px);
+}
+
+.quick-action-icon {
+  flex: 0 0 auto;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.quick-action-icon .icon { width: 18px; height: 18px; }
+
+.quick-action-icon.tone-rose { background: var(--rose-100); color: var(--rose-500); }
+.quick-action-icon.tone-green { background: var(--green-100); color: var(--green-600); }
+.quick-action-icon.tone-gold { background: var(--gold-100); color: var(--gold-600); }
+.quick-action-icon.tone-blue { background: var(--color-info-soft); color: var(--color-info); }
+
+.quick-action-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.quick-action-copy strong {
+  font-size: 13.5px;
+  font-weight: 700;
+}
+
+.quick-action-copy span {
+  font-size: 11.5px;
+  color: var(--color-text-faint);
+  line-height: 1.35;
+}
+
+.quick-action-arrow {
+  width: 16px;
+  height: 16px;
+  margin-left: auto;
+  flex-shrink: 0;
   color: var(--color-text-faint);
 }
 
@@ -520,6 +611,7 @@
 
 @media (max-width: 1180px) {
   .stat-grid { grid-template-columns: repeat(2, 1fr); }
+  .quick-actions { grid-template-columns: repeat(2, 1fr); }
   .panel-grid { grid-template-columns: 1fr; }
   .dashboard-lower-grid { grid-template-columns: 1fr; }
 }
@@ -554,6 +646,7 @@
 
 @media (max-width: 560px) {
   .stat-grid { grid-template-columns: 1fr; }
+  .quick-actions { grid-template-columns: 1fr; }
   .alert-banner {
     display: block;
     --alert-greeting-top: 24px;

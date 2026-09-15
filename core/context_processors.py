@@ -87,6 +87,35 @@ def _aira_guidance(request):
     return _AIRA_GUIDANCE.get(view_name, _AIRA_DEFAULT_GUIDANCE)
 
 
+# Detail/intermediate views that should keep a parent sidebar section
+# highlighted when the exact view name has no nav item of its own.
+_ACTIVE_NAV_PARENTS = {
+    'accreditation:area_details': 'accreditation:levels_areas',
+    'accreditation:submission_workspace_subarea': 'accreditation:submission_workspace',
+    'accreditation:evidence_review': 'accreditation:review_workflow',
+}
+
+
+def _resolve_active_nav(request):
+    resolver_match = getattr(request, 'resolver_match', None)
+    if not resolver_match:
+        return ''
+    current = (
+        f'{resolver_match.namespace}:{resolver_match.url_name}'
+        if resolver_match.namespace
+        else resolver_match.url_name
+    )
+    if current == 'accreditation:evidence_detail':
+        # Evidence details open from "My Tasks" for Program Heads and from
+        # the review queue for reviewers, so highlight the matching section.
+        assignment = active_assignment(request.user)
+        role_code = assignment.role.code if assignment else ''
+        if role_code == 'PROGRAM_HEAD':
+            return 'accreditation:submission_workspace'
+        return 'accreditation:review_workflow'
+    return _ACTIVE_NAV_PARENTS.get(current, current)
+
+
 def site_nav(request):
     nav_sections = [
         {
@@ -242,4 +271,5 @@ def site_nav(request):
         'aira_guidance': aira_guidance,
         'notification_count': notification_count,
         'notification_preview': notification_preview,
+        'active_nav': _resolve_active_nav(request),
     }

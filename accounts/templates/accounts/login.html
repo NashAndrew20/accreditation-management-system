@@ -1,9 +1,9 @@
-{% load static %}
+{% load static nav_extras %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
   <title>Sign in · JMCFI AMS</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,6 +15,7 @@
   <link rel="stylesheet" href="{% static 'css/base.css' %}">
   <link rel="stylesheet" href="{% static 'css/login.css' %}?v=20260904-login">
   <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+  <link rel="stylesheet" href="{% static 'css/prototype_login.css' %}?v=proto-20260915">
 </head>
 <body class="login-body login-screen">
   <main class="login-page">
@@ -85,12 +86,252 @@
           <p class="login-support">No account yet? <a href="{% url 'register' %}">Request access</a></p>
         </div>
 
-        <p class="login-footer">JOSE MARIA COLLEGE FOUNDATION, INC.</p>
+        <button
+          type="button"
+          class="proto-help-trigger"
+          data-proto-overlay-open="proto-signin-guide"
+          aria-haspopup="dialog"
+          aria-expanded="false">
+          <span class="proto-help-trigger-icon" aria-hidden="true">?</span>
+          Sign-in guide
+        </button>
+
+        <p class="login-footer">
+          JOSE MARIA COLLEGE FOUNDATION, INC.
+          <span>·</span>
+          <a class="login-privacy-link" href="{% url 'core:policy_detail' 'privacy-policy' %}" data-proto-overlay-open="login-privacy" aria-haspopup="dialog" aria-expanded="false">Privacy</a>
+          <span>·</span>
+          <a class="login-privacy-link" href="{% url 'core:policy_detail' 'terms-of-use' %}" data-proto-overlay-open="login-terms" aria-haspopup="dialog" aria-expanded="false">Terms</a>
+        </p>
       </div>
     </section>
+
+    <div
+      class="proto-overlay"
+      id="proto-signin-guide"
+      data-proto-overlay
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="proto-guide-title"
+      hidden>
+      <div class="proto-overlay-backdrop" data-proto-overlay-close aria-hidden="true"></div>
+      <div class="proto-sheet">
+        <header class="proto-sheet-head">
+          <div>
+<p class="proto-sheet-eyebrow">Sign-in guide</p>
+          <h2 id="proto-guide-title">How to sign in</h2>
+          </div>
+          <button type="button" class="proto-sheet-close" data-proto-overlay-close aria-label="Close sign-in guide">&times;</button>
+        </header>
+
+        <div class="proto-sheet-body">
+          <ol class="proto-steps">
+            <li>
+              <div>
+                <strong>Enter your credentials</strong>
+                <span>Use the email or username and password issued to you by the registrar's office.</span>
+              </div>
+            </li>
+            <li>
+              <div>
+                <strong>Sign in with Google</strong>
+                <span>Use your institutional Google account to skip the password step — your account must already be approved.</span>
+              </div>
+            </li>
+            <li>
+              <div>
+                <strong>Land on your dashboard</strong>
+                <span>Pending reviews, submissions, and upcoming deadlines are surfaced for your active role.</span>
+              </div>
+            </li>
+          </ol>
+
+          <div class="proto-theme-note" role="status">
+            <span>Active preview theme</span>
+            <strong data-theme-mode-label>Light</strong>
+          </div>
+        </div>
+
+        <footer class="proto-sheet-foot">
+          <button type="button" class="proto-sheet-cta" data-proto-overlay-close>Close</button>
+        </footer>
+      </div>
+    </div>
+
+    <div
+      class="proto-overlay"
+      id="login-privacy"
+      data-proto-overlay
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="login-privacy-title"
+      hidden>
+      <div class="proto-overlay-backdrop" data-proto-overlay-close aria-hidden="true"></div>
+      <div class="proto-sheet">
+        <header class="proto-sheet-head">
+          <div>
+            <p class="proto-sheet-eyebrow">JMCFI AMS · Privacy</p>
+            <h2 id="login-privacy-title">Data Privacy Notice &amp; Policy</h2>
+            <div class="proto-sheet-meta">
+              <span class="proto-chip">Version {{ privacy_policy.version|default:'1.0' }}</span>
+              <span>Last updated {{ privacy_policy.updated_at|date:'F j, Y'|default:'September 14, 2026' }}</span>
+            </div>
+          </div>
+          <button type="button" class="proto-sheet-close" data-proto-overlay-close aria-label="Close privacy policy">&times;</button>
+        </header>
+
+        <div class="proto-sheet-body">
+          <article class="privacy-content login-policy-content" aria-label="Data privacy policy">
+            {% include 'core/policies/_privacy_body.html' %}
+          </article>
+        </div>
+
+        <footer class="proto-sheet-foot">
+          <a class="proto-sheet-link" href="{% url 'core:policy_detail' 'privacy-policy' %}">Open full policy</a>
+          <button type="button" class="proto-sheet-cta" data-proto-overlay-close>Close</button>
+        </footer>
+      </div>
+    </div>
+
+    <div
+      class="proto-overlay"
+      id="login-terms"
+      data-proto-overlay
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="login-terms-title"
+      hidden>
+      <div class="proto-overlay-backdrop" data-proto-overlay-close aria-hidden="true"></div>
+      <div class="proto-sheet">
+        <header class="proto-sheet-head">
+          <div>
+            <p class="proto-sheet-eyebrow">JMCFI AMS · Legal</p>
+            <h2 id="login-terms-title">Terms of Use</h2>
+            <div class="proto-sheet-meta">
+              <span class="proto-chip">Version {{ terms_policy.version|default:'1.0' }}</span>
+              <span>Effective {{ terms_policy.effective_date|date:'F j, Y'|default:'September 14, 2026' }}</span>
+            </div>
+          </div>
+          <button type="button" class="proto-sheet-close" data-proto-overlay-close aria-label="Close terms of use">&times;</button>
+        </header>
+
+        <div class="proto-sheet-body">
+          <article class="privacy-content login-policy-content" aria-label="Terms of use">
+            {% include 'core/policies/_terms_body.html' %}
+          </article>
+        </div>
+
+        <footer class="proto-sheet-foot">
+          <a class="proto-sheet-link" href="{% url 'core:policy_detail' 'terms-of-use' %}">Open full terms</a>
+          <button type="button" class="proto-sheet-cta" data-proto-overlay-close>Close</button>
+        </footer>
+      </div>
+    </div>
 
   </main>
 
   <script src="{% static 'js/login.js' %}" defer></script>
+  {% block extra_js %}
+  <script>
+    (function () {
+      function setUpPrototypeOverlay() {
+        var overlays = Array.prototype.slice.call(document.querySelectorAll('[data-proto-overlay]'));
+        var triggers = Array.prototype.slice.call(document.querySelectorAll('[data-proto-overlay-open]'));
+        var focusable = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+        var lastFocused = null;
+        var lastTrigger = null;
+
+        function themeName() {
+          return (document.documentElement.getAttribute('data-theme') || 'light') === 'dark' ? 'Dark' : 'Light';
+        }
+
+        function syncThemeLabels() {
+          Array.prototype.forEach.call(document.querySelectorAll('[data-theme-mode-label]'), function (el) {
+            el.textContent = themeName();
+          });
+        }
+
+        function openOverlay(overlay, trigger) {
+          lastFocused = trigger || document.activeElement;
+          lastTrigger = trigger || null;
+          overlay.hidden = false;
+          document.body.classList.add('proto-no-scroll');
+          document.documentElement.classList.add('proto-no-scroll');
+          if (lastTrigger) lastTrigger.setAttribute('aria-expanded', 'true');
+          var panel = document.querySelector('.login-panel');
+          if (panel) panel.setAttribute('aria-hidden', 'true');
+          var target = overlay.querySelector('[data-proto-autofocus]') ||
+            overlay.querySelector('button, a, input, select, textarea');
+          if (target) target.focus();
+        }
+
+        function closeOverlay(overlay) {
+          overlay.hidden = true;
+          if (lastTrigger) lastTrigger.setAttribute('aria-expanded', 'false');
+          document.body.classList.remove('proto-no-scroll');
+          document.documentElement.classList.remove('proto-no-scroll');
+          var panel = document.querySelector('.login-panel');
+          if (panel) panel.removeAttribute('aria-hidden');
+          if (lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus();
+        }
+
+        function isOpen(overlay) {
+          return overlay && !overlay.hidden;
+        }
+
+        overlays.forEach(function (overlay) {
+          overlay.addEventListener('click', function (event) {
+            if (event.target === overlay || event.target.closest('[data-proto-overlay-close]')) {
+              closeOverlay(overlay);
+            }
+          });
+
+          overlay.addEventListener('keydown', function (event) {
+            if (event.key !== 'Tab') return;
+            var nodes = overlay.querySelectorAll(focusable);
+            if (!nodes.length) return;
+            var first = nodes[0];
+            var last = nodes[nodes.length - 1];
+            if (event.shiftKey && document.activeElement === first) {
+              event.preventDefault();
+              last.focus();
+            } else if (!event.shiftKey && document.activeElement === last) {
+              event.preventDefault();
+              first.focus();
+            }
+          });
+        });
+
+        document.addEventListener('keydown', function (event) {
+          if (event.key !== 'Escape') return;
+          var open = overlays.find(isOpen);
+          if (open) closeOverlay(open);
+        });
+
+        triggers.forEach(function (trigger) {
+          trigger.addEventListener('click', function (event) {
+            event.preventDefault();
+            var overlay = document.getElementById(trigger.getAttribute('data-proto-overlay-open'));
+            if (overlay) openOverlay(overlay, trigger);
+          });
+        });
+
+        syncThemeLabels();
+        if (typeof window.MutationObserver === 'function') {
+          new MutationObserver(syncThemeLabels).observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ['data-theme'],
+          });
+        }
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setUpPrototypeOverlay);
+      } else {
+        setUpPrototypeOverlay();
+      }
+    })();
+  </script>
+  {% endblock extra_js %}
 </body>
 </html>

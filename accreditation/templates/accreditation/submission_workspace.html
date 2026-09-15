@@ -195,7 +195,11 @@
             <div class="upload-box">
               {% icon 'cloud' 'upload-icon' %}
               <strong>Drop files here or click to upload</strong>
-              <span>PDF, DOCX, XLSX up to 25MB</span>
+              <span>PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, JPG, PNG</span>
+            </div>
+            <div class="notice notice-warning upload-privacy-note" role="note">
+              <span class="notice-icon">{% icon 'alert' %}</span>
+              <span>Upload only documents authorized for this accreditation workspace, and limit personal or sensitive data to what the requirement needs. See the <a href="{% url 'core:privacy_notice' %}">Data Privacy Notice &amp; Policy</a> for handling guidance.</span>
             </div>
           {% endif %}
 
@@ -217,8 +221,8 @@
               {% csrf_token %}
               <a href="{% url 'accreditation:area_details' workspace.area_key %}" class="workspace-action-btn workspace-action-cancel">Cancel</a>
               {% if can_manage_submission %}
-                {% if can_resubmit %}<button type="submit" name="action" value="resubmit" class="workspace-action-btn workspace-action-resubmit">Resubmit</button>{% endif %}
-                {% if can_submit %}<button type="submit" name="action" value="submit" class="workspace-action-btn workspace-action-submit">Submit</button>{% endif %}
+                {% if can_resubmit %}<button type="submit" name="action" value="resubmit" class="workspace-action-btn workspace-action-resubmit" data-confirm data-confirm-title="Resubmit evidence" data-confirm-message="Resubmit this evidence set for internal review? The current version and files will remain in the version history." data-confirm-accept="Resubmit">Resubmit</button>{% endif %}
+                {% if can_submit %}<button type="submit" name="action" value="submit" class="workspace-action-btn workspace-action-submit" data-confirm data-confirm-title="Submit for review" data-confirm-message="Submit this evidence set for internal review? A reviewer will be assigned once submitted." data-confirm-accept="Submit">Submit</button>{% endif %}
               {% endif %}
             </form>
           {% endif %}

@@ -1,0 +1,216 @@
+/* ---------- Privacy hero ---------- */
+
+.privacy-hero {
+  margin: -26px -28px 28px;
+  padding: 56px 64px 44px;
+  background:
+    linear-gradient(120deg, var(--maroon-800), var(--maroon-700)),
+    url('../images/jmcfi-campus.jpeg') center / cover no-repeat;
+  background-blend-mode: multiply;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  color: #fff;
+}
+
+.privacy-eyebrow {
+  display: inline-block;
+  margin-bottom: 10px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.privacy-hero h1 {
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.privacy-hero p {
+  max-width: 62ch;
+  margin-top: 8px;
+  font-size: 15px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.privacy-meta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.privacy-meta .ui-chip.tone-maroon {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+}
+
+.privacy-date {
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+/* ---------- Layout ---------- */
+
+.privacy-layout {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 36px;
+  align-items: start;
+}
+
+.privacy-toc {
+  position: sticky;
+  top: calc(var(--topbar-height) + 20px);
+  padding: 18px 20px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+}
+
+.privacy-toc h2 {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-faint);
+  margin-bottom: 12px;
+}
+
+.privacy-toc ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.privacy-toc a {
+  display: block;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 12.5px;
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+.privacy-toc a:hover {
+  background: var(--color-bg);
+  color: var(--maroon-700);
+}
+
+/* ---------- Content ---------- */
+
+.privacy-content {
+  max-width: 860px;
+}
+
+.privacy-section {
+  padding: 30px 0 8px;
+  border-bottom: 1px solid var(--color-border);
+  scroll-margin-top: calc(var(--topbar-height) + 20px);
+}
+
+.privacy-section h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--color-text);
+  margin-bottom: 12px;
+}
+
+.privacy-section h2 span {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--maroon-600);
+  letter-spacing: 0.06em;
+}
+
+.privacy-section p {
+  margin: 0 0 12px;
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--color-text-muted);
+}
+
+.privacy-section ul {
+  list-style: none;
+  margin: 0 0 14px;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.privacy-section ul li {
+  position: relative;
+  padding-left: 18px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--color-text-muted);
+}
+
+.privacy-section ul li::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 8px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--maroon-600);
+}
+
+.privacy-section .notice {
+  margin-bottom: 12px;
+}
+
+.privacy-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 24px 0 8px;
+  font-size: 13px;
+  color: var(--color-text-faint);
+}
+
+.privacy-footer a {
+  color: var(--maroon-700);
+  font-weight: 700;
+}
+
+.privacy-footer a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 900px) {
+  .privacy-layout {
+    display: block;
+  }
+
+  .privacy-toc {
+    position: static;
+    margin-bottom: 24px;
+  }
+}
+
+@media (max-width: 760px) {
+  .privacy-hero {
+    margin: -20px -20px 24px;
+    padding: 36px 24px 30px;
+  }
+
+  .privacy-hero h1 {
+    font-size: 24px;
+  }
+
+  .privacy-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

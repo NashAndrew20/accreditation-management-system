@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% load static nav_extras %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/privacy.css' %}?v=1">
+{% endblock %}
+
+{% block content %}
+  <header class="privacy-hero">
+    <div class="privacy-hero-inner">
+      <span class="privacy-eyebrow">Data Privacy · JMCFI AMS</span>
+      <h1>Data Privacy Notice &amp; Policy</h1>
+      <p>
+        How the Jose Maria College Foundation, Inc. (JMCFI) Accreditation Management
+        System (AMS) collects, uses, stores, shares, and protects personal data.
+      </p>
+      <div class="privacy-meta">
+        <span class="ui-chip tone-maroon">Version {{ policy.version|default:'1.0' }}</span>
+        <span class="privacy-date">Last updated: {{ policy.updated_at|date:'F j, Y'|default:'September 14, 2026' }}</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="privacy-layout">
+    <nav class="privacy-toc" aria-label="Privacy policy contents">
+      <h2>Contents</h2>
+      <ol>
+        <li><a href="#sec-1">Introduction</a></li>
+        <li><a href="#sec-2">Scope and Application</a></li>
+        <li><a href="#sec-3">Governing Law and Framework</a></li>
+        <li><a href="#sec-4">What the Accreditation Management System Is</a></li>
+        <li><a href="#sec-5">Personal Data We Process</a></li>
+        <li><a href="#sec-6">Sensitive Personal Data in Evidence</a></li>
+        <li><a href="#sec-7">Sources of Personal Data</a></li>
+        <li><a href="#sec-8">Purposes of Processing</a></li>
+        <li><a href="#sec-9">Legal Basis for Processing</a></li>
+        <li><a href="#sec-10">Retention of Personal Data</a></li>
+        <li><a href="#sec-11">Who May Access Personal Data</a></li>
+        <li><a href="#sec-12">Disclosure and Sharing</a></li>
+        <li><a href="#sec-13">Third-Party Services</a></li>
+        <li><a href="#sec-14">Security Measures</a></li>
+        <li><a href="#sec-15">Your Rights Under the Data Privacy Act</a></li>
+        <li><a href="#sec-16">How to Exercise Your Rights</a></li>
+        <li><a href="#sec-17">Automated Processing and Advisory Tools</a></li>
+        <li><a href="#sec-18">Cookies, Sessions, and Local Storage</a></li>
+        <li><a href="#sec-19">User Responsibilities</a></li>
+        <li><a href="#sec-20">Incident Reporting</a></li>
+        <li><a href="#sec-21">Policy Review and Updates</a></li>
+        <li><a href="#sec-22">Acknowledgment</a></li>
+        <li><a href="#sec-23">Contact Information</a></li>
+      </ol>
+    </nav>
+
+    <article class="privacy-content" aria-label="Data privacy policy">
+      {% include 'core/policies/_privacy_body.html' %}
+
+      <footer class="privacy-footer">
+        <p>&copy; 2026 Jose Maria College Foundation, Inc. Accreditation Management System.</p>
+        {% if user.is_authenticated %}
+          <a href="{% url 'dashboard:index' %}">Return to dashboard</a>
+        {% else %}
+          <a href="{% url 'login' %}">Return to sign in</a>
+        {% endif %}
+      </footer>
+    </article>
+  </div>
+{% endblock %}

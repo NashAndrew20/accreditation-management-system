@@ -21,7 +21,7 @@ from django.views.generic import TemplateView, View
 
 from core.access import approved_assignments, can_approve_accounts, is_admin_user
 from core.mixins import AccountApprovalMixin, ApprovedUserRequiredMixin
-from core.models import AuditLog, Notification, RoleAssignment, UserProfile
+from core.models import AuditLog, Notification, Policy, RoleAssignment, UserProfile
 from core.rate_limit import LOGIN_ATTEMPT_WINDOW, allow_login_attempt
 
 from .forms import (
@@ -56,6 +56,11 @@ class PortalLoginView(LoginView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        active_policies = {p.policy_type: p for p in Policy.active_required()}
+        context.update({
+            'privacy_policy': active_policies.get(Policy.PRIVACY),
+            'terms_policy': active_policies.get(Policy.TERMS),
+        })
         return context
 
     def get_success_url(self):
@@ -452,9 +457,14 @@ class SettingsProfileView(ApprovedUserRequiredMixin, TemplateView):
                 {'key': 'password', 'label': 'Password', 'icon': 'settings', 'active': False},
                 {'key': 'notifications', 'label': 'Notifications', 'icon': 'bell', 'active': False},
                 {'key': 'assistant', 'label': 'Assistant', 'icon': 'sparkle', 'active': False},
+                {'key': 'privacy', 'label': 'Privacy & Legal', 'icon': 'shield', 'active': False},
             ],
             'profile': profile,
             'form': form or ProfileSettingsForm(user),
+            'legal_policies': list(Policy.active_required()),
+            'legal_consents': list(
+                user.policy_consents.select_related('policy').order_by('-accepted_at')
+            ),
         }
 
     def get_context_data(self, **kwargs):

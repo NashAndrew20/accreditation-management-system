@@ -509,6 +509,24 @@
   text-align: center;
 }
 
+.login-legal-note {
+  margin-top: 14px;
+  color: var(--color-text-faint);
+  font-size: 11px;
+  text-align: center;
+}
+
+.login-legal-note a {
+  color: var(--maroon-700);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.login-legal-note a:hover {
+  color: var(--maroon-900);
+  text-decoration: underline;
+}
+
 .login-footer {
   margin-top: 22px;
   color: var(--color-text-faint);
@@ -519,6 +537,17 @@
 .login-footer span {
   padding: 0 4px;
   color: var(--color-border-strong);
+}
+
+.login-privacy-link {
+  color: var(--color-text-muted);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.login-privacy-link:hover {
+  color: var(--maroon-700);
+  text-decoration: underline;
 }
 
 /* Full-screen sign-in presentation. The other account screens keep the

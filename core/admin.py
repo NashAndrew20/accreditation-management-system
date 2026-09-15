@@ -1,6 +1,15 @@
 from django.contrib import admin
 
-from .models import AuditLog, Department, Notification, Role, RoleAssignment, UserProfile
+from .models import (
+    AuditLog,
+    Department,
+    Notification,
+    Policy,
+    PolicyConsent,
+    Role,
+    RoleAssignment,
+    UserProfile,
+)
 
 
 @admin.register(Role)
@@ -45,3 +54,19 @@ class AuditLogAdmin(admin.ModelAdmin):
     list_filter = ('action', 'object_type')
     search_fields = ('actor__username', 'action', 'object_id')
     readonly_fields = ('created_at',)
+
+
+@admin.register(Policy)
+class PolicyAdmin(admin.ModelAdmin):
+    list_display = ('title', 'policy_type', 'version', 'status', 'is_required', 'effective_date', 'updated_at')
+    list_filter = ('policy_type', 'status', 'is_required')
+    search_fields = ('title', 'slug', 'version')
+    readonly_fields = ('created_at', 'updated_at')
+
+
+@admin.register(PolicyConsent)
+class PolicyConsentAdmin(admin.ModelAdmin):
+    list_display = ('user', 'policy', 'version', 'accepted_at')
+    list_filter = ('policy__policy_type',)
+    search_fields = ('user__username', 'user__email', 'policy__title', 'version')
+    readonly_fields = ('accepted_at',)

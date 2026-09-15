@@ -48,6 +48,15 @@ html[data-theme='dark'] {
   --red-100: #47242E;
 
   --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.24), 0 12px 30px rgba(0, 0, 0, 0.2);
+  --shadow-popover: 0 18px 42px rgba(0, 0, 0, 0.4);
+  --shadow-dialog: 0 24px 70px rgba(0, 0, 0, 0.48);
+
+  /* Interaction tokens for dark surfaces */
+  --control-hover: rgba(226, 106, 142, 0.12);
+
+  /* Skeleton loading surfaces for dark theme */
+  --surface-skeleton: #2E252B;
+  --surface-skeleton-high: #3C3038;
 }
 
 html[data-theme='dark'] body {
@@ -119,6 +128,35 @@ html[data-theme='dark'] .evidence-alert {
 html[data-theme='dark'] .notification-popover,
 html[data-theme='dark'] .profile-popover {
   box-shadow: 0 18px 42px rgba(0, 0, 0, 0.4);
+}
+
+/* Reusable component surfaces (components.css) */
+
+html[data-theme='dark'] .ui-card-footer,
+html[data-theme='dark'] .confirm-dialog-actions {
+  background: var(--surface-muted);
+}
+
+html[data-theme='dark'] .confirm-dialog {
+  border-color: var(--color-border-strong);
+  background: linear-gradient(180deg, #2C2027 0%, var(--surface-warm) 100%);
+}
+
+html[data-theme='dark'] .confirm-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.68);
+}
+
+html[data-theme='dark'] .confirm-dialog-close {
+  background: var(--surface-warm);
+}
+
+html[data-theme='dark'] .notice-maroon {
+  border-left-color: var(--maroon-600);
+  background: linear-gradient(180deg, #2C2027 0%, var(--color-danger-soft) 130%);
+}
+
+html[data-theme='dark'] .skip-link {
+  background: var(--maroon-700);
 }
 
 .theme-toggle-action {

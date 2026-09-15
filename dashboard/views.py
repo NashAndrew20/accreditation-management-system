@@ -5,8 +5,20 @@ from django.utils.timesince import timesince
 from django.views.generic import TemplateView
 
 from accreditation.constants import ACTIVE_REVIEW_STATUSES, COMPLETED_STATUSES
-from accreditation.models import AccreditationCycle, AccreditationLevel, EvidenceRequirement, EvidenceSubmission
-from core.access import accessible_submissions, active_assignment
+from accreditation.models import (
+    AccreditationCycle,
+    AccreditationLevel,
+    AreaAssignment,
+    EvidenceRequirement,
+    EvidenceSubmission,
+)
+from core.access import (
+    accessible_submissions,
+    active_assignment,
+    department_scope_ids,
+    has_role,
+    is_admin_user,
+)
 from core.models import AuditLog
 from core.mixins import ApprovedUserRequiredMixin
 
@@ -175,8 +187,95 @@ class DashboardView(ApprovedUserRequiredMixin, TemplateView):
             })
 
         context['recent_activity'] = recent_activity
-        context['upcoming_deadlines'] = []
-        context['quick_actions'] = ['Submit Evidence', 'Review Queue', 'Upload Document', 'View Reports']
+        context['upcoming_deadlines'] = self._upcoming_deadlines(user, cycle, submissions)
+        context['quick_actions'] = [
+            {
+                'label': 'Submit Evidence',
+                'description': 'Open your submission workspace to upload new evidence.',
+                'url_name': 'accreditation:submission_workspace',
+                'icon': 'file',
+                'tone': 'rose',
+            },
+            {
+                'label': 'Review Queue',
+                'description': 'Work through evidence that is awaiting your decision.',
+                'url_name': 'accreditation:review_workflow',
+                'icon': 'clock',
+                'tone': 'gold',
+            },
+            {
+                'label': 'Document Repository',
+                'description': 'Browse the centralized document and evidence repository.',
+                'url_name': 'resources:document_repository',
+                'icon': 'folder',
+                'tone': 'blue',
+            },
+            {
+                'label': 'Reports & Monitoring',
+                'description': 'View readiness, compliance, and submission trend reports.',
+                'url_name': 'intelligence:reports_monitoring',
+                'icon': 'chart',
+                'tone': 'green',
+            },
+        ]
         context['hide_topbar_title'] = True
         context['hide_aira_global'] = True
         return context
+
+    def _upcoming_deadlines(self, user, cycle, submissions):
+        """Return the next assignment and requirement deadlines in the user's scope."""
+        if not cycle:
+            return []
+
+        manager_scope = is_admin_user(user) or has_role(user, 'QA', 'ACCREDITATION_HEAD')
+        scoped_department_ids = None
+        scoped_area_ids = None
+        if not manager_scope:
+            assignment = active_assignment(user)
+            if assignment:
+                scoped_department_ids = department_scope_ids(assignment.department)
+            scoped_area_ids = set(
+                submissions.values_list('requirement__area_id', flat=True)
+            ) | set(
+                AreaAssignment.objects.filter(
+                    department_id__in=scoped_department_ids or [],
+                ).values_list('area_id', flat=True)
+            )
+
+        today = timezone.localdate()
+        entries = []
+
+        requirement_qs = EvidenceRequirement.objects.filter(
+            area__level__cycle=cycle,
+            deadline__gte=today,
+            deadline__isnull=False,
+        ).select_related('area')
+        if scoped_area_ids is not None:
+            requirement_qs = requirement_qs.filter(area_id__in=scoped_area_ids)
+        for requirement in requirement_qs[:8]:
+            entries.append({
+                'title': f'{requirement.code} · {requirement.area.code}',
+                'date_label': requirement.deadline.strftime('%b %d, %Y'),
+                'days': (requirement.deadline - today).days,
+                'urgent': False,
+            })
+
+        assignment_qs = AreaAssignment.objects.filter(
+            area__level__cycle=cycle,
+            deadline__gte=today,
+            deadline__isnull=False,
+        ).select_related('area', 'department')
+        if scoped_department_ids is not None:
+            assignment_qs = assignment_qs.filter(department_id__in=scoped_department_ids)
+        for assignment in assignment_qs[:8]:
+            entries.append({
+                'title': f'Area {assignment.area.code} · {assignment.department.name}',
+                'date_label': assignment.deadline.strftime('%b %d, %Y'),
+                'days': (assignment.deadline - today).days,
+                'urgent': False,
+            })
+
+        entries.sort(key=lambda item: item['days'])
+        for entry in entries[:5]:
+            entry['urgent'] = entry['days'] <= 14
+        return entries[:5]

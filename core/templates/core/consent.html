@@ -1,0 +1,126 @@
+{% load static nav_extras %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy &amp; Terms · JMCFI AMS</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script src="{% static 'js/theme.js' %}"></script>
+  <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  <link rel="stylesheet" href="{% static 'css/consent.css' %}?v=20260914-consent">
+  <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+</head>
+<body class="consent-body">
+  <main class="consent-page">
+    <section class="consent-panel" aria-label="Privacy and terms acknowledgment">
+      <div class="consent-panel-inner">
+        <a class="consent-brand" href="{% url 'dashboard:index' %}" aria-label="JMCFI AMS home">
+          <img src="{% static 'images/jmcfi-logo.png' %}" alt="JMCFI logo">
+          <span>
+            <strong>Accreditation Management System</strong>
+            <small>Institutional Portal</small>
+          </span>
+        </a>
+
+        <div class="consent-card">
+          <form method="post" action="{% url 'core:consent_accept' %}">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ next_url }}">
+
+            <div class="consent-heading">
+              <span class="consent-eyebrow">Privacy &amp; Terms</span>
+              <h1>Review before entering the AMS</h1>
+              <p>
+                Welcome back, <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>. Before you
+                continue, please review the institutional policies below. JMCFI keeps an auditable record of each
+                acknowledgment.
+              </p>
+            </div>
+
+            {% if any_updates %}
+              <div class="consent-updated-banner" role="status">
+                {% icon 'alert' %}
+                <span>Policy updates are in effect. One or more policies changed since your last acknowledgment — please
+                  review the current versions before continuing.</span>
+              </div>
+            {% endif %}
+
+            {% if messages %}
+              <div class="consent-error" role="alert">
+                {% for message in messages %}{{ message }}{% endfor %}
+              </div>
+            {% endif %}
+
+            <div class="consent-policy-list">
+              {% for row in policies %}
+                <div class="consent-policy">
+                  <span class="consent-policy-icon">
+                    {% icon 'shield' %}
+                  </span>
+                  <div class="consent-policy-copy">
+                    <div class="consent-policy-title">
+                      <strong>{{ row.policy.title }}</strong>
+                      <span class="consent-badge{% if row.acknowledged_version and row.acknowledged_version != row.policy.version %} is-old{% endif %}">
+                        v{{ row.policy.version }}
+                      </span>
+                    </div>
+                    <p class="consent-policy-meta">
+                      Effective {{ row.policy.effective_date|date:'F j, Y' }} ·
+                      Updated {{ row.policy.updated_at|date:'F j, Y' }}
+                      {% if row.acknowledged_version %}
+                        · Previously acknowledged v{{ row.acknowledged_version }}
+                        {% if row.acknowledged_at %}({{ row.acknowledged_at|date:'M j, Y' }}){% endif %}
+                      {% endif %}
+                    </p>
+                    <a class="consent-policy-link" href="{% url 'core:policy_detail' row.policy.slug %}" target="_blank" rel="noopener">
+                      View full policy {% icon 'chevron-right' 'icon' %}
+                    </a>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+
+            <input type="hidden" name="acknowledge" value="0" id="consent-acknowledge-value">
+            {% for row in policies %}
+              <input type="hidden" name="version_{{ row.policy.policy_type }}" value="{{ row.policy.version }}">
+            {% endfor %}
+
+            <label class="consent-ack" for="consent-ack-checkbox">
+              <input type="checkbox" id="consent-ack-checkbox" data-consent-checkbox>
+              <span class="consent-ack-copy">
+                I have reviewed the
+                {% for row in policies %}{% if row.policy.policy_type == 'PRIVACY' %}
+                  <strong>Privacy Policy v{{ row.policy.version }}</strong>
+                {% endif %}{% endfor %}
+                and
+                {% for row in policies %}{% if row.policy.policy_type == 'TERMS' %}
+                  <strong>Terms of Use v{{ row.policy.version }}</strong>
+                {% endif %}{% endfor %}
+                shown above, and I acknowledge their terms.
+              </span>
+            </label>
+
+            <button type="submit" class="consent-submit" disabled data-consent-submit>
+              Continue to the AMS
+            </button>
+          </form>
+        </div>
+
+        <p class="consent-footer">
+          JOSE MARIA COLLEGE FOUNDATION, INC.
+          <span>See also: <a href="{% url 'core:privacy_notice' %}">Data Privacy</a> ·
+          <a href="{% url 'core:policy_detail' 'terms-of-use' %}">Terms of Use</a></span>
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <script src="{% static 'js/consent.js' %}?v=20260914-consent" defer></script>
+</body>
+</html>

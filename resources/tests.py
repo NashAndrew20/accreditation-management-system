@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from accreditation.models import (
@@ -17,6 +17,7 @@ from core.models import Department, Notification, Role, RoleAssignment, UserProf
 from resources.models import CommunicationMessage, Conversation, ConversationParticipant
 
 
+@override_settings(POLICY_CONSENT_ENABLED=False)
 class DocumentRepositoryAccessTests(TestCase):
     @classmethod
     def setUpTestData(cls):

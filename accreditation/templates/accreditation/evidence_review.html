@@ -53,7 +53,7 @@
         <section class="evidence-card review-action-card">
           <h2>Review decision</h2>
           <p class="review-assignment">Review the evidence, add feedback, and choose an outcome for this submission.</p>
-          <form method="post" class="evidence-form">
+          <form method="post" class="evidence-form" data-confirm data-confirm-title="Confirm review decision">
             {% csrf_token %}
             <label><span>Decision</span>{{ form.action }}</label>
             <label><span>Feedback / remarks</span>{{ form.remarks }}{% for error in form.remarks.errors %}<em>{{ error }}</em>{% endfor %}</label>

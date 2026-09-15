@@ -26,6 +26,7 @@ from .cache import ACTIVE_STRUCTURE_CACHE_KEY
 from .workflow import approve_submission, request_revision, submit_submission
 
 
+@override_settings(POLICY_CONSENT_ENABLED=False)
 class AccreditationWorkflowTests(TestCase):
     @classmethod
     def setUpTestData(cls):
@@ -208,7 +209,10 @@ class AccreditationWorkflowTests(TestCase):
             for item in section['items']
         ]
         self.assertIn('PACUCOA', navigation_labels)
-        self.assertContains(response, 'PACUCOA Levels I-IV')
+        cycle = response.context['cycle']
+        self.assertIsNotNone(cycle)
+        self.assertContains(response, cycle['name'])
+        self.assertContains(response, cycle['academic_year'])
 
     def test_review_workflow_does_not_render_duplicate_breadcrumb(self):
         self.client.force_login(self.qa)

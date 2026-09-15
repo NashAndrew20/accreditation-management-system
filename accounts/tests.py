@@ -8,6 +8,7 @@ from unittest.mock import patch
 from core.models import Department, Role, RoleAssignment, UserProfile
 
 
+@override_settings(POLICY_CONSENT_ENABLED=False)
 class LoginPageTests(TestCase):
     def setUp(self):
         cache.clear()

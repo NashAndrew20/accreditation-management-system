@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% load static nav_extras %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/privacy.css' %}?v=1">
+{% endblock %}
+
+{% block content %}
+  <header class="privacy-hero">
+    <div class="privacy-hero-inner">
+      <span class="privacy-eyebrow">Terms of Use · JMCFI AMS</span>
+      <h1>{{ policy.title|default:'Terms of Use' }}</h1>
+      <p>
+        The rules governing access to and use of the Jose Maria College Foundation,
+        Inc. (JMCFI) Accreditation Management System (AMS) by registered and
+        authorized users.
+      </p>
+      <div class="privacy-meta">
+        <span class="ui-chip tone-maroon">Version {{ policy.version|default:'1.0' }}</span>
+        <span class="privacy-date">Effective {{ policy.effective_date|date:'F j, Y'|default:'September 14, 2026' }}</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="privacy-layout">
+    <nav class="privacy-toc" aria-label="Terms of use contents">
+      <h2>Contents</h2>
+      <ol>
+        <li><a href="#term-1">Acceptance of These Terms</a></li>
+        <li><a href="#term-2">Authorized Use</a></li>
+        <li><a href="#term-3">Accounts, Credentials, and Access</a></li>
+        <li><a href="#term-4">Data Accuracy and Evidence Handling</a></li>
+        <li><a href="#term-5">Confidentiality and Data Protection</a></li>
+        <li><a href="#term-6">Advisory Tools and Automated Assistance</a></li>
+        <li><a href="#term-7">Acceptable Conduct</a></li>
+        <li><a href="#term-8">Intellectual Property</a></li>
+        <li><a href="#term-9">Availability, Interruptions, and Changes</a></li>
+        <li><a href="#term-10">Notice, Contact, and Enforcement</a></li>
+      </ol>
+    </nav>
+
+    <article class="privacy-content" aria-label="Terms of use">
+      {% include 'core/policies/_terms_body.html' %}
+
+      <footer class="privacy-footer">
+        <p>&copy; 2026 Jose Maria College Foundation, Inc. Accreditation Management System.</p>
+        {% if user.is_authenticated %}
+          <a href="{% url 'dashboard:index' %}">Return to dashboard</a>
+        {% else %}
+          <a href="{% url 'login' %}">Return to sign in</a>
+        {% endif %}
+      </footer>
+    </article>
+  </div>
+{% endblock %}

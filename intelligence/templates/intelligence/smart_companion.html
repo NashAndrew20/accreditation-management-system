@@ -2,7 +2,7 @@
 {% load static nav_extras %}
 
 {% block extra_css %}
-  <link rel="stylesheet" href="{% static 'css/smart_companion.css' %}">
+  <link rel="stylesheet" href="{% static 'css/smart_companion.css' %}?v=2">
 {% endblock %}
 
 {% block content %}
@@ -16,7 +16,7 @@
         <span class="companion-status"><i></i>Ready to help</span>
       </div>
 
-      <div class="companion-body" data-aira-image="{% static 'images/aira-wave-1.png' %}">
+      <div class="companion-body" aria-live="polite" role="log" data-aira-image="{% static 'images/aira-wave-1.png' %}" data-aira-endpoint="{% url 'intelligence:aira_ask' %}">
         <article class="companion-message">
           <div class="companion-bot-icon companion-aira-avatar">
             <img src="{% static 'images/aira-wave-1.png' %}" alt="AIRA">
@@ -30,11 +30,18 @@
       </div>
 
       <footer class="companion-composer">
-        <div class="composer-row">
-          <input type="text" placeholder="Ask about requirements, missing documents, or deadlines...">
-          <button type="button" aria-label="Send message">{% icon 'chevron-right' %}</button>
-        </div>
-        <p>AI responses are advisory only. Verify with your QA Office.</p>
+        <form class="composer-row" data-companion-form>
+          {% csrf_token %}
+          <input type="text" maxlength="500" placeholder="Ask about requirements, missing documents, or deadlines...">
+          <button type="submit" aria-label="Send message">{% icon 'chevron-right' %}</button>
+        </form>
+        <p>
+          AIRA provides AI-assisted information from your authorized scope and system
+          records. Responses are advisory only — the authorized reviewer makes the
+          final decision. Do not enter or ask for information you are not authorized
+          to disclose. <a href="{% url 'core:privacy_notice' %}#sec-17">See the Data Privacy
+          Notice</a>.
+        </p>
       </footer>
     </section>
   </div>

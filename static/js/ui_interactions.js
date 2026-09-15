@@ -57,6 +57,9 @@
       const message = target.dataset.tooltip;
       if (!message) return;
 
+      const sidebar = target.closest('.sidebar');
+      if (sidebar && !sidebar.classList.contains('is-collapsed')) return;
+
       activeTarget = target;
       tooltip.textContent = message;
       tooltip.classList.add('is-visible');
@@ -453,6 +456,57 @@
     });
   }
 
+  function bindSidebarCollapse() {
+    const sidebar = document.querySelector('[data-mobile-sidebar]');
+    const toggle = document.querySelector('[data-sidebar-collapse]');
+    if (!sidebar || !toggle) return;
+
+    const desktopQuery = window.matchMedia('(min-width: 881px)');
+    const STORAGE_KEY = 'jmcfi-sidebar-collapsed';
+
+    function storedCollapsed() {
+      try {
+        return localStorage.getItem(STORAGE_KEY) === '1';
+      } catch (error) {
+        return false;
+      }
+    }
+
+    function setCollapsed(collapsed) {
+      sidebar.classList.toggle('is-collapsed', collapsed);
+      toggle.setAttribute('aria-expanded', String(!collapsed));
+      toggle.setAttribute('aria-label', collapsed ? 'Expand navigation' : 'Collapse navigation');
+      toggle.setAttribute('title', collapsed ? 'Expand sidebar' : 'Collapse sidebar');
+    }
+
+    toggle.addEventListener('click', function () {
+      const collapsed = !sidebar.classList.contains('is-collapsed');
+      setCollapsed(collapsed);
+      try {
+        localStorage.setItem(STORAGE_KEY, collapsed ? '1' : '0');
+      } catch (error) {}
+    });
+
+    function syncToViewport() {
+      if (desktopQuery.matches) {
+        const collapsed = storedCollapsed();
+        if (collapsed !== sidebar.classList.contains('is-collapsed')) {
+          setCollapsed(collapsed);
+        }
+      } else if (sidebar.classList.contains('is-collapsed')) {
+        setCollapsed(false);
+      }
+    }
+
+    if (typeof desktopQuery.addEventListener === 'function') {
+      desktopQuery.addEventListener('change', syncToViewport);
+    } else if (typeof desktopQuery.addListener === 'function') {
+      desktopQuery.addListener(syncToViewport);
+    }
+
+    syncToViewport();
+  }
+
   function bindMobileNavigation() {
     const sidebar = document.querySelector('[data-mobile-sidebar]');
     const backdrop = document.querySelector('[data-mobile-menu-backdrop]');
@@ -515,21 +569,51 @@
     setMenuOpen(false, false);
   }
 
-  function companionAnswer(question) {
-    const lower = normalize(question);
-    if (lower.includes('missing') || lower.includes('documents')) {
-      return 'Area II needs updated faculty credentials, current syllabi, and supporting portfolio samples. Prioritize documents tied to pending or revision items first.';
-    }
-    if (lower.includes('deadline') || lower.includes('july 25')) {
-      return 'Before July 25, finish Level I preliminary evidence, resolve Area II revisions, and confirm overdue Student Services submissions.';
-    }
-    if (lower.includes('critical') || lower.includes('risk') || lower.includes('area viii')) {
-      return 'The highest-risk areas are Area VII and Area VIII. Area VIII needs early follow-up because readiness is still below target and the deadline window is narrowing.';
-    }
-    if (lower.includes('compliance') || lower.includes('department')) {
-      return 'Engineering and Arts & Sciences need the closest monitoring. Check pending evidence counts, reviewer remarks, and zero-submission areas first.';
-    }
-    return 'Start with the items marked pending or needs revision, then assign each item to an owner with a target upload date. I can also summarize this into a checklist.';
+  function getCsrfToken() {
+    const input = document.querySelector('input[name="csrfmiddlewaretoken"]');
+    return input ? input.value : '';
+  }
+
+  function createCompanionReply(body, airaImage) {
+    const reply = document.createElement('article');
+    reply.className = 'companion-message companion-reply';
+    reply.appendChild(createCompanionAvatar(airaImage));
+
+    const messageStack = document.createElement('div');
+    messageStack.className = 'message-stack';
+    const bubble = document.createElement('div');
+    bubble.className = 'assistant-bubble';
+    messageStack.appendChild(bubble);
+    reply.appendChild(messageStack);
+    body.appendChild(reply);
+    body.scrollTop = body.scrollHeight;
+    return { reply: reply, stack: messageStack, bubble: bubble };
+  }
+
+  function addSourceChip(stack, source) {
+    if (!source) return;
+    const chip = document.createElement('span');
+    chip.className = 'companion-source';
+    chip.textContent = 'Source: ' + source;
+    stack.appendChild(chip);
+  }
+
+  function addCompanionSuggestions(stack, suggestions, composerInput) {
+    if (!suggestions || !suggestions.length) return;
+    const row = document.createElement('div');
+    row.className = 'companion-suggestions';
+    suggestions.forEach(function (suggestion) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.textContent = suggestion;
+      button.addEventListener('click', function () {
+        if (!composerInput) return;
+        composerInput.value = suggestion;
+        composerInput.focus();
+      });
+      row.appendChild(button);
+    });
+    stack.appendChild(row);
   }
 
   function createCompanionAvatar(imageUrl) {
@@ -596,9 +680,11 @@
       return;
     }
 
-    const body = document.querySelector('.companion-body');
+    const body = document.querySelector('[data-aira-endpoint]');
+    const composerForm = document.querySelector('[data-companion-form]');
     if (!body) return;
     const airaImage = body.dataset.airaImage;
+    const endpoint = body.dataset.airaEndpoint;
 
     const userMessage = document.createElement('article');
     userMessage.className = 'companion-user-message';
@@ -607,22 +693,87 @@
     userBubble.textContent = question;
     userMessage.appendChild(userBubble);
 
-    const reply = document.createElement('article');
-    reply.className = 'companion-message companion-reply';
-    reply.appendChild(createCompanionAvatar(airaImage));
-
-    const messageStack = document.createElement('div');
-    messageStack.className = 'message-stack';
-    const bubble = document.createElement('div');
-    bubble.className = 'assistant-bubble';
-    bubble.textContent = companionAnswer(question);
-    messageStack.appendChild(bubble);
-    reply.appendChild(messageStack);
+    const created = createCompanionReply(body, airaImage);
+    created.bubble.textContent = 'Thinking…';
+    created.bubble.classList.add('is-pending');
+    created.reply.setAttribute('aria-busy', 'true');
 
     body.appendChild(userMessage);
-    body.appendChild(reply);
-    input.value = '';
     body.scrollTop = body.scrollHeight;
+
+    if (composerForm) {
+      const sendButton = composerForm.querySelector('button[type="submit"]');
+      const field = composerForm.querySelector('input');
+      sendButton.disabled = true;
+      field.disabled = true;
+    }
+
+    function settle(replyText, source, suggestions) {
+      created.bubble.classList.remove('is-pending');
+      created.bubble.textContent = replyText;
+      created.reply.removeAttribute('aria-busy');
+      addSourceChip(created.stack, source);
+      addCompanionSuggestions(created.stack, suggestions, composerForm ? composerForm.querySelector('input') : null);
+      if (composerForm) {
+        const sendButton = composerForm.querySelector('button[type="submit"]');
+        const field = composerForm.querySelector('input');
+        sendButton.disabled = false;
+        field.disabled = false;
+        field.focus();
+      }
+      body.scrollTop = body.scrollHeight;
+    }
+
+    function fail() {
+      created.bubble.classList.remove('is-pending');
+      created.bubble.textContent =
+        'I could not reach the accreditation service. Please try again.';
+      created.bubble.classList.add('is-error');
+      created.reply.removeAttribute('aria-busy');
+
+      const retry = document.createElement('button');
+      retry.type = 'button';
+      retry.className = 'companion-retry';
+      retry.textContent = 'Retry';
+      retry.addEventListener('click', function () {
+        created.reply.remove();
+        submitCompanionQuestion(input);
+      });
+      created.stack.appendChild(retry);
+
+      if (composerForm) {
+        const sendButton = composerForm.querySelector('button[type="submit"]');
+        const field = composerForm.querySelector('input');
+        sendButton.disabled = false;
+        field.disabled = false;
+        if (field.value === '') field.value = question;
+      }
+      body.scrollTop = body.scrollHeight;
+    }
+
+    input.value = '';
+
+    fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCsrfToken(),
+      },
+      credentials: 'same-origin',
+      body: JSON.stringify({ question: question }),
+    })
+      .then(function (response) {
+        if (!response.ok) {
+          throw new Error('Request failed with status ' + response.status);
+        }
+        return response.json();
+      })
+      .then(function (data) {
+        settle(data.reply || '', data.source || '', data.suggestions || []);
+      })
+      .catch(function () {
+        fail();
+      });
   }
 
   function bindMessaging() {
@@ -635,10 +786,10 @@
       });
     });
 
-    document.querySelectorAll('.composer-row button').forEach(function (button) {
-      button.addEventListener('click', function () {
-        const composer = button.closest('.composer-row');
-        const input = composer && composer.querySelector('input');
+    document.querySelectorAll('form[data-companion-form]').forEach(function (form) {
+      form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        const input = form.querySelector('input');
         if (!input) return;
         submitCompanionQuestion(input);
       });
@@ -733,7 +884,7 @@
       button.addEventListener('click', function () {
         const input = document.createElement('input');
         input.type = 'file';
-        input.accept = '.pdf,.doc,.docx,.xls,.xlsx';
+        input.accept = '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png';
         input.addEventListener('change', function () {
           if (input.files.length > 0) showToast(input.files[0].name + ' selected');
         });
@@ -984,6 +1135,155 @@
     });
   }
 
+  function bindConfirmDialogs() {
+    const dialog = document.createElement('dialog');
+    dialog.className = 'confirm-dialog';
+    dialog.innerHTML =
+      '<div class="confirm-dialog-head">' +
+        '<h2 data-confirm-title>Please confirm</h2>' +
+        '<button type="button" class="confirm-dialog-close" data-confirm-cancel aria-label="Cancel and close">&times;</button>' +
+      '</div>' +
+      '<p class="confirm-dialog-copy" data-confirm-copy></p>' +
+      '<div class="confirm-dialog-actions">' +
+        '<button type="button" class="btn btn-ghost" data-confirm-cancel>Cancel</button>' +
+        '<button type="button" class="btn btn-primary" data-confirm-accept></button>' +
+      '</div>';
+    document.body.appendChild(dialog);
+
+    let pendingAction = null;
+
+    function openConfirm(options) {
+      const title = dialog.querySelector('[data-confirm-title]');
+      const copy = dialog.querySelector('[data-confirm-copy]');
+      const accept = dialog.querySelector('[data-confirm-accept]');
+      title.textContent = options.title || 'Please confirm';
+      copy.textContent = options.message || 'Are you sure you want to continue?';
+      accept.textContent = options.acceptLabel || 'Continue';
+      accept.className = 'btn ' + (options.danger ? 'btn-danger' : 'btn-primary');
+      pendingAction = options.action || null;
+      if (typeof dialog.showModal === 'function') dialog.showModal();
+    }
+
+    function closeConfirm() {
+      pendingAction = null;
+      if (dialog.open) dialog.close();
+    }
+
+    dialog.querySelectorAll('[data-confirm-cancel]').forEach(function (button) {
+      button.addEventListener('click', closeConfirm);
+    });
+
+    dialog.addEventListener('click', function (event) {
+      if (event.target === dialog) closeConfirm();
+    });
+
+    dialog.querySelector('[data-confirm-accept]').addEventListener('click', function () {
+      const action = pendingAction;
+      closeConfirm();
+      if (action) action();
+    });
+
+    document.addEventListener('submit', function (event) {
+      const form = event.target;
+      const submitter = form && event.submitter;
+      const formConfirms = form && form.matches('[data-confirm]');
+      const submitterConfirms = submitter && submitter.matches('[data-confirm]');
+      if (!formConfirms && !submitterConfirms) return;
+
+      if (form.dataset.confirmTriggered === 'true') {
+        delete form.dataset.confirmTriggered;
+        return;
+      }
+
+      event.preventDefault();
+      const source = submitterConfirms ? submitter : form;
+      const actionSelect = form.querySelector('select[name="action"]');
+      let title = source.dataset.confirmTitle || 'Please confirm';
+      let message = source.dataset.confirmMessage || 'Are you sure you want to continue?';
+      let acceptLabel = source.dataset.confirmAccept || 'Continue';
+      let danger = source.dataset.confirmTone === 'danger';
+      if (actionSelect && actionSelect.customLabel) {
+        title = actionSelect.customTitle || title;
+        message = 'Submit this review decision as "' + actionSelect.customLabel + '"? The decision is recorded in the evidence history and audit trail.';
+        acceptLabel = 'Confirm decision';
+        danger = actionSelect.customTone === 'danger';
+      }
+      openConfirm({
+        title: title,
+        message: message,
+        acceptLabel: acceptLabel,
+        danger: danger,
+        action: function () {
+          form.dataset.confirmTriggered = 'true';
+          if (submitter && typeof form.requestSubmit === 'function') {
+            form.requestSubmit(submitter);
+          } else if (typeof form.requestSubmit === 'function') {
+            form.requestSubmit();
+          } else {
+            form.submit();
+          }
+        },
+      });
+    });
+
+    document.addEventListener('click', function (event) {
+      const target = event.target.closest('[data-confirm]');
+      if (!target) return;
+
+      if (target.dataset.confirmHandled === 'true') {
+        target.dataset.confirmHandled = '';
+        return;
+      }
+
+      const form = target.closest('form');
+      const isSubmit = form && (target.type === 'submit' || target.matches('button[type="submit"]'));
+      if (form && isSubmit) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      openConfirm({
+        title: target.dataset.confirmTitle || 'Please confirm',
+        message: target.dataset.confirmMessage || 'Are you sure you want to continue?',
+        acceptLabel: target.dataset.confirmAccept || 'Continue',
+        danger: target.dataset.confirmTone === 'danger',
+        action: function () {
+          if (target.hasAttribute('href')) {
+            window.location.href = target.getAttribute('href');
+          } else {
+            target.dataset.confirmHandled = 'true';
+            target.click();
+          }
+        },
+      });
+    });
+  }
+
+  function bindReviewActionLabels() {
+    document.querySelectorAll('select[name="action"]').forEach(function (select) {
+      function update() {
+        const option = select.selectedOptions[0];
+        if (!option) return;
+        const value = option.value;
+        select.customLabel = option.text;
+        if (value === 'approve') {
+          select.customTitle = 'Confirm approval';
+          select.customTone = '';
+        } else if (value === 'revision') {
+          select.customTitle = 'Confirm revision request';
+          select.customTone = '';
+        } else if (value === 'non_complied') {
+          select.customTitle = 'Confirm non-compliance';
+          select.customTone = 'danger';
+        } else {
+          select.customTitle = 'Confirm review decision';
+          select.customTone = '';
+        }
+      }
+      update();
+      select.addEventListener('change', update);
+    });
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
     bindSearches();
     bindFilterTabs();
@@ -993,6 +1293,7 @@
     bindNotificationMenu();
     bindProfileMenu();
     bindMobileNavigation();
+    bindSidebarCollapse();
     bindAiraCompanion();
     bindMessaging();
     bindProfilePhoto();
@@ -1005,5 +1306,7 @@
     bindAreaAssignmentForms();
     bindAreaFilters();
     bindRepositoryFilters();
+    bindConfirmDialogs();
+    bindReviewActionLabels();
   });
 })();

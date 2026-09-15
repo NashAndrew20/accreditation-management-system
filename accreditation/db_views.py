@@ -158,6 +158,7 @@ class LevelsAreasView(ApprovedUserRequiredMixin, TemplateView):
         if not structure['cycle']:
             context.update({
                 'page_title': 'Levels & Areas',
+                'cycle': None,
                 'levels': [],
                 'areas': [],
                 'overview': {},
@@ -199,6 +200,7 @@ class LevelsAreasView(ApprovedUserRequiredMixin, TemplateView):
         )
         context.update({
             'page_title': 'Levels & Areas',
+            'cycle': structure['cycle'],
             'levels': levels,
             'areas': areas,
             'area_departments': area_departments,

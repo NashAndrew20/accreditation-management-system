@@ -14,13 +14,15 @@
 
   <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
   <link rel="stylesheet" href="{% static 'css/base.css' %}">
-  <link rel="stylesheet" href="{% static 'css/layout.css' %}?v=2">
+  <link rel="stylesheet" href="{% static 'css/layout.css' %}?v=3">
   <link rel="stylesheet" href="{% static 'css/interactions.css' %}">
-  <link rel="stylesheet" href="{% static 'css/aira_companion.css' %}?v=16">
+  <link rel="stylesheet" href="{% static 'css/components.css' %}?v=1">
+  <link rel="stylesheet" href="{% static 'css/aira_companion.css' %}?v=17">
   {% block extra_css %}{% endblock %}
   <link rel="stylesheet" href="{% static 'css/theme.css' %}">
 </head>
 <body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
   <div class="app-shell">
     {% include 'partials/_sidebar.html' %}
     <div class="mobile-nav-backdrop" data-mobile-menu-backdrop hidden></div>
@@ -28,7 +30,7 @@
     <div class="main-column">
       {% include 'partials/_topbar.html' %}
 
-      <main class="content">
+      <main class="content" id="main-content">
         {% if messages %}
           <div class="flash-messages" aria-live="polite">
             {% for message in messages %}<div class="flash-message flash-{{ message.tags|default:'info' }}">{{ message }}</div>{% endfor %}
@@ -40,10 +42,12 @@
       {% if not hide_aira_global %}
         {% include 'partials/_aira_companion.html' %}
       {% endif %}
+
+      {% include 'partials/_footer.html' %}
     </div>
   </div>
 
-  <script src="{% static 'js/ui_interactions.js' %}?v=6" defer></script>
+  <script src="{% static 'js/ui_interactions.js' %}?v=8" defer></script>
   {% block extra_js %}{% endblock %}
 </body>
 </html>

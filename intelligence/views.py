@@ -1,9 +1,12 @@
+import json
 import math
 from datetime import timedelta
 
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.utils import timezone
 from django.views.generic import TemplateView, View
+
+from .aira import ask
 
 from accreditation.constants import ACTIVE_REVIEW_STATUSES, COMPLETED_STATUSES
 from accreditation.models import AccreditationCycle, AccreditationLevel, EvidenceRequirement, EvidenceSubmission
@@ -182,3 +185,45 @@ class SmartCompanionView(ApprovedUserRequiredMixin, TemplateView):
             'hide_aira_global': True,
         })
         return context
+
+
+class AiraAskView(ApprovedUserRequiredMixin, View):
+    """AJAX endpoint backing the Smart Companion chat.
+
+    Every reply is derived from the authenticated user's authorized AMS
+    records via ``intelligence.aira.ask``. The endpoint performs no external
+    AI calls and returns only the advisory message, source label, and
+    suggestion prompts.
+    """
+
+    MAX_QUESTION_LENGTH = 500
+
+    def _extract_question(self, request):
+        question = ''
+        if request.content_type and request.content_type.startswith('application/json'):
+            try:
+                payload = json.loads(request.body or b'{}')
+            except (ValueError, TypeError):
+                payload = {}
+            question = payload.get('question', '')
+        else:
+            question = request.POST.get('question', '')
+        if not isinstance(question, str):
+            return ''
+        return question.strip()[: self.MAX_QUESTION_LENGTH]
+
+    def post(self, request, *args, **kwargs):
+        if request.content_type and request.content_type.startswith('application/json'):
+            if not request.body or len(request.body) > 4096:
+                return JsonResponse(
+                    {'error': 'Request is empty or too large.'},
+                    status=413,
+                )
+        question = self._extract_question(request)
+        if not question:
+            return JsonResponse(
+                {'error': 'Please provide a question.'},
+                status=400,
+            )
+        reply = ask(request.user, question)
+        return JsonResponse(reply)

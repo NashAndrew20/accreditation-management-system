@@ -625,6 +625,10 @@
   font-size: 12px;
 }
 
+.upload-privacy-note {
+  margin-top: 12px;
+}
+
 .document-list {
   display: flex;
   flex-direction: column;

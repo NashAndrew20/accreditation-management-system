@@ -28,7 +28,8 @@
         {% for item in section.items %}
           {% is_active_nav item.url_name as item_is_active %}
           <a href="{% url item.url_name %}"
-             class="nav-item{% if item_is_active %} is-active{% endif %}">
+             class="nav-item{% if item_is_active %} is-active{% endif %}"
+             data-tooltip="{{ item.label }}">
             {% icon item.icon %}
             <span>{{ item.label }}</span>
             {% if item.badge %}
@@ -44,9 +45,23 @@
 
   <div class="sidebar-footer">
     <div class="avatar-chip" data-profile-avatar data-profile-initials="{{ current_user_summary.initials }}" data-profile-photo="{{ current_user_summary.photo_url }}">{{ current_user_summary.initials }}</div>
-    <div>
+    <div class="sidebar-user-copy">
       <div class="user-name">{{ current_user_summary.name }}</div>
       <div class="user-role">{{ current_user_summary.role }}</div>
     </div>
+    <a class="sidebar-privacy-link" href="{% url 'core:privacy_notice' %}" title="Data Privacy Notice &amp; Policy" aria-label="Data Privacy Notice and Policy">
+      {% icon 'cloud' %}
+    </a>
+    <button
+      type="button"
+      class="sidebar-collapse-toggle"
+      data-sidebar-collapse
+      aria-expanded="true"
+      aria-label="Collapse navigation"
+      title="Collapse sidebar"
+    >
+      <span class="sidebar-collapse-icon is-collapse-icon" aria-hidden="true">{% icon 'chevrons-left' 'icon' %}</span>
+      <span class="sidebar-collapse-icon is-expand-icon" aria-hidden="true">{% icon 'chevrons-right' 'icon' %}</span>
+    </button>
   </div>
 </aside>

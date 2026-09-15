@@ -2,10 +2,19 @@
 {% load static nav_extras %}
 
 {% block extra_css %}
-  <link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=7">
+  <link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=9">
 {% endblock %}
 
 {% block content %}
+  <header class="content-header dashboard-header">
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <span>Overview</span>
+      <span aria-hidden="true">/</span>
+      <strong>Dashboard</strong>
+    </nav>
+    <h1>Dashboard</h1>
+  </header>
+
   <section
     class="alert-banner"
     data-alert-banner
@@ -44,6 +53,19 @@
         <div class="stat-label">{{ stat.label }}</div>
         <div class="stat-note">{{ stat.note }}</div>
       </div>
+    {% endfor %}
+  </section>
+
+  <section class="quick-actions" aria-label="Quick actions">
+    {% for action in quick_actions %}
+      <a class="quick-action" href="{% url action.url_name %}">
+        <div class="quick-action-icon tone-{{ action.tone }}">{% icon action.icon %}</div>
+        <div class="quick-action-copy">
+          <strong>{{ action.label }}</strong>
+          <span>{{ action.description }}</span>
+        </div>
+        {% icon 'chevron-right' 'quick-action-arrow' %}
+      </a>
     {% endfor %}
   </section>
 
@@ -142,6 +164,12 @@
               <p class="activity-time">{{ item.time_ago }}</p>
             </div>
           </div>
+        {% empty %}
+          <div class="empty-state is-compact">
+            <div class="empty-state-icon">{% icon 'clock' %}</div>
+            <div class="empty-state-title">No activity yet</div>
+            <p class="empty-state-copy">Evidence submissions and review decisions in your access scope will appear here.</p>
+          </div>
         {% endfor %}
       </div>
     </div>
@@ -164,11 +192,15 @@
               <div class="deadline-date">{{ deadline.date_label }}</div>
             </div>
             {% if deadline.urgent %}
-              <div class="deadline-flag">{% icon 'alert' %}</div>
+              <div class="deadline-flag" data-tooltip="Due in {{ deadline.days }} days">{% icon 'alert' %}</div>
             {% endif %}
           </div>
         {% empty %}
-          <p class="empty-copy">No deadlines configured for the active cycle.</p>
+          <div class="empty-state is-compact">
+            <div class="empty-state-icon">{% icon 'calendar' %}</div>
+            <div class="empty-state-title">No upcoming deadlines</div>
+            <p class="empty-state-copy">Assignment and requirement deadlines in your access scope will appear here.</p>
+          </div>
         {% endfor %}
       </div>
     </div>
