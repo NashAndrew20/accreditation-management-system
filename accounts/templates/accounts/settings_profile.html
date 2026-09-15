@@ -233,8 +233,79 @@
           </div>
 
           <section class="settings-note">
+            <strong>Consent History</strong>
+            <p>Your current acknowledgment status for each institutional policy. Detailed acceptance records appear
+              below.</p>
+            {% if legal_summary %}
+              <ul class="consent-status-list">
+                {% for row in legal_summary %}
+                  <li class="consent-status-item">
+                    <span class="role-chip">{{ row.policy.title }}</span>
+                    <span class="settings-history-version">v{{ row.policy.version }}</span>
+                    <span class="consent-status-label is-{{ row.status_class }}">{{ row.status_label }}</span>
+                    {% if row.version_acknowledged %}
+                      <span class="settings-history-version">Acknowledged v{{ row.version_acknowledged }}</span>
+                    {% endif %}
+                    {% if row.acknowledged_at %}
+                      <span class="settings-history-date">{{ row.acknowledged_at|date:'F j, Y · g:i A' }}</span>
+                    {% endif %}
+                  </li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+            {% if consent_last_updated %}
+              <p class="settings-empty-copy">Last updated {{ consent_last_updated|date:'F j, Y · g:i A' }}.</p>
+            {% else %}
+              <p class="settings-empty-copy">No policy acknowledgments recorded yet.</p>
+            {% endif %}
+          </section>
+
+          <section class="settings-note">
+            <strong>Cookie Preferences</strong>
+            <p>
+              Essential cookies are required for secure sign-in and system
+              functionality and are always active.
+              {% if cookie_optional_categories %}
+                You can switch optional categories on or off below.
+              {% else %}
+                The AMS currently uses no optional cookies.
+              {% endif %}
+            </p>
+            {% if cookie_preference %}
+              <p class="settings-empty-copy">
+                Preferences saved
+                {% if cookie_preference.updated_at %}{{ cookie_preference.updated_at|date:'F j, Y · g:i A' }}{% endif %}
+                — essential cookies {% if cookie_preference.essential_cookies_accepted %}enabled{% else %}disabled{% endif %}.
+              </p>
+            {% endif %}
+            {% if cookie_optional_categories %}
+              <form method="post" action="{% url 'core:cookie_preferences' %}" class="cookie-preference-form">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{% url 'accounts:settings_profile' %}">
+                <fieldset class="cookie-option-list">
+                  {% for category in cookie_optional_categories %}
+                    <label class="cookie-option">
+                      <input
+                        type="checkbox"
+                        name="optional_cookies"
+                        value="{{ category }}"
+                        {% if category in cookie_enabled_categories %}checked{% endif %}>
+                      <span>{{ category|title }} cookies</span>
+                    </label>
+                  {% endfor %}
+                </fieldset>
+                <button type="submit" class="save-settings-btn">
+                  {% icon 'file' %}
+                  <span>Save Cookie Preferences</span>
+                </button>
+              </form>
+            {% endif %}
+          </section>
+
+          <section class="settings-note">
             <strong>Acknowledgment History</strong>
-            <p>Each acknowledgment is recorded server-side with the policy version and timestamp.</p>
+            <p>Every acknowledgment is recorded with the policy version and timestamp. Acknowledgment of
+              informational (non-required) policies can be withdrawn at any time.</p>
           </section>
 
           {% if legal_consents %}
@@ -244,6 +315,17 @@
                   <span class="role-chip">{{ consent.policy.title }}</span>
                   <span class="settings-history-version">v{{ consent.version }}</span>
                   <span class="settings-history-date">{{ consent.accepted_at|date:'F j, Y · g:i A' }}</span>
+                  {% if consent.status == 'REVOKED' %}
+                    <span class="consent-status-label is-revoked">Withdrawn</span>
+                  {% endif %}
+                  {% if not consent.policy.is_required and consent.status == 'ACCEPTED' %}
+                    <form method="post" action="{% url 'core:consent_withdraw' %}" class="inline-withdraw-form"
+                      onsubmit="return confirm('Withdraw your acknowledgment of {{ consent.policy.title }}?');">
+                      {% csrf_token %}
+                      <input type="hidden" name="policy_id" value="{{ consent.policy_id }}">
+                      <button type="submit" class="withdraw-btn">Withdraw</button>
+                    </form>
+                  {% endif %}
                 </div>
               {% endfor %}
             </div>

@@ -4,6 +4,8 @@
   <nav class="app-footer-links" aria-label="Footer">
     <a href="{% url 'core:policy_detail' 'privacy-policy' %}">Privacy Policy</a>
     <a href="{% url 'core:policy_detail' 'terms-of-use' %}">Terms of Use</a>
+    <a href="{% url 'core:policy_detail' 'cookie-policy' %}">Cookies</a>
+    <a href="{% url 'core:policy_detail' 'aira-data-notice' %}">AIRA Notice</a>
     {% if user.is_authenticated %}
       <a href="{% url 'intelligence:smart_companion' %}">Help</a>
     {% endif %}

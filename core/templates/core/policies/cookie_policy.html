@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load static nav_extras %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/privacy.css' %}?v=1">
+{% endblock %}
+
+{% block content %}
+  <header class="privacy-hero">
+    <div class="privacy-hero-inner">
+      <span class="privacy-eyebrow">Cookie Policy · JMCFI AMS</span>
+      <h1>{{ policy.title|default:'Cookie Policy' }}</h1>
+      <p>
+        How the Jose Maria College Foundation, Inc. (JMCFI) Accreditation
+        Management System (AMS) uses cookies and similar storage technologies.
+      </p>
+      <div class="privacy-meta">
+        <span class="ui-chip tone-maroon">Version {{ policy.version|default:'1.0' }}</span>
+        <span class="privacy-date">Effective {{ policy.effective_date|date:'F j, Y'|default:'September 15, 2026' }}</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="privacy-layout">
+    <nav class="privacy-toc" aria-label="Cookie policy contents">
+      <h2>Contents</h2>
+      <ol>
+        <li><a href="#cookie-1">Overview</a></li>
+        <li><a href="#cookie-2">Essential Cookies</a></li>
+        <li><a href="#cookie-3">Optional Cookies</a></li>
+        <li><a href="#cookie-4">Managing Cookies in Your Browser</a></li>
+        <li><a href="#cookie-5">Policy Updates and Acknowledgment</a></li>
+      </ol>
+    </nav>
+
+    <article class="privacy-content" aria-label="Cookie policy">
+      {% include 'core/policies/_cookie_body.html' %}
+
+      <footer class="privacy-footer">
+        <p>&copy; 2026 Jose Maria College Foundation, Inc. Accreditation Management System.</p>
+        {% if user.is_authenticated %}
+          <a href="{% url 'dashboard:index' %}">Return to dashboard</a>
+        {% else %}
+          <a href="{% url 'login' %}">Return to sign in</a>
+        {% endif %}
+      </footer>
+    </article>
+  </div>
+{% endblock %}

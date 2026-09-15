@@ -75,6 +75,29 @@ DEMO_PASSWORD = os.getenv('DEMO_PASSWORD', '')
 # production; tests can disable it with override_settings.
 POLICY_CONSENT_ENABLED = env_bool('POLICY_CONSENT_ENABLED', True)
 
+# Optional-cookie categories that this deployment actually uses. The AMS uses
+# only essential cookies today (session + CSRF/security); keep this list empty
+# so the UI accurately reports "no optional cookies in use". If the
+# institution later enables analytics/advertising/tracking cookies, list the
+# category keys (e.g. COOKIE_OPTIONAL_CATEGORIES=analytics,preferences) and the
+# consent UI will render per-category on/off controls.
+COOKIE_OPTIONAL_CATEGORIES = [
+    item.strip()
+    for item in os.getenv('COOKIE_OPTIONAL_CATEGORIES', '').split(',')
+    if item.strip()
+]
+
+# Contextual data-use notices shown near a form's submission action. Only forms
+# that collect additional personal information should opt in here. The body
+# copy lives in core/templates/core/partials/_data_use_notice.html; the
+# `required` flag controls whether the acknowledgment checkbox is enforced
+# server-side.
+DATA_USE_NOTICES = {
+    'registration': {
+        'required': env_bool('DATA_USE_NOTICE_REGISTRATION_REQUIRED', True),
+    },
+}
+
 # Google OAuth/OpenID Connect is opt-in. Keep credentials outside the source
 # tree and leave the provider disabled until both values are configured.
 GOOGLE_OAUTH_CLIENT_ID = os.getenv('GOOGLE_OAUTH_CLIENT_ID', '')

@@ -1045,3 +1045,67 @@
     display: none;
   }
 }
+
+/* ---- Consent footer & data-use notice (capstone consent pass) ---- */
+.login-screen .login-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 2px 0;
+  line-height: 1.6;
+}
+.login-screen .login-footer .login-privacy-link {
+  color: rgba(255, 255, 255, 0.78);
+}
+.login-screen .login-footer .login-privacy-link:hover {
+  color: #ffffff;
+}
+.data-use-notice {
+  margin: 4px 0 16px;
+  padding: 14px 14px 12px;
+  border: 1px solid var(--color-border);
+  border-left: 4px solid var(--maroon-700, #871b35);
+  border-radius: 12px;
+  background: var(--color-surface-muted, #f7f5f0);
+  text-align: left;
+}
+.data-use-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.data-use-icon {
+  color: var(--maroon-700, #871b35);
+  font-size: 18px;
+}
+.data-use-head h2 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+.data-use-body p {
+  margin: 0 0 8px;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--color-text-muted, #5b5b52);
+}
+.data-use-body p:last-child {
+  margin-bottom: 0;
+}
+.data-use-checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--color-text-muted, #55524a);
+  cursor: pointer;
+}
+.data-use-checkbox-label input[type='checkbox'] {
+  margin-top: 2px;
+  accent-color: var(--maroon-700, #871b35);
+}
+

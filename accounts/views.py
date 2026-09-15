@@ -20,6 +20,7 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.generic import TemplateView, View
 
 from core.access import approved_assignments, can_approve_accounts, is_admin_user
+from core import consent as consent_service
 from core.mixins import AccountApprovalMixin, ApprovedUserRequiredMixin
 from core.models import AuditLog, Notification, Policy, RoleAssignment, UserProfile
 from core.rate_limit import LOGIN_ATTEMPT_WINDOW, allow_login_attempt
@@ -56,10 +57,15 @@ class PortalLoginView(LoginView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        active_policies = {p.policy_type: p for p in Policy.active_required()}
+        active_policies = {p.policy_type: p for p in Policy.active()}
         context.update({
             'privacy_policy': active_policies.get(Policy.PRIVACY),
             'terms_policy': active_policies.get(Policy.TERMS),
+            'cookie_policy': active_policies.get(Policy.COOKIE),
+            'aira_notice': active_policies.get(Policy.AIRA),
+            'layout_policies': consent_service.consent_summary(self.request.user),
+            'consent_last_updated': consent_service.last_acknowledged_at(self.request.user),
+            'cookie_optional_categories': list(getattr(settings, 'COOKIE_OPTIONAL_CATEGORIES', [])),
         })
         return context
 
@@ -188,15 +194,35 @@ class GoogleLoginCallbackView(View):
 class RegisterView(TemplateView):
     template_name = 'accounts/register.html'
 
+    @staticmethod
+    def _data_use_notice():
+        config = getattr(settings, 'DATA_USE_NOTICES', {}).get('registration', {})
+        return {
+            'mode': 'registration',
+            'required': bool(config.get('required', True)),
+            'field_name': 'data_use_acknowledged',
+            'title': 'Data Use Notice',
+        }
+
     def get(self, request, *args, **kwargs):
-        return render(request, self.template_name, {'form': RegistrationForm(), 'page_title': 'Request an account'})
+        return render(request, self.template_name, {
+            'form': RegistrationForm(),
+            'page_title': 'Request an account',
+            'data_use_notice': self._data_use_notice(),
+        })
 
     def post(self, request, *args, **kwargs):
         form = RegistrationForm(request.POST)
         if form.is_valid():
             form.save()
-            return render(request, 'accounts/registration_pending.html', {'page_title': 'Account pending approval'})
-        return render(request, self.template_name, {'form': form, 'page_title': 'Request an account'})
+            return render(request, 'accounts/registration_pending.html', {
+                'page_title': 'Account pending approval',
+            })
+        return render(request, self.template_name, {
+            'form': form,
+            'page_title': 'Request an account',
+            'data_use_notice': self._data_use_notice(),
+        })
 
 
 class SelectRoleView(LoginRequiredMixin, TemplateView):
@@ -438,6 +464,7 @@ class SettingsProfileView(ApprovedUserRequiredMixin, TemplateView):
     def get_page_context(self, form=None):
         user = self.request.user
         profile_model = getattr(user, 'profile', None)
+        cookie_pref = getattr(user, 'cookie_preference', None)
         assignment = approved_assignments(user).filter(pk=getattr(profile_model, 'active_assignment_id', None)).select_related('role', 'department').first() or approved_assignments(user).first()
         name = user.get_full_name().strip() or user.username
         initials = ''.join(part[0] for part in name.split()[:2]).upper() or 'U'
@@ -461,9 +488,16 @@ class SettingsProfileView(ApprovedUserRequiredMixin, TemplateView):
             ],
             'profile': profile,
             'form': form or ProfileSettingsForm(user),
-            'legal_policies': list(Policy.active_required()),
+            'legal_policies': list(Policy.active()),
             'legal_consents': list(
                 user.policy_consents.select_related('policy').order_by('-accepted_at')
+            ),
+            'legal_summary': consent_service.consent_summary(user),
+            'consent_last_updated': consent_service.last_acknowledged_at(user),
+            'cookie_preference': cookie_pref,
+            'cookie_optional_categories': list(getattr(settings, 'COOKIE_OPTIONAL_CATEGORIES', [])),
+            'cookie_enabled_categories': (
+                set((cookie_pref.optional_cookies or {}).keys()) if cookie_pref else set()
             ),
         }
 

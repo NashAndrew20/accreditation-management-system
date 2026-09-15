@@ -1,4 +1,6 @@
 from django.db import models
+from django.db.models import Q
+from django.utils import timezone
 
 
 ROLE_CODES = (
@@ -186,9 +188,13 @@ class AuditLog(models.Model):
 class Policy(models.Model):
     PRIVACY = 'PRIVACY'
     TERMS = 'TERMS'
+    COOKIE = 'COOKIE'
+    AIRA = 'AIRA'
     POLICY_TYPE_CHOICES = (
         (PRIVACY, 'Privacy Policy'),
         (TERMS, 'Terms of Use'),
+        (COOKIE, 'Cookie Policy'),
+        (AIRA, 'AIRA / AI Data-Use Notice'),
     )
 
     DRAFT = 'DRAFT'
@@ -221,6 +227,11 @@ class Policy(models.Model):
         return f'{self.get_policy_type_display()} v{self.version}'
 
     @staticmethod
+    def active():
+        """Every active institutional document, required or informational."""
+        return Policy.objects.filter(status=Policy.ACTIVE).order_by('policy_type', '-version')
+
+    @staticmethod
     def active_required():
         """Active policies that require explicit user acknowledgment."""
         return Policy.objects.filter(status=Policy.ACTIVE, is_required=True).order_by(
@@ -229,6 +240,13 @@ class Policy(models.Model):
 
 
 class PolicyConsent(models.Model):
+    ACCEPTED = 'ACCEPTED'
+    REVOKED = 'REVOKED'
+    STATUS_CHOICES = (
+        (ACCEPTED, 'Accepted'),
+        (REVOKED, 'Revoked'),
+    )
+
     user = models.ForeignKey(
         'auth.User',
         on_delete=models.CASCADE,
@@ -240,7 +258,11 @@ class PolicyConsent(models.Model):
         related_name='consents',
     )
     version = models.CharField(max_length=20)
-    accepted_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=ACCEPTED)
+    accepted_at = models.DateTimeField(default=timezone.now)
+    withdrawn_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(default=timezone.now)
 
     class Meta:
         ordering = ('policy__policy_type',)
@@ -249,7 +271,50 @@ class PolicyConsent(models.Model):
                 fields=('user', 'policy'),
                 name='unique_user_policy_consent',
             ),
+            models.CheckConstraint(
+                condition=Q(status__in=('ACCEPTED', 'REVOKED')),
+                name='policyconsent_status_valid',
+            ),
+            models.CheckConstraint(
+                condition=(
+                    Q(status='REVOKED', withdrawn_at__isnull=False)
+                    | Q(status='ACCEPTED', withdrawn_at__isnull=True)
+                ),
+                name='policyconsent_withdrawal_timestamp',
+            ),
         ]
 
     def __str__(self):
         return f'{self.user} · {self.policy} · {self.version}'
+
+
+class CookiePreference(models.Model):
+    """Server-authoritative cookie preferences for one user.
+
+    Essential cookies (session + CSRF security) are always required for the
+    system to operate securely, so a row can never be saved with them
+    disabled. Optional cookie categories currently used by the deployment
+    live in the JSON field; the deployment has none today, so the UI
+    accurately reports "no optional cookies in use".
+    """
+
+    user = models.OneToOneField(
+        'auth.User',
+        on_delete=models.CASCADE,
+        related_name='cookie_preference',
+    )
+    essential_cookies_accepted = models.BooleanField(default=True)
+    optional_cookies = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                condition=Q(essential_cookies_accepted=True),
+                name='cookiepreference_essential_always_active',
+            ),
+        ]
+
+    def __str__(self):
+        return f'{self.user} · cookie preferences'

@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import Http404
@@ -11,7 +12,13 @@ from django.views.decorators.http import require_POST
 from . import consent as consent_service
 from .access import accessible_submissions, can_approve_accounts, is_admin_user
 from .mixins import ApprovedUserRequiredMixin
-from .models import AuditLog, Notification, Policy
+from .models import (
+    AuditLog,
+    CookiePreference,
+    Notification,
+    Policy,
+    PolicyConsent,
+)
 
 
 NOTIFICATION_PRESENTATION = {
@@ -110,10 +117,44 @@ def _safe_consent_next(request, candidate):
     return reverse('dashboard:index')
 
 
-class ConsentView(LoginRequiredMixin, TemplateView):
-    """Full-page institutional consent screen gating AMS access."""
+POLICY_SUMMARIES = {
+    Policy.COOKIE: (
+        'Guidelines for cookies used to support secure authentication, session '
+        'management, and essential AMS functionality.'
+    ),
+    Policy.PRIVACY: (
+        'Information on how personal and institutional data is collected, '
+        'processed, protected, retained, and used within the JMCFI '
+        'Accreditation Management System.'
+    ),
+    Policy.TERMS: (
+        'Guidelines and responsibilities governing authorized access and '
+        'appropriate use of the JMCFI Accreditation Management System.'
+    ),
+    Policy.AIRA: (
+        'Information on how the AIRA Smart Companion uses only the '
+        'accreditation records you are authorized to access, and assists '
+        'within the AMS.'
+    ),
+}
 
-    template_name = 'core/consent.html'
+
+def _user_display_name(user):
+    """Institutional greeting name: full name, first name, or a neutral fallback."""
+    if not user or not user.is_authenticated:
+        return 'User'
+    return user.get_full_name() or user.first_name or user.username or 'User'
+
+
+class ConsentView(LoginRequiredMixin, TemplateView):
+    """Versioned institutional-consent screen gating AMS access.
+
+    Rendered as a modal overlay on top of the login page (via
+    ``core/consent_overlay.html`` extending ``accounts/login.html``), not as a
+    separate layout page.
+    """
+
+    template_name = 'core/consent_overlay.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -122,23 +163,36 @@ class ConsentView(LoginRequiredMixin, TemplateView):
         # Explicit per-policy prior acknowledgment (version + timestamp).
         prior = {
             pc.policy_id: pc
-            for pc in self.request.user.policy_consents.select_related('policy')
+            for pc in self.request.user.policy_consents.filter(
+                status=PolicyConsent.ACCEPTED,
+            ).select_related('policy')
         }
         rows = []
         for policy in policies:
             ack = prior.get(policy.id)
             rows.append({
                 'policy': policy,
+                'summary': POLICY_SUMMARIES.get(
+                    policy.policy_type,
+                    'Information about this policy and how it applies to your use of the AMS.',
+                ),
                 'acknowledged_version': ack.version if ack else '',
                 'acknowledged_at': ack.accepted_at if ack else None,
             })
+        active_policies = {p.policy_type: p for p in Policy.active()}
         context.update({
-            'page_title': 'Privacy & Terms',
+            'page_title': 'Institutional Policies',
             'policies': rows,
+            'consent_display_name': _user_display_name(self.request.user),
+            'consent_open': True,
             'any_updates': any(
                 row['acknowledged_version'] and row['acknowledged_version'] != row['policy'].version
                 for row in rows
             ),
+            'privacy_policy': active_policies.get(Policy.PRIVACY),
+            'terms_policy': active_policies.get(Policy.TERMS),
+            'cookie_policy': active_policies.get(Policy.COOKIE),
+            'aira_notice': active_policies.get(Policy.AIRA),
             'next_url': _safe_consent_next(self.request, self.request.GET.get('next')),
         })
         return context
@@ -186,9 +240,16 @@ class PolicyDetailView(TemplateView):
             raise Http404('Policy not found')
 
     def get_template_names(self):
-        if self.policy.policy_type == Policy.TERMS:
-            return ['core/policies/terms_of_use.html']
-        return ['core/privacy_notice.html']
+        template_map = {
+            Policy.PRIVACY: ['core/privacy_notice.html'],
+            Policy.TERMS: ['core/policies/terms_of_use.html'],
+            Policy.COOKIE: ['core/policies/cookie_policy.html'],
+            Policy.AIRA: ['core/policies/aira_notice.html'],
+        }
+        return template_map.get(
+            self.policy.policy_type,
+            ['core/privacy_notice.html'],
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -197,3 +258,59 @@ class PolicyDetailView(TemplateView):
         context['hide_topbar_title'] = True
         context['created_via_consent'] = True
         return context
+
+
+class CookiePreferenceUpdateView(LoginRequiredMixin, View):
+    """Persist a user's cookie preferences server-side (POST only, CSRF-protected).
+
+    The deployment currently uses no optional cookie categories, so the only
+    permitted state is "essential cookies always active". When optional
+    categories are added to ``settings.COOKIE_OPTIONAL_CATEGORIES`` the same
+    endpoint persists per-category on/off choices; unknown categories are
+    never accepted.
+    """
+
+    def post(self, request, *args, **kwargs):
+        allowed = set(getattr(settings, 'COOKIE_OPTIONAL_CATEGORIES', []))
+        submitted = request.POST.getlist('optional_cookies')
+        optional = {category: category in submitted for category in allowed}
+
+        preference, _ = CookiePreference.objects.update_or_create(
+            user=request.user,
+            defaults={'optional_cookies': optional},
+        )
+        AuditLog.objects.create(
+            actor=request.user,
+            action='COOKIE_PREFERENCES_SAVED',
+            object_type='CookiePreference',
+            object_id=str(preference.pk),
+            details={'optional_categories': optional},
+        )
+        messages.success(request, 'Cookie preferences saved.')
+        default_next = reverse('accounts:settings_profile')
+        candidate = request.POST.get('next') or default_next
+        return redirect(_safe_consent_next(request, candidate))
+
+
+class ConsentWithdrawView(LoginRequiredMixin, View):
+    """Revoke the authenticated user's own acknowledgment for a policy.
+
+    Only non-required (informational) policies can be withdrawn through this
+    endpoint. Required policies cannot be casually reversed because continued
+    access depends on them; users must re-acknowledge the current version
+    instead.
+    """
+
+    def post(self, request, *args, **kwargs):
+        policy = Policy.objects.filter(
+            pk=request.POST.get('policy_id'),
+            is_required=False,
+        ).first()
+        if not policy:
+            raise Http404('Policy not found or cannot be withdrawn.')
+        withdrawn = consent_service.withdraw(request.user, policy)
+        if withdrawn:
+            messages.success(request, f'Acknowledgment of "{policy.title}" was withdrawn.')
+        else:
+            messages.error(request, 'No active acknowledgment to withdraw.')
+        return redirect(reverse('accounts:settings_profile'))

@@ -41,13 +41,32 @@
             {% csrf_token %}
             <div class="register-grid">
               {% for field in form %}
-                <div class="login-field{% if field.name == 'role' or field.name == 'department' or field.name == 'password1' or field.name == 'password2' %} register-wide{% endif %}">
-                  <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                  {{ field }}
-                  {% for error in field.errors %}<span class="login-field-error">{{ error }}</span>{% endfor %}
-                </div>
+                {% if field.name != 'data_use_acknowledged' %}
+                  <div class="login-field{% if field.name == 'role' or field.name == 'department' or field.name == 'password1' or field.name == 'password2' %} register-wide{% endif %}">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% for error in field.errors %}<span class="login-field-error">{{ error }}</span>{% endfor %}
+                  </div>
+                {% endif %}
               {% endfor %}
             </div>
+
+            {% include 'accounts/_data_use_notice.html' with data_use_notice=data_use_notice %}
+
+            <div class="login-field register-wide{% if form.data_use_acknowledged.errors %} has-error{% endif %}">
+              <label class="data-use-checkbox-label" for="{{ form.data_use_acknowledged.id_for_label }}">
+                {{ form.data_use_acknowledged }}
+                <span>
+                  I have read and understood this notice and I acknowledge that
+                  information I submit will be used for accreditation and
+                  quality-assurance purposes.
+                </span>
+              </label>
+              {% for error in form.data_use_acknowledged.errors %}
+                <span class="login-field-error">{{ error }}</span>
+              {% endfor %}
+            </div>
+
             <button type="submit" class="login-submit">
               <span class="login-submit-label">Request account</span>
               <span class="login-submit-arrow" aria-hidden="true">→</span>

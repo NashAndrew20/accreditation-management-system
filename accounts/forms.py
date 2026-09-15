@@ -86,6 +86,11 @@ class RegistrationForm(forms.Form):
     )
     password1 = forms.CharField(label='Password', widget=forms.PasswordInput)
     password2 = forms.CharField(label='Confirm password', widget=forms.PasswordInput)
+    data_use_acknowledged = forms.BooleanField(
+        required=False,
+        label='I have read and understand this notice.',
+        widget=forms.CheckboxInput(attrs={'class': 'data-use-checkbox'}),
+    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -115,6 +120,12 @@ class RegistrationForm(forms.Form):
                 validate_password(password1)
             except ValidationError as error:
                 self.add_error('password1', error)
+        notice_config = getattr(settings, 'DATA_USE_NOTICES', {}).get('registration', {})
+        if notice_config.get('required', True) and not cleaned.get('data_use_acknowledged'):
+            self.add_error(
+                'data_use_acknowledged',
+                'Please confirm that you have read and understood the Data Use Notice.',
+            )
         return cleaned
 
     @transaction.atomic

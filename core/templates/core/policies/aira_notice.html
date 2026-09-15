@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load static nav_extras %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/privacy.css' %}?v=1">
+{% endblock %}
+
+{% block content %}
+  <header class="privacy-hero">
+    <div class="privacy-hero-inner">
+      <span class="privacy-eyebrow">AIRA Notice · JMCFI AMS</span>
+      <h1>{{ policy.title|default:'AIRA Data-Use Notice' }}</h1>
+      <p>
+        How AIRA, the AI-assisted Smart Companion of the Jose Maria College
+        Foundation, Inc. (JMCFI) Accreditation Management System (AMS),
+        handles accreditation data on your behalf.
+      </p>
+      <div class="privacy-meta">
+        <span class="ui-chip tone-maroon">Version {{ policy.version|default:'1.0' }}</span>
+        <span class="privacy-date">Effective {{ policy.effective_date|date:'F j, Y'|default:'September 15, 2026' }}</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="privacy-layout">
+    <nav class="privacy-toc" aria-label="AIRA data-use notice contents">
+      <h2>Contents</h2>
+      <ol>
+        <li><a href="#aira-1">What AIRA Is</a></li>
+        <li><a href="#aira-2">Data AIRA May Use</a></li>
+        <li><a href="#aira-3">Advisory Only</a></li>
+        <li><a href="#aira-4">Processing Location and Data Sharing</a></li>
+        <li><a href="#aira-5">User Responsibilities</a></li>
+        <li><a href="#aira-6">Questions and Review</a></li>
+      </ol>
+    </nav>
+
+    <article class="privacy-content" aria-label="AIRA data-use notice">
+      {% include 'core/policies/_aira_notice_body.html' %}
+
+      <footer class="privacy-footer">
+        <p>&copy; 2026 Jose Maria College Foundation, Inc. Accreditation Management System.</p>
+        {% if user.is_authenticated %}
+          <a href="{% url 'dashboard:index' %}">Return to dashboard</a>
+        {% else %}
+          <a href="{% url 'login' %}">Return to sign in</a>
+        {% endif %}
+      </footer>
+    </article>
+  </div>
+{% endblock %}

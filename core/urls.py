@@ -10,5 +10,7 @@ urlpatterns = [
     path('privacy-notice/', views.PrivacyNoticeView.as_view(), name='privacy_notice'),
     path('consent/', views.ConsentView.as_view(), name='consent'),
     path('consent/accept/', views.ConsentAcceptView.as_view(), name='consent_accept'),
+    path('consent/withdraw/', views.ConsentWithdrawView.as_view(), name='consent_withdraw'),
+    path('cookie-preferences/', views.CookiePreferenceUpdateView.as_view(), name='cookie_preferences'),
     path('policies/<str:slug>/', views.PolicyDetailView.as_view(), name='policy_detail'),
 ]

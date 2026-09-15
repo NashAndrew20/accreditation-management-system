@@ -2,6 +2,7 @@ from django.contrib import admin
 
 from .models import (
     AuditLog,
+    CookiePreference,
     Department,
     Notification,
     Policy,
@@ -66,7 +67,14 @@ class PolicyAdmin(admin.ModelAdmin):
 
 @admin.register(PolicyConsent)
 class PolicyConsentAdmin(admin.ModelAdmin):
-    list_display = ('user', 'policy', 'version', 'accepted_at')
-    list_filter = ('policy__policy_type',)
+    list_display = ('user', 'policy', 'version', 'status', 'accepted_at', 'withdrawn_at', 'updated_at')
+    list_filter = ('policy__policy_type', 'status')
     search_fields = ('user__username', 'user__email', 'policy__title', 'version')
-    readonly_fields = ('accepted_at',)
+    readonly_fields = ('accepted_at', 'created_at', 'updated_at')
+
+
+@admin.register(CookiePreference)
+class CookiePreferenceAdmin(admin.ModelAdmin):
+    list_display = ('user', 'essential_cookies_accepted', 'optional_cookies', 'updated_at')
+    search_fields = ('user__username', 'user__email')
+    readonly_fields = ('created_at', 'updated_at')

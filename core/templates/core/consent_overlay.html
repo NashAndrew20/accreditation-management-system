@@ -1,0 +1,128 @@
+{% extends 'accounts/login.html' %}
+{% load static nav_extras %}
+
+{% block login_overlays %}
+  <div
+    class="proto-overlay"
+    id="consent-overlay"
+    data-proto-overlay
+    data-consent-overlay
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="consent-overlay-title"
+    {% if not consent_open %}hidden{% endif %}>
+    <div class="proto-overlay-backdrop" aria-hidden="true"></div>
+    <div class="proto-sheet proto-consent-sheet">
+      <header class="proto-sheet-head">
+        <div>
+          <p class="proto-sheet-eyebrow">Institutional Policies</p>
+          <h2 id="consent-overlay-title">Review before accessing the AMS</h2>
+          <p class="proto-consent-intro">
+            Welcome back, <strong>{{ consent_display_name }}</strong>. Before accessing the JMCFI Accreditation
+            Management System, please review the institutional policies and notices below. Your acknowledgment helps
+            ensure that your use of the system is consistent with JMCFI policies and applicable data-protection
+            requirements.
+          </p>
+        </div>
+        <button
+          type="button"
+          class="proto-consent-back"
+          data-proto-overlay-close
+          aria-label="Back to sign in">
+          {% icon 'chevrons-left' %}
+          <span>Back</span>
+        </button>
+      </header>
+
+      <div class="proto-sheet-body proto-consent-body">
+        {% if messages %}
+          <div class="consent-overlay-alert" role="alert">
+            {% for message in messages %}{{ message }}{% endfor %}
+          </div>
+        {% endif %}
+
+        {% if any_updates %}
+          <div class="consent-overlay-banner" role="status">
+            {% icon 'alert' %}
+            <span>Policy updates are in effect. One or more policies were updated since your last acknowledgment —
+              please review the current versions shown below before continuing.</span>
+          </div>
+        {% endif %}
+
+        <form method="post" action="{% url 'core:consent_accept' %}">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ next_url }}">
+
+          <div class="consent-overlay-policy-list" role="list">
+            {% for row in policies %}
+              <article class="consent-overlay-policy" role="listitem">
+                <span class="consent-overlay-policy-icon" aria-hidden="true">
+                  {% icon 'shield' %}
+                </span>
+                <div class="consent-overlay-policy-copy">
+                  <div class="consent-overlay-policy-title">
+                    <h3>{{ row.policy.title }}</h3>
+                    <span class="proto-chip">v{{ row.policy.version }}</span>
+                  </div>
+                  <p class="consent-overlay-policy-date">
+                    Effective {{ row.policy.effective_date|date:'F j, Y' }}
+                  </p>
+                  <p class="consent-overlay-policy-summary">{{ row.summary }}</p>
+                  <a
+                    class="proto-sheet-link consent-overlay-policy-action"
+                    href="{% url 'core:policy_detail' row.policy.slug %}"
+                    target="_blank"
+                    rel="noopener">
+                    View full policy {% icon 'chevron-right' 'icon' %}
+                  </a>
+                </div>
+              </article>
+            {% endfor %}
+          </div>
+
+          <input type="hidden" name="acknowledge" value="0" id="consent-acknowledge-value">
+          {% for row in policies %}
+            <input type="hidden" name="version_{{ row.policy.policy_type }}" value="{{ row.policy.version }}">
+          {% endfor %}
+
+          <label class="consent-overlay-ack" for="consent-ack-checkbox">
+            <input type="checkbox" id="consent-ack-checkbox" data-consent-checkbox data-proto-autofocus>
+            <span class="consent-overlay-ack-copy">
+              I confirm that I have reviewed the institutional policies and notices presented above and acknowledge
+              their applicable terms and provisions.
+            </span>
+          </label>
+
+          <button type="submit" class="proto-sheet-cta consent-overlay-submit" disabled data-consent-submit>
+            Continue to the AMS
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block extra_scripts %}
+  <script src="{% static 'js/consent.js' %}" defer></script>
+  <script>
+    (function () {
+      function openConsentOverlay() {
+        var overlay = document.getElementById('consent-overlay');
+        if (!overlay || overlay.hidden) return;
+        document.body.classList.add('proto-no-scroll');
+        document.documentElement.classList.add('proto-no-scroll');
+        var panel = document.querySelector('.login-panel');
+        if (panel) panel.setAttribute('aria-hidden', 'true');
+        var target = overlay.querySelector('[data-proto-autofocus]') ||
+          overlay.querySelector('button:not([disabled]), a, input:not([type=hidden]), select, textarea');
+        if (target) target.focus();
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', openConsentOverlay);
+      } else {
+        openConsentOverlay();
+      }
+    })();
+  </script>
+{% endblock %}

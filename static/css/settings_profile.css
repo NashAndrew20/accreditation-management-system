@@ -421,3 +421,81 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ---- Privacy & Legal panel (capstone consent pass) ---- */
+.consent-status-list {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+.consent-status-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.consent-status-label {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+.consent-status-label.is-current {
+  color: #14532d;
+  background: #d9f0e1;
+}
+.consent-status-label.is-outdated {
+  color: #7a3b0c;
+  background: #fce7d0;
+}
+.consent-status-label.is-missing {
+  color: #7c1d2e;
+  background: #f9dde3;
+}
+.consent-status-label.is-authorizing {
+  color: #3b3f51;
+  background: #e7eaf2;
+}
+.consent-status-label.is-revoked {
+  color: #6b2323;
+  background: #f6dcdc;
+}
+.cookie-preference-form {
+  margin-top: 10px;
+}
+.cookie-option-list {
+  margin: 0 0 10px;
+  padding: 0;
+  border: 0;
+  display: grid;
+  gap: 8px;
+}
+.cookie-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+.cookie-option input[type='checkbox'] {
+  accent-color: var(--maroon-700, #871b35);
+}
+.inline-withdraw-form {
+  display: inline;
+}
+.withdraw-btn {
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border: 1px solid var(--color-border-strong, #c8c4b8);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-text-muted, #55524a);
+  cursor: pointer;
+}
+.withdraw-btn:hover {
+  border-color: #c0392b;
+  color: #c0392b;
+}
+

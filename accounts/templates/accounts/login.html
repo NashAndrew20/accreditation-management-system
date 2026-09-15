@@ -102,6 +102,14 @@
           <a class="login-privacy-link" href="{% url 'core:policy_detail' 'privacy-policy' %}" data-proto-overlay-open="login-privacy" aria-haspopup="dialog" aria-expanded="false">Privacy</a>
           <span>·</span>
           <a class="login-privacy-link" href="{% url 'core:policy_detail' 'terms-of-use' %}" data-proto-overlay-open="login-terms" aria-haspopup="dialog" aria-expanded="false">Terms</a>
+          {% if cookie_policy %}
+            <span>·</span>
+            <a class="login-privacy-link" href="{% url 'core:policy_detail' 'cookie-policy' %}" data-proto-overlay-open="login-cookie" aria-haspopup="dialog" aria-expanded="false">Cookies</a>
+          {% endif %}
+          {% if aira_notice %}
+            <span>·</span>
+            <a class="login-privacy-link" href="{% url 'core:policy_detail' 'aira-data-notice' %}" data-proto-overlay-open="login-aira" aria-haspopup="dialog" aria-expanded="false">AIRA Notice</a>
+          {% endif %}
         </p>
       </div>
     </section>
@@ -228,6 +236,82 @@
       </div>
     </div>
 
+    {% if cookie_policy %}
+    <div
+      class="proto-overlay"
+      id="login-cookie"
+      data-proto-overlay
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="login-cookie-title"
+      hidden>
+      <div class="proto-overlay-backdrop" data-proto-overlay-close aria-hidden="true"></div>
+      <div class="proto-sheet">
+        <header class="proto-sheet-head">
+          <div>
+            <p class="proto-sheet-eyebrow">JMCFI AMS · Cookies</p>
+            <h2 id="login-cookie-title">Cookie Policy</h2>
+            <div class="proto-sheet-meta">
+              <span class="proto-chip">Version {{ cookie_policy.version|default:'1.0' }}</span>
+              <span>Effective {{ cookie_policy.effective_date|date:'F j, Y'|default:'September 15, 2026' }}</span>
+            </div>
+          </div>
+          <button type="button" class="proto-sheet-close" data-proto-overlay-close aria-label="Close cookie policy">&times;</button>
+        </header>
+
+        <div class="proto-sheet-body">
+          <article class="privacy-content login-policy-content" aria-label="Cookie policy">
+            {% include 'core/policies/_cookie_body.html' %}
+          </article>
+        </div>
+
+        <footer class="proto-sheet-foot">
+          <a class="proto-sheet-link" href="{% url 'core:policy_detail' 'cookie-policy' %}">Open full policy</a>
+          <button type="button" class="proto-sheet-cta" data-proto-overlay-close>Close</button>
+        </footer>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if aira_notice %}
+    <div
+      class="proto-overlay"
+      id="login-aira"
+      data-proto-overlay
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="login-aira-title"
+      hidden>
+      <div class="proto-overlay-backdrop" data-proto-overlay-close aria-hidden="true"></div>
+      <div class="proto-sheet">
+        <header class="proto-sheet-head">
+          <div>
+            <p class="proto-sheet-eyebrow">JMCFI AMS · AIRA</p>
+            <h2 id="login-aira-title">AIRA Data-Use Notice</h2>
+            <div class="proto-sheet-meta">
+              <span class="proto-chip">Version {{ aira_notice.version|default:'1.0' }}</span>
+              <span>Effective {{ aira_notice.effective_date|date:'F j, Y'|default:'September 15, 2026' }}</span>
+            </div>
+          </div>
+          <button type="button" class="proto-sheet-close" data-proto-overlay-close aria-label="Close AIRA data-use notice">&times;</button>
+        </header>
+
+        <div class="proto-sheet-body">
+          <article class="privacy-content login-policy-content" aria-label="AIRA data-use notice">
+            {% include 'core/policies/_aira_notice_body.html' %}
+          </article>
+        </div>
+
+        <footer class="proto-sheet-foot">
+          <a class="proto-sheet-link" href="{% url 'core:policy_detail' 'aira-data-notice' %}">Open full notice</a>
+          <button type="button" class="proto-sheet-cta" data-proto-overlay-close>Close</button>
+        </footer>
+      </div>
+    </div>
+    {% endif %}
+
+    {% block login_overlays %}{% endblock %}
+
   </main>
 
   <script src="{% static 'js/login.js' %}" defer></script>
@@ -333,5 +417,7 @@
     })();
   </script>
   {% endblock extra_js %}
+
+  {% block extra_scripts %}{% endblock %}
 </body>
 </html>

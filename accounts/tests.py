@@ -55,6 +55,17 @@ class LoginPageTests(TestCase):
         self.assertContains(dashboard_response, "css/theme.css")
         self.assertContains(dashboard_response, "data-theme-toggle")
 
+    def test_login_footer_lists_legal_links_and_policy_modals(self):
+        response = self.client.get(reverse('login'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Privacy')
+        self.assertContains(response, 'Terms')
+        self.assertContains(response, 'Cookies')
+        self.assertContains(response, 'AIRA Notice')
+        self.assertContains(response, 'login-cookie')
+        self.assertContains(response, 'login-aira')
+
     def test_valid_credentials_redirect_to_dashboard(self):
         response = self.client.post(
             reverse('login'),
@@ -123,12 +134,46 @@ class LoginPageTests(TestCase):
             'department': self.department.id,
             'password1': 'A-strong-registration-password-55!',
             'password2': 'A-strong-registration-password-55!',
+            'data_use_acknowledged': 'on',
         })
         self.assertEqual(response.status_code, 200)
         new_user = get_user_model().objects.get(username='new-program-head')
         self.assertFalse(new_user.is_active)
         self.assertEqual(new_user.profile.approval_status, UserProfile.PENDING)
         self.assertFalse(new_user.role_assignments.get().is_approved)
+
+    def test_registration_requires_data_use_acknowledgment(self):
+        response = self.client.post(reverse('register'), {
+            'username': 'unacknowledged-user',
+            'email': 'unacknowledged@jmcfi.edu.ph',
+            'first_name': 'Unacknowledged',
+            'last_name': 'User',
+            'role': self.role.id,
+            'department': self.department.id,
+            'password1': 'A-strong-registration-password-55!',
+            'password2': 'A-strong-registration-password-55!',
+        })
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(get_user_model().objects.filter(username='unacknowledged-user').exists())
+        self.assertContains(response, 'Data Use Notice')
+        self.assertContains(response, 'Please confirm that you have read and understood')
+
+    @override_settings(DATA_USE_NOTICES={'registration': {'required': False}})
+    def test_registration_proceeds_when_data_use_notice_is_optional(self):
+        response = self.client.post(reverse('register'), {
+            'username': 'optional-notice-user',
+            'email': 'optional_notice@jmcfi.edu.ph',
+            'first_name': 'Optional',
+            'last_name': 'Notice',
+            'role': self.role.id,
+            'department': self.department.id,
+            'password1': 'A-strong-registration-password-55!',
+            'password2': 'A-strong-registration-password-55!',
+        })
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(get_user_model().objects.filter(username='optional-notice-user').exists())
 
     def test_admin_can_approve_pending_account(self):
         admin_role = Role.objects.create(code='ADMIN', name='Admin')
