@@ -109,6 +109,8 @@ def _resolve_active_nav(request):
         # Evidence details open from "My Tasks" for Program Heads and from
         # the review queue for reviewers, so highlight the matching section.
         assignment = active_assignment(request.user)
+        user = getattr(request, 'user', None)
+        assignment = active_assignment(user) if user else None
         role_code = assignment.role.code if assignment else ''
         if role_code == 'PROGRAM_HEAD':
             return 'accreditation:submission_workspace'
@@ -117,6 +119,26 @@ def _resolve_active_nav(request):
 
 
 def site_nav(request):
+    # Guard: error pages and middleware responses (CSRF failure, rate-limit,
+    # server error) can be rendered before auth middleware attaches request.user.
+    # Return a minimal context so context processors never crash on error renders.
+    user = getattr(request, 'user', None)
+    if user is None:
+        return {
+            'nav_sections': [],
+            'current_user_summary': {
+                'name': 'Guest',
+                'role': 'Sign in required',
+                'role_context': 'JMCFI AMS',
+                'initials': 'GU',
+                'photo_url': '',
+            },
+            'aira_guidance': _AIRA_DEFAULT_GUIDANCE,
+            'notification_count': 0,
+            'notification_preview': [],
+            'active_nav': '',
+        }
+
     nav_sections = [
         {
             'label': 'Overview',
@@ -203,6 +225,7 @@ def site_nav(request):
         },
     ]
     if can_approve_accounts(request.user):
+    if can_approve_accounts(user):
         admin_items.insert(0, {
             'label': 'User Management',
             'icon': 'users',
@@ -217,6 +240,8 @@ def site_nav(request):
 
     if request.user.is_authenticated and not is_admin_user(request.user):
         assignment = active_assignment(request.user)
+    if user.is_authenticated and not is_admin_user(user):
+        assignment = active_assignment(user)
         role_code = assignment.role.code if assignment else ''
         if role_code == 'PROGRAM_HEAD':
             nav_sections[1]['items'] = [
@@ -243,6 +268,10 @@ def site_nav(request):
         assignment = active_assignment(request.user)
         profile = getattr(request.user, 'profile', None)
         name = request.user.get_full_name().strip() or request.user.username
+    if user.is_authenticated:
+        assignment = active_assignment(user)
+        profile = getattr(user, 'profile', None)
+        name = user.get_full_name().strip() or user.username
         initials = ''.join(part[0] for part in name.split()[:2]).upper() or 'U'
         current_user_summary = {
             'name': name,
@@ -252,6 +281,7 @@ def site_nav(request):
             'photo_url': profile.photo.url if profile and profile.photo else '',
         }
         user_notifications = Notification.objects.filter(user=request.user).select_related('submission')
+        user_notifications = Notification.objects.filter(user=user).select_related('submission')
         notification_count = user_notifications.filter(is_read=False).count()
         for notification in user_notifications[:5]:
             notification_preview.append({

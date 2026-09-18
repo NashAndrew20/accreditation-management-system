@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.http import HttpResponse, JsonResponse
+from django.http import JsonResponse
 from django.shortcuts import redirect
 from django.urls import reverse
 
@@ -31,13 +32,24 @@ class RequestRateLimitMiddleware:
     @staticmethod
     def _too_many_requests(request):
         message = 'Too many requests. Please try again in about one minute.'
+        from config.error_views import rate_limited as render_rate_limited
+        retry_after = settings.REQUEST_RATE_WINDOW_SECONDS
         if request.path_info.startswith('/api/'):
+            message = 'Too many requests. Please try again in about one minute.'
             response = JsonResponse({'detail': message}, status=429)
         else:
             response = HttpResponse(message, status=429, content_type='text/plain')
         response['Retry-After'] = str(settings.REQUEST_RATE_WINDOW_SECONDS)
         response['Cache-Control'] = 'no-store'
         return response
+            response['Retry-After'] = str(settings.REQUEST_RATE_WINDOW_SECONDS)
+            response['Retry-After'] = str(retry_after)
+            response['Cache-Control'] = 'no-store'
+            return response
+        return render_rate_limited(request, retry_after=retry_after)
+
+        from config.error_views import rate_limited
+        return rate_limited(request, retry_after=settings.REQUEST_RATE_WINDOW_SECONDS)
 
 
 class ConsentGateMiddleware:

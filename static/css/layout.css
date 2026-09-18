@@ -29,6 +29,10 @@
   display: none;
 }
 
+.mobile-menu-trigger {
+  display: none;
+}
+
 .mobile-nav-backdrop {
   display: none;
 }
@@ -780,6 +784,30 @@
   .topbar-left {
     flex: 1;
     gap: 12px;
+  }
+
+  .mobile-menu-trigger {
+    display: grid;
+    flex: 0 0 auto;
+    width: 36px;
+    height: 36px;
+    place-items: center;
+    padding: 0;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    color: var(--color-text-muted);
+  }
+
+  .mobile-menu-trigger:hover,
+  .mobile-menu-trigger:focus-visible {
+    border-color: var(--maroon-600);
+    color: var(--maroon-700);
+  }
+
+  .mobile-menu-trigger .icon {
+    width: 19px;
+    height: 19px;
   }
 
   .topbar-title {

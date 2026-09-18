@@ -30,8 +30,14 @@ from datetime import timedelta
 from django.utils import timezone
 
 from accreditation.constants import ACTIVE_REVIEW_STATUSES, COMPLETED_STATUSES
-from accreditation.models import AccreditationArea, AreaAssignment, EvidenceSubmission
+from accreditation.models import (
+    AccreditationArea,
+    AreaAssignment,
+    EvidenceReview,
+    EvidenceSubmission,
+)
 from core.access import active_assignment, accessible_submissions, department_scope_ids
+from core.models import Notification
 
 SOURCE_LABEL = 'AMS records'
 
@@ -57,32 +63,72 @@ def _submissions(user):
 # Safety / refusal
 # ---------------------------------------------------------------------------
 
-_SECRET_TERMS = (
+_INJECTION_TERMS = (
     'system prompt',
     'system instruction',
     'your instructions',
     'your prompt',
+    'ignore your previous',
+    'ignore all previous',
+    'ignore earlier instructions',
+    'ignore previous',
+    'disregard previous',
+    'disregard your',
+    'forget your instructions',
+    'override instructions',
+    'new instructions',
+    'act as an administrator',
+    'act as administrator',
+    'act as a system',
+    'pretend to be',
+    'you are now',
+    'developer mode',
+    'jailbreak',
+    'prompt injection',
+    'injection',
+)
+
+_SECRET_TERMS = (
     'api key',
+    'secret key',
     'secret',
     'password',
     'credential',
+    'access token',
     'token',
     'environment variable',
     'internal configuration',
     '.env',
     'bypass',
-    'override instructions',
-    'ignore earlier instructions',
-    'ignore previous',
     'reveal',
     'expose',
-    'injection',
+)
+
+_BULK_TERMS = (
+    'all users',
+    'user list',
+    'list of users',
+    'all user accounts',
+    'all records',
+    'every record',
+    'entire database',
+    'database contents',
+    'dump the database',
+    'database schema',
+    'all confidential',
 )
 
 
 def _looks_like_secret_request(question):
     lowered = question.lower()
-    return any(term in lowered for term in _SECRET_TERMS)
+    return any(term in lowered for term in _INJECTION_TERMS) or any(
+        term in lowered for term in _SECRET_TERMS
+    )
+
+
+def _looks_like_bulk_request(question):
+    lowered = question.lower()
+    return any(term in lowered for term in _BULK_TERMS)
 
 
 def _refuse_secrets():
@@ -172,6 +218,26 @@ def _detect_intents(question):
         'confirm', 'final decision', 'officially',
     )):
         intents.add('compliance')
+    if any(term in lowered for term in (
+        'revision request', 'returned for revision', 'returned to me',
+        'needs revision', 'need revision', 'in revision', 'resubmit',
+        'resubmission', 'which documents have revision', 'what was returned',
+    )):
+        intents.add('revisions')
+    if any(term in lowered for term in (
+        'comment', 'remarks', 'reviewer said', 'what did the reviewer',
+    )):
+        intents.add('comments')
+    if any(term in lowered for term in (
+        'pending task', 'my task', 'my pending', 'what should i',
+        'action required', 'next action', 'what do i need to do',
+        'need attention', 'review next', 'pending action',
+    )):
+        intents.add('tasks')
+    if any(term in lowered for term in (
+        'notification', 'notifications', 'alerts', 'unread', 'my updates',
+    )):
+        intents.add('notifications')
     return intents
 
 
@@ -187,7 +253,8 @@ def _reply_capabilities():
             "I'm AIRA, the accreditation intelligent companion for JMCFI AMS. "
             "I can help you understand accreditation requirements, find missing "
             "or incomplete evidence, track submission and review status, check "
-            "upcoming deadlines, and identify which evidence documents are "
+            "upcoming deadlines, review requests, reviewer comments, pending "
+            "tasks, and notifications, and identify which evidence documents are "
             "on record for your scope. I work only from the AMS records you are "
             "authorized to access. I am an assistant, not the final accreditation "
             "decision-maker."
@@ -532,6 +599,320 @@ def _reply_scope(user):
     }
 
 
+def _user_name(user):
+    if not user:
+        return 'an assigned reviewer'
+    return user.get_full_name().strip() or user.username
+
+
+def _latest_review(submission):
+    return (
+        submission.reviews.exclude(remarks='')
+        .select_related('reviewer', 'reviewer_role')
+        .order_by('-created_at')
+        .first()
+    )
+
+
+def _latest_comment(submission):
+    return (
+        submission.comments.select_related('author').order_by('-created_at').first()
+    )
+
+
+def _find_requirement_code(user, question):
+    """Return the longest accessible requirement code mentioned in a question."""
+    lowered = question.lower()
+    codes = _submissions(user).values_list('requirement__code', flat=True).distinct()
+    matches = [code for code in codes if code and code.lower() in lowered]
+    if not matches:
+        return None
+    return max(matches, key=len)
+
+
+def _submission_detail_lines(submission, include_versions=False, include_reviews=True):
+    lines = [
+        f'{submission.requirement.code} — {submission.requirement.title} '
+        f'({submission.department.name}) is recorded with status '
+        f'"{_status_label(submission.status)}".'
+    ]
+    latest = submission.latest_version
+    if latest:
+        lines.append(
+            f'Current version on record: v{latest.version_number} '
+            f'({latest.created_at.date().strftime("%b %d, %Y")}).'
+        )
+    if submission.current_reviewer_id:
+        role_name = (
+            submission.current_review_role.name
+            if submission.current_review_role_id else 'reviewer'
+        )
+        lines.append(
+            f'Currently with {_user_name(submission.current_reviewer)} ({role_name}) '
+            'for review.'
+        )
+    if include_reviews:
+        review = _latest_review(submission)
+        if review and review.remarks:
+            role_name = review.reviewer_role.name if review.reviewer_role_id else 'reviewer'
+            lines.append(
+                f'Latest recorded reviewer remark ({role_name} · '
+                f'{review.created_at.date().strftime("%b %d, %Y")}): "{review.remarks}"'
+            )
+        else:
+            comment = _latest_comment(submission)
+            if comment and comment.body:
+                lines.append(
+                    f'Latest recorded comment ({_user_name(comment.author)} · '
+                    f'{comment.created_at.date().strftime("%b %d, %Y")}): "{comment.body}"'
+                )
+    if include_versions:
+        history = list(submission.versions.order_by('-version_number')[:4])
+        if len(history) > 1:
+            entries = ', '.join(
+                f'v{version.version_number} '
+                f'({version.created_at.date().strftime("%b %d, %Y")})'
+                for version in history
+            )
+            lines.append(f'Version history on record: {entries}.')
+            previous = history[1]
+            lines.append(
+                f'The previous version is v{previous.version_number} '
+                f'({previous.created_at.date().strftime("%b %d, %Y")}).'
+            )
+    return lines
+
+
+def _explicit_submission_id(question):
+    match = re.search(r'submission[^\d]{0,12}(\d{1,10})', question.lower())
+    return int(match.group(1)) if match else None
+
+
+def _reply_submission_detail(user, question):
+    """Answer a question about a specific submission or requirement code."""
+    lowered = question.lower()
+    explicit_id = _explicit_submission_id(question)
+    targets = []
+    if explicit_id is not None:
+        targets = list(_submissions(user).filter(pk=explicit_id)[:1])
+    else:
+        code = _find_requirement_code(user, question)
+        if code:
+            targets = list(
+                _submissions(user).filter(requirement__code=code)
+                .order_by('department__name')[:3]
+            )
+    if not targets:
+        return None
+
+    wants_versions = any(
+        term in lowered for term in ('version', 'history', 'previous', 'older')
+    )
+    blocks = [
+        '\n'.join(_submission_detail_lines(
+            submission,
+            include_versions=wants_versions,
+        ))
+        for submission in targets
+    ]
+    return {
+        'intent': 'submission',
+        'source': SOURCE_LABEL,
+        'reply': (
+            'Here is what the AMS records show for that item:\n\n'
+            + '\n\n'.join(blocks)
+            + '\n\nThe authorized reviewer makes the final decision. '
+              'Verify details in the submission workspace before acting.'
+        ),
+        'suggestions': [
+            'What action is required?',
+            'What was the latest reviewer comment?',
+        ],
+    }
+
+
+def _reply_revisions(user):
+    submissions = (
+        _submissions(user)
+        .filter(status=EvidenceSubmission.NEEDS_REVISION)
+        .order_by('-last_updated')
+    )
+    records = []
+    for submission in submissions[:5]:
+        review = (
+            submission.reviews.filter(decision=EvidenceReview.REQUEST_REVISION)
+            .exclude(remarks='')
+            .select_related('reviewer_role')
+            .order_by('-created_at')
+            .first()
+        )
+        records.append((submission, review))
+    if not records:
+        return {
+            'intent': 'revisions',
+            'source': SOURCE_LABEL,
+            'reply': (
+                'No evidence submissions in your accessible scope are currently '
+                'recorded as returned for revision.'
+            ),
+            'suggestions': ['What is my current review status?'],
+        }
+    lines = []
+    for submission, review in records:
+        detail = (
+            f'• {submission.requirement.code} — {submission.requirement.title} '
+            f'({submission.department.name})'
+        )
+        if review and review.remarks:
+            role_name = review.reviewer_role.name if review.reviewer_role_id else 'reviewer'
+            detail += f'\n    {role_name} requested: "{review.remarks}"'
+        lines.append(detail)
+    return {
+        'intent': 'revisions',
+        'source': SOURCE_LABEL,
+        'reply': (
+            f'{len(records)} item(s) in your scope have a recorded revision request:\n'
+            + '\n'.join(lines)
+            + '\nAddress the reviewer remarks, then resubmit inside the submission workspace.'
+        ),
+        'suggestions': [
+            'What action is required?',
+            'What are my pending accreditation tasks?',
+        ],
+    }
+
+
+def _reply_comments(user):
+    reviews = list(
+        EvidenceReview.objects.filter(submission__in=_submissions(user))
+        .exclude(remarks='')
+        .select_related(
+            'submission__requirement',
+            'reviewer',
+            'reviewer_role',
+        )
+        .order_by('-created_at')[:5]
+    )
+    if not reviews:
+        return {
+            'intent': 'comments',
+            'source': SOURCE_LABEL,
+            'reply': (
+                'No reviewer comments are on record for the submissions in your '
+                'accessible scope yet.'
+            ),
+            'suggestions': ['What is my current review status?'],
+        }
+    lines = '\n'.join(
+        f'• {review.submission.requirement.code} — {review.submission.requirement.title} · '
+        f'{review.reviewer_role.name if review.reviewer_role_id else "reviewer"} '
+        f'({_user_name(review.reviewer)}, {review.created_at.date().strftime("%b %d, %Y")}): '
+        f'"{review.remarks}"'
+        for review in reviews
+    )
+    return {
+        'intent': 'comments',
+        'source': SOURCE_LABEL,
+        'reply': (
+            'The most recent reviewer comments on record in your scope are:\n'
+            f'{lines}\n'
+            'I report remarks exactly as they were recorded in the AMS; these are '
+            'advisory guidance from an authorized reviewer.'
+        ),
+        'suggestions': [
+            'Which items were returned for revision?',
+            'What is my current review status?',
+        ],
+    }
+
+
+def _reply_tasks(user):
+    assignment = active_assignment(user)
+    role_code = assignment.role.code if assignment else ''
+    submissions = _submissions(user)
+
+    if role_code == 'PROGRAM_HEAD':
+        actionable = list(
+            submissions.filter(status__in=(
+                EvidenceSubmission.DRAFT,
+                EvidenceSubmission.NEEDS_REVISION,
+            )).order_by('-last_updated')[:5]
+        )
+        intro = 'Items in your program that still need your action:'
+    elif role_code in {'DEAN', 'AREA_CHAIR', 'QA', 'ACCREDITATION_HEAD'}:
+        actionable = list(
+            submissions.filter(
+                current_reviewer=user,
+                status__in=ACTIVE_REVIEW_STATUSES,
+            ).order_by('-last_updated')[:5]
+        )
+        intro = 'Items currently assigned to you for review:'
+    else:
+        actionable = list(
+            submissions.filter(status__in=ACTIVE_REVIEW_STATUSES)
+            .order_by('-last_updated')[:5]
+        )
+        intro = 'Items currently waiting on an internal reviewer:'
+
+    unread = Notification.objects.filter(user=user, is_read=False)
+    unread_count = unread.count()
+    lines = '\n'.join(
+        f'• {item.requirement.code} — {item.requirement.title} '
+        f'({_status_label(item.status)}, {item.department.name})'
+        for item in actionable
+    )
+    if not lines:
+        lines = '• No items are currently waiting on your action in your scope.'
+    note = (
+        f'You also have {unread_count} unread notification(s).'
+        if unread_count else 'You have no unread notifications.'
+    )
+    return {
+        'intent': 'tasks',
+        'source': SOURCE_LABEL,
+        'reply': (
+            f'{intro}\n{lines}\n{note}\n'
+            'Open the submission workspace to act on these items; I cannot make '
+            'or change accreditation decisions myself.'
+        ),
+        'suggestions': [
+            'What was the latest reviewer comment?',
+            'Which items were returned for revision?',
+        ],
+    }
+
+
+def _reply_notifications(user):
+    notifications = Notification.objects.filter(user=user).order_by('-created_at')
+    unread = notifications.filter(is_read=False)
+    if not notifications.exists():
+        return {
+            'intent': 'notifications',
+            'source': SOURCE_LABEL,
+            'reply': 'There are no notifications on record for your account right now.',
+            'suggestions': ['What are my pending accreditation tasks?'],
+        }
+    recent = list(notifications[:5])
+    lines = '\n'.join(
+        f'• {item.title}'
+        + ('' if item.is_read else ' (unread)')
+        for item in recent
+    )
+    return {
+        'intent': 'notifications',
+        'source': SOURCE_LABEL,
+        'reply': (
+            f'You have {unread.count()} unread notification(s). '
+            f'Your most recent notifications are:\n{lines}\n'
+            'Open the notifications page for the full list and actions.'
+        ),
+        'suggestions': [
+            'What are my pending accreditation tasks?',
+            'What is my current review status?',
+        ],
+    }
+
+
 def _reply_compliance(user, question):
     submissions = _submissions(user)
     completed = submissions.filter(status__in=COMPLETED_STATUSES).count()
@@ -553,6 +934,13 @@ def _reply_compliance(user, question):
         item = submissions.filter(requirement__code=found_code).first()
         label = _status_label(item.status)
         decided = item.status in COMPLETED_STATUSES
+        remark = ''
+        review = _latest_review(item)
+        if review and review.remarks:
+            role_name = review.reviewer_role.name if review.reviewer_role_id else 'reviewer'
+            remark = (
+                f'\nLatest reviewer remark ({role_name}): "{review.remarks}"'
+            )
         return {
             'intent': 'compliance',
             'source': SOURCE_LABEL,
@@ -563,6 +951,7 @@ def _reply_compliance(user, question):
                    if decided else
                    'It is still in progress, so no complied outcome is recorded yet. '
                    'The authorized reviewer makes the final decision.')
+                + remark
             ),
             'suggestions': ['Which items are waiting on a reviewer?'],
         }
@@ -621,14 +1010,31 @@ def ask(user, question):
         }
     if _looks_like_secret_request(question):
         return _refuse_secrets()
+    if _looks_like_bulk_request(question):
+        return _refuse_out_of_scope()
     probe = _probe_out_of_scope(user, question)
     if probe:
         return probe
     intents = _detect_intents(question)
+    if _explicit_submission_id(question) is not None:
+        detail = _reply_submission_detail(user, question)
+        if detail:
+            return detail
     if 'capabilities' in intents:
         return _reply_capabilities()
     if 'compliance' in intents:
         return _reply_compliance(user, question)
+    detail = _reply_submission_detail(user, question)
+    if detail:
+        return detail
+    if 'notifications' in intents:
+        return _reply_notifications(user)
+    if 'comments' in intents:
+        return _reply_comments(user)
+    if 'revisions' in intents:
+        return _reply_revisions(user)
+    if 'tasks' in intents:
+        return _reply_tasks(user)
     if 'gaps' in intents:
         return _reply_gaps(user)
     if 'deadlines' in intents:

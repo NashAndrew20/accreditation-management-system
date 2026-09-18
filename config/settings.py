@@ -113,6 +113,7 @@ ALLOWED_HOSTS = [host.strip() for host in os.getenv('DJANGO_ALLOWED_HOSTS', '127
 SECURE_SSL_REDIRECT = env_bool('SECURE_SSL_REDIRECT', IS_PRODUCTION)
 SESSION_COOKIE_SECURE = env_bool('SESSION_COOKIE_SECURE', IS_PRODUCTION)
 CSRF_COOKIE_SECURE = env_bool('CSRF_COOKIE_SECURE', IS_PRODUCTION)
+CSRF_FAILURE_VIEW = 'config.error_views.csrf_failure'
 SECURE_HSTS_SECONDS = env_int('SECURE_HSTS_SECONDS', 31536000 if IS_PRODUCTION else 0)
 SECURE_HSTS_INCLUDE_SUBDOMAINS = env_bool('SECURE_HSTS_INCLUDE_SUBDOMAINS', IS_PRODUCTION)
 SECURE_HSTS_PRELOAD = env_bool('SECURE_HSTS_PRELOAD', IS_PRODUCTION)
@@ -121,6 +122,11 @@ SECURE_HSTS_PRELOAD = env_bool('SECURE_HSTS_PRELOAD', IS_PRODUCTION)
 # The value can be adjusted for a deployment through environment variables.
 REQUEST_RATE_LIMIT = env_int('REQUEST_RATE_LIMIT', 120)
 REQUEST_RATE_WINDOW_SECONDS = env_int('REQUEST_RATE_WINDOW_SECONDS', 60)
+
+# Per-user AIRA chat limit. Enforced server-side in addition to the per-IP
+# request limiter so a single authenticated account cannot spam the assistant.
+AIRA_REQUEST_LIMIT = env_int('AIRA_REQUEST_LIMIT', 60)
+AIRA_REQUEST_WINDOW_SECONDS = env_int('AIRA_REQUEST_WINDOW_SECONDS', 60)
 
 
 # Application definition

@@ -9,6 +9,9 @@
         </div>
         <p class="aira-companion-message">{{ aira_guidance.message }}</p>
         <span class="aira-companion-note">Advisory only · Verify with your QA Office</span>
+        <a class="aira-companion-cta" href="{% url 'intelligence:smart_companion' %}">
+          {% icon 'sparkle' 'aira-companion-cta-icon' %} Ask AIRA
+        </a>
       </div>
     </div>
 

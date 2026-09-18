@@ -757,6 +757,14 @@ class EvidenceReviewView(ApprovedUserRequiredMixin, View):
         submission = get_object_or_404(_scoped_submissions(request.user), pk=submission_id)
         if submission.current_reviewer_id != request.user.id or not assignment_for_reviewer(request.user, submission):
             raise PermissionDenied('This submission is not assigned to you.')
+        if not EvidenceSubmission.objects.filter(pk=submission_id).exists():
+            raise Http404('Review workspace not found.')
+        submission = _scoped_submissions(request.user).filter(pk=submission_id).first()
+        if not submission or submission.current_reviewer_id != request.user.id or not assignment_for_reviewer(request.user, submission):
+            raise PermissionDenied(
+                'This review workspace is restricted to authorized users assigned '
+                'to the corresponding accreditation workflow.'
+            )
         return submission
 
     @staticmethod

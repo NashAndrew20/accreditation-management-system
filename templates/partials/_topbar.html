@@ -1,6 +1,16 @@
 {% load nav_extras %}
 <header class="topbar">
   <div class="topbar-left">
+    <button
+      type="button"
+      class="mobile-menu-trigger"
+      data-mobile-menu-trigger
+      aria-label="Open navigation menu"
+      aria-expanded="false"
+      title="Open menu"
+    >
+      {% icon 'menu' %}
+    </button>
     <label class="search-field">
       {% icon 'search' %}
       <input type="search" placeholder="Search..." aria-label="Search" data-global-search>

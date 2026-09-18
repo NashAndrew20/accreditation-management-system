@@ -1,4 +1,5 @@
 import json
+import logging
 import math
 from datetime import timedelta
 
@@ -12,9 +13,13 @@ from accreditation.constants import ACTIVE_REVIEW_STATUSES, COMPLETED_STATUSES
 from accreditation.models import AccreditationCycle, AccreditationLevel, EvidenceRequirement, EvidenceSubmission
 from core.access import accessible_submissions, department_scope_ids
 from core.mixins import ApprovedUserRequiredMixin
-from core.models import Department
+from core.models import AuditLog, Department
+from core.rate_limit import allow_aira_request
 
 from .pdf_export import build_report_pdf
+
+
+logger = logging.getLogger(__name__)
 
 
 def _points(values, max_value=36):
@@ -197,6 +202,7 @@ class AiraAskView(ApprovedUserRequiredMixin, View):
     """
 
     MAX_QUESTION_LENGTH = 500
+    MAX_REQUEST_BODY_BYTES = 4096
 
     def _extract_question(self, request):
         question = ''
@@ -213,17 +219,79 @@ class AiraAskView(ApprovedUserRequiredMixin, View):
         return question.strip()[: self.MAX_QUESTION_LENGTH]
 
     def post(self, request, *args, **kwargs):
-        if request.content_type and request.content_type.startswith('application/json'):
-            if not request.body or len(request.body) > 4096:
-                return JsonResponse(
-                    {'error': 'Request is empty or too large.'},
-                    status=413,
-                )
+        if not request.body or len(request.body) > self.MAX_REQUEST_BODY_BYTES:
+            return JsonResponse(
+                {'error': 'Request is empty or too large.'},
+                status=413,
+            )
         question = self._extract_question(request)
         if not question:
             return JsonResponse(
                 {'error': 'Please provide a question.'},
                 status=400,
             )
-        reply = ask(request.user, question)
+        try:
+            allowed = allow_aira_request(request.user)
+        except Exception:
+            # A rate-limiter outage must not silently remove the server-side
+            # protection. Return a safe, retryable failure instead.
+            logger.exception('AIRA rate-limit check failed for user %s', request.user.pk)
+            self._audit_error(request)
+            return JsonResponse(
+                {'error': 'AIRA is temporarily unavailable. Please try again shortly.'},
+                status=503,
+            )
+        if not allowed:
+            return JsonResponse(
+                {
+                    'error': (
+                        'You are sending messages too quickly. Please wait a '
+                        'moment and try again.'
+                    ),
+                },
+                status=429,
+            )
+        try:
+            reply = ask(request.user, question)
+        except Exception:
+            # Never leak a database/provider exception through the chat API.
+            logger.exception('AIRA could not answer a request for user %s', request.user.pk)
+            self._audit_error(request)
+            return JsonResponse(
+                {'error': 'AIRA is temporarily unavailable. Please try again shortly.'},
+                status=503,
+            )
+        self._audit_question(request, question, reply)
         return JsonResponse(reply)
+
+    @staticmethod
+    def _audit_question(request, question, reply):
+        """Record the request intent without storing confidential content."""
+        try:
+            AuditLog.objects.create(
+                actor=request.user,
+                action='AIRA_QUERY',
+                object_type='AiraQuery',
+                details={
+                    'intent': reply.get('intent', ''),
+                    'refused': reply.get('intent') == 'refused',
+                    'question_length': len(question),
+                },
+            )
+        except Exception:
+            # Auditing must never break the user-facing reply, but operators
+            # still need a diagnostic when the audit store is unavailable.
+            logger.exception('Could not write AIRA audit event for user %s', request.user.pk)
+
+    @staticmethod
+    def _audit_error(request):
+        """Audit an AIRA service failure without retaining the user's message."""
+        try:
+            AuditLog.objects.create(
+                actor=request.user,
+                action='AIRA_ERROR',
+                object_type='AiraQuery',
+                details={'stage': 'service_or_rate_limit'},
+            )
+        except Exception:
+            logger.exception('Could not write AIRA error audit event for user %s', request.user.pk)

@@ -1,0 +1,45 @@
+{% extends 'error_base.html' %}
+{% load nav_extras %}
+
+{% block title %}Access Denied · JMCFI AMS{% endblock %}
+
+{% block error_icon %}
+  {% icon icon_name|default:'lock' %}
+{% endblock %}
+
+{% block error_title %}{{ error_title|default:"Access Denied" }}{% endblock %}
+
+{% block error_description %}
+  {{ error_description|default:"You don't have permission to access this page with your current account or workflow role." }}
+{% endblock %}
+
+{% block error_context %}
+  <div class="error-context-panel">
+    <span class="error-context-title">{{ context_title|default:"Workflow Access Restriction" }}</span>
+    <p class="error-context-message">
+      {{ context_message|default:"This review workspace is restricted to authorized users assigned to the corresponding accreditation workflow." }}
+    </p>
+    {% if reference_id %}
+      <div class="error-reference-id">Reference ID: {{ reference_id }}</div>
+    {% endif %}
+  </div>
+{% endblock %}
+
+{% block error_actions %}
+  <a class="btn-error btn-error-primary" href="{{ primary_action_url|default:'/' }}">
+    {% icon primary_action_icon|default:'home' %}
+    <span>{{ primary_action_label|default:"Return to Dashboard" }}</span>
+  </a>
+
+  {% if user.is_authenticated %}
+    <a class="btn-error btn-error-secondary" href="{% if secondary_action_url %}{{ secondary_action_url }}{% else %}javascript:history.back(){% endif %}" onclick="if(window.history.length>1){event.preventDefault();window.history.back();}">
+      {% icon 'arrow-left' %}
+      <span>{{ secondary_action_label|default:"Go Back" }}</span>
+    </a>
+  {% else %}
+    <a class="btn-error btn-error-secondary" href="{{ secondary_action_url|default:'/login/' }}">
+      {% icon 'lock' %}
+      <span>{{ secondary_action_label|default:"Sign In Again" }}</span>
+    </a>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,107 @@
+{% load static nav_extras %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}{{ error_title|default:"Error" }} · JMCFI AMS{% endblock %}</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  <link rel="stylesheet" href="{% static 'css/error.css' %}?v=2">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  <main class="error-page" aria-labelledby="error-title">
+    <section class="error-card" role="alert" aria-live="assertive">
+      <!-- Institutional Branding / Logo -->
+      <div class="error-brand-logo">
+        <img
+          class="error-logo-img"
+          src="{% static 'images/jmcfi-logo.png' %}"
+          alt="JMCFI Institutional Logo"
+        >
+      </div>
+
+      <!-- Error Icon Badge -->
+      <div class="error-icon-badge tone-{{ icon_tone|default:'maroon' }}" aria-hidden="true">
+        {% block error_icon %}
+          {% icon icon_name|default:'shield' %}
+        {% endblock %}
+      </div>
+
+      <!-- Prominent HTTP Status Number -->
+      {% if status_code %}
+        <div class="error-status" aria-label="Status code {{ status_code }}">{{ status_code }}</div>
+      {% endif %}
+
+      <!-- Error Title -->
+      <h1 id="error-title" class="error-title">
+        {% block error_title %}{{ error_title|default:"Access Denied" }}{% endblock %}
+      </h1>
+
+      <!-- Descriptive Explanation -->
+      <p class="error-description">
+        {% block error_description %}
+          {{ error_description|default:"You don't have permission to access this page with your current account or workflow role." }}
+        {% endblock %}
+      </p>
+
+      <!-- Contextual Diagnostic / Guidance Panel -->
+      {% block error_context %}
+        {% if context_message %}
+          <div class="error-context-panel">
+            {% if context_title %}
+              <span class="error-context-title">{{ context_title }}</span>
+            {% endif %}
+            <p class="error-context-message">{{ context_message }}</p>
+            {% if reference_id %}
+              <div class="error-reference-id">Reference ID: {{ reference_id }}</div>
+            {% endif %}
+          </div>
+        {% endif %}
+      {% endblock %}
+
+      <!-- Actions -->
+      <div class="error-actions">
+        {% block error_actions %}
+          {% if primary_action_url %}
+            <a class="btn-error btn-error-primary" href="{{ primary_action_url }}">
+              <span>{{ primary_action_label|default:"Return to Dashboard" }}</span>
+              {% if primary_action_icon %}
+                {% icon primary_action_icon %}
+              {% endif %}
+            </a>
+          {% endif %}
+
+          {% if secondary_action_url %}
+            <a class="btn-error btn-error-secondary" href="{{ secondary_action_url }}" {% if secondary_action_url == 'javascript:history.back()' %}onclick="if(window.history.length>1){event.preventDefault();window.history.back();}"{% endif %}>
+              {% if secondary_action_icon %}
+                {% icon secondary_action_icon %}
+              {% endif %}
+              <span>{{ secondary_action_label|default:"Go Back" }}</span>
+            </a>
+          {% endif %}
+
+          {% if retry_action %}
+            <button type="button" class="btn-error btn-error-primary" onclick="window.location.reload();">
+              {% icon 'refresh-cw' %}
+              <span>Try Again</span>
+            </button>
+          {% endif %}
+        {% endblock %}
+      </div>
+
+      <!-- Institutional Footer -->
+      <footer class="error-footer">
+        JMCFI Accreditation Management System
+      </footer>
+    </section>
+  </main>
+</body>
+</html>
+

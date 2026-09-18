@@ -1,0 +1,53 @@
+{% extends 'error_base.html' %}
+{% load nav_extras %}
+
+{% block title %}{{ error_title|default:"Notice" }} · JMCFI AMS{% endblock %}
+
+{% block error_icon %}
+  {% icon icon_name|default:'alert' %}
+{% endblock %}
+
+{% block error_title %}{{ error_title|default:"Notice" }}{% endblock %}
+
+{% block error_description %}{{ error_description }}{% endblock %}
+
+{% block error_context %}
+  {% if context_message %}
+    <div class="error-context-panel">
+      {% if context_title %}
+        <span class="error-context-title">{{ context_title }}</span>
+      {% endif %}
+      <p class="error-context-message">{{ context_message }}</p>
+      {% if reference_id %}
+        <div class="error-reference-id">Reference ID: {{ reference_id }}</div>
+      {% endif %}
+    </div>
+  {% endif %}
+{% endblock %}
+
+{% block error_actions %}
+  {% if retry_action %}
+    <button type="button" class="btn-error btn-error-primary" onclick="window.location.reload();">
+      {% icon 'refresh-cw' %}
+      <span>{{ retry_label|default:"Try Again" }}</span>
+    </button>
+  {% elif primary_action_url %}
+    <a class="btn-error btn-error-primary" href="{{ primary_action_url }}">
+      {% if primary_action_icon %}{% icon primary_action_icon %}{% else %}{% icon 'home' %}{% endif %}
+      <span>{{ primary_action_label|default:"Return to Dashboard" }}</span>
+    </a>
+  {% endif %}
+
+  {% if secondary_action_url %}
+    <a class="btn-error btn-error-secondary" href="{{ secondary_action_url }}" {% if secondary_action_url == 'javascript:history.back()' %}onclick="if(window.history.length>1){event.preventDefault();window.history.back();}"{% endif %}>
+      {% if secondary_action_icon %}{% icon secondary_action_icon %}{% else %}{% icon 'arrow-left' %}{% endif %}
+      <span>{{ secondary_action_label|default:"Go Back" }}</span>
+    </a>
+  {% elif retry_action and primary_action_url %}
+    <a class="btn-error btn-error-secondary" href="{{ primary_action_url }}">
+      {% icon 'home' %}
+      <span>Return to Dashboard</span>
+    </a>
+  {% endif %}
+{% endblock %}
+

@@ -69,6 +69,17 @@
               <label for="{{ form.password.id_for_label }}">Password</label>
               <div class="login-password-wrap">
                 {{ form.password }}
+                <button
+                  type="button"
+                  class="password-toggle"
+                  data-password-toggle
+                  aria-label="Show password"
+                  aria-pressed="false"
+                  title="Show password"
+                >
+                  {% icon 'eye' %}
+                  <span class="password-toggle-label">Show</span>
+                </button>
               </div>
               {% for error in form.password.errors %}
                 <span class="login-field-error">{{ error }}</span>
@@ -314,7 +325,7 @@
 
   </main>
 
-  <script src="{% static 'js/login.js' %}" defer></script>
+  <script src="{% static 'js/login.js' %}?v=20260918-password-toggle" defer></script>
   {% block extra_js %}
   <script>
     (function () {

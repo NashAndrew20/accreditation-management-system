@@ -1,20 +1,75 @@
 (function () {
-  function showToast(message) {
+  function showToast(options) {
     let toast = document.querySelector('.ui-toast');
     if (!toast) {
       toast = document.createElement('div');
       toast.className = 'ui-toast';
-      toast.setAttribute('role', 'status');
-      toast.setAttribute('aria-live', 'polite');
       document.body.appendChild(toast);
     }
 
-    toast.textContent = message;
-    toast.classList.add('is-visible');
     window.clearTimeout(showToast.timer);
-    showToast.timer = window.setTimeout(function () {
-      toast.classList.remove('is-visible');
-    }, 2200);
+
+    if (typeof options === 'object' && options !== null) {
+      toast.className = 'ui-toast is-error';
+      toast.setAttribute('role', 'alert');
+      toast.setAttribute('aria-live', 'assertive');
+      toast.innerHTML = '';
+
+      const head = document.createElement('div');
+      head.className = 'ui-toast-error-head';
+      head.innerHTML =
+        '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+        '<circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>' +
+        '<span class="ui-toast-error-title">' + (options.title || 'Unable to save changes') + '</span>';
+      toast.appendChild(head);
+
+      const desc = document.createElement('div');
+      desc.className = 'ui-toast-error-desc';
+      desc.textContent = options.message || 'The server could not process your request.';
+      toast.appendChild(desc);
+
+      const actions = document.createElement('div');
+      actions.className = 'ui-toast-actions';
+
+      if (options.onRetry) {
+        const retryBtn = document.createElement('button');
+        retryBtn.type = 'button';
+        retryBtn.className = 'ui-toast-btn';
+        retryBtn.textContent = 'Retry';
+        retryBtn.addEventListener('click', function () {
+          toast.classList.remove('is-visible');
+          options.onRetry();
+        });
+        actions.appendChild(retryBtn);
+      }
+
+      const dismissBtn = document.createElement('button');
+      dismissBtn.type = 'button';
+      dismissBtn.className = 'ui-toast-btn is-dismiss';
+      dismissBtn.textContent = 'Dismiss';
+      dismissBtn.addEventListener('click', function () {
+        toast.classList.remove('is-visible');
+        if (options.onDismiss) options.onDismiss();
+      });
+      actions.appendChild(dismissBtn);
+
+      toast.appendChild(actions);
+      toast.classList.add('is-visible');
+
+      showToast.timer = window.setTimeout(function () {
+        toast.classList.remove('is-visible');
+      }, 7000);
+    } else {
+      toast.className = 'ui-toast';
+      toast.setAttribute('role', 'status');
+      toast.setAttribute('aria-live', 'polite');
+      toast.textContent = options;
+      toast.classList.add('is-visible');
+
+      showToast.timer = window.setTimeout(function () {
+        toast.classList.remove('is-visible');
+      }, 2200);
+    }
   }
 
   function bindDataTooltips() {
@@ -23,7 +78,6 @@
 
     const tooltip = document.createElement('div');
     tooltip.className = 'ui-data-tooltip';
-    tooltip.id = 'ui-data-tooltip';
     tooltip.setAttribute('role', 'tooltip');
     tooltip.setAttribute('aria-hidden', 'true');
     document.body.appendChild(tooltip);
@@ -674,6 +728,7 @@
   }
 
   function submitCompanionQuestion(input) {
+    if (!input || input.disabled) return;
     const question = input.value.trim();
     if (!question) {
       showToast('Choose a prompt or type a question');
@@ -693,17 +748,17 @@
     userBubble.textContent = question;
     userMessage.appendChild(userBubble);
 
+    body.appendChild(userMessage);
     const created = createCompanionReply(body, airaImage);
     created.bubble.textContent = 'Thinking…';
     created.bubble.classList.add('is-pending');
     created.reply.setAttribute('aria-busy', 'true');
 
-    body.appendChild(userMessage);
     body.scrollTop = body.scrollHeight;
 
     if (composerForm) {
       const sendButton = composerForm.querySelector('button[type="submit"]');
-      const field = composerForm.querySelector('input');
+      const field = composerForm.querySelector('input[type="text"]');
       sendButton.disabled = true;
       field.disabled = true;
     }
@@ -713,10 +768,10 @@
       created.bubble.textContent = replyText;
       created.reply.removeAttribute('aria-busy');
       addSourceChip(created.stack, source);
-      addCompanionSuggestions(created.stack, suggestions, composerForm ? composerForm.querySelector('input') : null);
+      addCompanionSuggestions(created.stack, suggestions, composerForm ? composerForm.querySelector('input[type="text"]') : null);
       if (composerForm) {
         const sendButton = composerForm.querySelector('button[type="submit"]');
-        const field = composerForm.querySelector('input');
+        const field = composerForm.querySelector('input[type="text"]');
         sendButton.disabled = false;
         field.disabled = false;
         field.focus();
@@ -724,26 +779,68 @@
       body.scrollTop = body.scrollHeight;
     }
 
-    function fail() {
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function fail(errorObj) {
       created.bubble.classList.remove('is-pending');
-      created.bubble.textContent =
-        'I could not reach the accreditation service. Please try again.';
       created.bubble.classList.add('is-error');
       created.reply.removeAttribute('aria-busy');
+
+      const status = errorObj && errorObj.status;
+      const rawMessage = errorObj && errorObj.userMessage;
+      let title = 'Unable to retrieve the required information';
+      let message = rawMessage || "I couldn't access the authorized AMS records needed to answer your question accurately.";
+      let subMessage = "I won't generate an unsupported answer without verified accreditation records.";
+
+      if (status === 503 || (rawMessage && rawMessage.toLowerCase().includes('temporarily unavailable'))) {
+        title = 'AIRA Temporarily Unavailable';
+        message = 'AIRA is temporarily unavailable. Please try again in a moment.';
+        subMessage = 'System services are currently undergoing maintenance or high load.';
+      } else if (status === 429 || (rawMessage && rawMessage.toLowerCase().includes('too quickly'))) {
+        title = 'Message Limit Reached';
+        message = 'You are sending messages too quickly. Please wait a moment and try again.';
+        subMessage = 'Per-user rate limits ensure fair companion availability.';
+      } else if (status === 413) {
+        title = 'Question Too Long';
+        message = 'Your message exceeds the allowed size limit. Please ask a more concise question.';
+        subMessage = 'AIRA performs best with focused accreditation queries.';
+      }
+
+      created.bubble.innerHTML =
+        '<div class="aira-error-card">' +
+        '  <div class="aira-error-head">' +
+        '    <svg class="icon aira-error-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+        '      <path d="M12 9v4"></path><path d="M12 17h.01"></path><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>' +
+        '    </svg>' +
+        '    <span class="aira-error-kicker">AIRA Assistant</span>' +
+        '  </div>' +
+        '  <strong class="aira-error-title">' + escapeHtml(title) + '</strong>' +
+        '  <p class="aira-error-desc">' + escapeHtml(message) + '</p>' +
+        '  <p class="aira-error-sub">' + escapeHtml(subMessage) + '</p>' +
+        '</div>';
 
       const retry = document.createElement('button');
       retry.type = 'button';
       retry.className = 'companion-retry';
-      retry.textContent = 'Retry';
+      retry.innerHTML = '<span>↺</span> Try Again';
       retry.addEventListener('click', function () {
         created.reply.remove();
+        userMessage.remove();
         submitCompanionQuestion(input);
       });
       created.stack.appendChild(retry);
 
       if (composerForm) {
         const sendButton = composerForm.querySelector('button[type="submit"]');
-        const field = composerForm.querySelector('input');
+        const field = composerForm.querySelector('input[type="text"]');
         sendButton.disabled = false;
         field.disabled = false;
         if (field.value === '') field.value = question;
@@ -763,23 +860,33 @@
       body: JSON.stringify({ question: question }),
     })
       .then(function (response) {
-        if (!response.ok) {
-          throw new Error('Request failed with status ' + response.status);
-        }
-        return response.json();
+        return response.json().catch(function () { return {}; }).then(function (data) {
+          if (!response.ok) {
+            const error = new Error('Request failed with status ' + response.status);
+            error.status = response.status;
+            error.userMessage = data.error || (response.status === 503 ? 'AIRA is temporarily unavailable. Please try again later.' : 'I could not complete that request. Please try again.');
+            throw error;
+          }
+          return data;
+        });
       })
       .then(function (data) {
-        settle(data.reply || '', data.source || '', data.suggestions || []);
+        if (!data.reply) {
+          const error = new Error('AIRA response was empty.');
+          error.userMessage = 'AIRA did not return an answer. Please try again.';
+          throw error;
+        }
+        settle(data.reply, data.source || '', data.suggestions || []);
       })
-      .catch(function () {
-        fail();
+      .catch(function (error) {
+        fail(error);
       });
   }
 
   function bindMessaging() {
     document.querySelectorAll('.sample-prompt-list button').forEach(function (button) {
       button.addEventListener('click', function () {
-        const input = document.querySelector('.composer-row input');
+        const input = document.querySelector('.composer-row input[type="text"]');
         if (!input) return;
         input.value = button.textContent.trim();
         input.focus();
@@ -789,13 +896,13 @@
     document.querySelectorAll('form[data-companion-form]').forEach(function (form) {
       form.addEventListener('submit', function (event) {
         event.preventDefault();
-        const input = form.querySelector('input');
+        const input = form.querySelector('input[type="text"]');
         if (!input) return;
         submitCompanionQuestion(input);
       });
     });
 
-    document.querySelectorAll('.composer-row input').forEach(function (input) {
+    document.querySelectorAll('.composer-row input[type="text"]').forEach(function (input) {
       input.addEventListener('keydown', function (event) {
         if (event.key === 'Enter') {
           event.preventDefault();

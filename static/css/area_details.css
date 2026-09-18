@@ -259,10 +259,12 @@ body.modal-open {
 
 .assignment-scope-option {
   flex: 1 1 240px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 10px;
   min-height: 48px;
+  min-width: 0;
   padding: 11px 14px;
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-md);
@@ -288,15 +290,24 @@ body.modal-open {
 .assignment-scope-option input {
   width: 16px;
   height: 16px;
-  margin: 0;
+  margin: 2px 0 0;
   accent-color: var(--maroon-700);
   flex: 0 0 auto;
 }
 
 .assignment-option-copy {
   display: flex;
+  flex: 1 1 auto;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
+  text-align: left;
+}
+
+.assignment-option-copy strong,
+.assignment-option-copy small {
+  display: block;
+  width: 100%;
 }
 
 .assignment-option-copy strong {
@@ -322,7 +333,7 @@ body.modal-open {
 
 .assignment-department-option {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 10px;
   min-height: 48px;
   padding: 10px 12px;
@@ -352,7 +363,7 @@ body.modal-open {
   width: 16px;
   height: 16px;
   min-height: 0;
-  margin: 0;
+  margin: 2px 0 0;
   accent-color: var(--maroon-700);
   flex: 0 0 auto;
 }

@@ -8,8 +8,11 @@ document.addEventListener('DOMContentLoaded', function () {
     passwordToggle.addEventListener('click', function () {
       const isVisible = passwordInput.type === 'text';
       passwordInput.type = isVisible ? 'password' : 'text';
-      passwordToggle.textContent = isVisible ? 'Show' : 'Hide';
-      passwordToggle.setAttribute('aria-label', isVisible ? 'Show password' : 'Hide password');
+      const label = isVisible ? 'Show' : 'Hide';
+      passwordToggle.querySelector('.password-toggle-label').textContent = label;
+      passwordToggle.setAttribute('aria-label', label + ' password');
+      passwordToggle.setAttribute('title', label + ' password');
+      passwordToggle.setAttribute('aria-pressed', String(!isVisible));
     });
   }
 

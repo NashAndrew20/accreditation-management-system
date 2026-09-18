@@ -234,7 +234,12 @@
   position: absolute;
   top: 50%;
   right: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
   min-width: 40px;
+  min-height: 40px;
   padding: 3px 0;
   border: 0;
   background: transparent;
@@ -246,6 +251,17 @@
 
 .password-toggle:hover {
   color: var(--maroon-900);
+}
+
+.password-toggle:focus-visible {
+  border-radius: 6px;
+  outline: 2px solid var(--maroon-600);
+  outline-offset: 2px;
+}
+
+.password-toggle .icon {
+  width: 16px;
+  height: 16px;
 }
 
 .login-field-error {
